@@ -78,7 +78,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
             type: linkType.LINK,
             url: "/rawat-jalan/poli",
           },
-        ], // Ini akan diupdate dengan data dari API
+        ],
       },
     ],
   },

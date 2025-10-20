@@ -51,42 +51,20 @@ const selectedTab = ref("");
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    // let isDoctor = true;
-    // let isNonDoctor = false;
-
-    // const response = await praktisiStore.getApi({
-    //   page: praktisiProperties.value.page,
-    //   limit: praktisiProperties.value.page_size,
-    //   name: searchQuery.value,
-    //   doctor: isDoctor,
-    //   non_doctor: isNonDoctor,
-    // });
-
-    let isDoctor = true;
-    const response = await praktisiStore.getApi({
+    const params = {
       page: praktisiProperties.value.page,
-      limit: praktisiProperties.value.page_size,
+      limit: 9999,
       name: searchDoctor.value,
-      isDoctor: isDoctor,
-    });
+      isDoctor: true,
+    };
+
+    const response = await praktisiStore.getApi(params);
 
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {
       praktisiPayload.value = [];
     }
-
-    // if (response && response.payload) {
-    //   praktisiProperties.value.total = response.properties.total;
-    //   praktisiPayload.value = [...response.payload];
-    //   // console.log(`COba`,praktisiPayload.value);
-    //    if (response.payload.length === praktisiProperties.value.page_size) {
-    //     praktisiProperties.value.page += 1;
-    //     await fetchPraktisiData();
-    //   }
-    // } else {
-    //   praktisiPayload.value = [];
-    // }
   } catch (error) {
     console.error("Failed to fetch data", error);
     praktisiPayload.value = [];

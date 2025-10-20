@@ -4,8 +4,10 @@ import { linkType } from "@/utils/Enum";
 import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
 import { useRouter, useRoute, routerKey } from "vue-router";
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import dialogStokView from "@/views/Stok/StokView.vue";
+import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import CustomSelect from "../Base/CustomSelect.vue";
 
 const props = defineProps({
   sidebarTitle: {
@@ -36,7 +38,7 @@ const StockLocationStore = useStockLocationStore();
 const StockLocationPayload = ref<any[]>([]);
 
 // Fetch Stock Location
-const fetchStockLocation = async () => {  
+const fetchStockLocation = async () => {
   try {
     const response = await StockLocationStore.getApi();
 
@@ -103,7 +105,7 @@ const getSVG = (svg: string) => {
 };
 
 onMounted(() => {
-  if (props.sidebarTitle === 'Inventory'){
+  if (props.sidebarTitle === "Inventory") {
     fetchStockLocation();
   }
 });
@@ -151,7 +153,10 @@ onMounted(() => {
               class="mb-[20px] mt-[20px]"
             />
           </div>
-          <div v-for="(section, index) in props.sidebarBodyList" class="text-SM">
+          <div
+            v-for="(section, index) in props.sidebarBodyList"
+            class="text-SM"
+          >
             <hr :class="[index == 0 ? 'mb-[20px]' : 'my-[20px]']" />
             <div v-for="row1 in section.child">
               <div v-if="showSidebar">
@@ -266,7 +271,7 @@ onMounted(() => {
       </div>
       <div
         v-if="showStockBtn && showSidebar"
-        class="flex flex-none justify-center w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
+        class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
         @click="DialogStokView = true"
       >
         <PhStack size="20" weight="bold" class="mr-[10px] my-auto" />

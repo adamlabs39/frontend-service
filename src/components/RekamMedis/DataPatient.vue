@@ -134,6 +134,7 @@ const showPatientData = ref(true);
               </div>
             </div>
             <!-- FIXME Belum Ada -->
+            <!-- Data yang ditampilkan masih bukan tanggal asesmen terakhir ( masih belum sesuai )-->
             <div class="mr-5">
               <div class="font-semibold underline mb-[5px] leading-5">
               Asesmen Terakhir
@@ -255,6 +256,7 @@ const showPatientData = ref(true);
                 </div>
                 <!-- FIXME Kurang Data -->
                 <div
+                {{ warnaTriase }}
                   v-if="rmType == 'igd' && summaryData.warnaTriase != '-'"
                   class="`font-semibold text-center h-5 leading-5 rounded-[50px] shadow-lg`"
                   :class="[

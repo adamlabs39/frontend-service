@@ -26,13 +26,14 @@ const props = defineProps({
     type: Object as PropType<any>,
     default: null,
   },
+  patientData: {
+    type: Object,
+    default: () => ({}),
+  }, 
 });
 
 const temuanLainnya = ref();
 const compareDialog = ref(false);
-const showDialogCompare = () => {
-  compareDialog.value = true;
-};
 
 const saveData = () => {
   return {
@@ -46,7 +47,62 @@ const setFormData = () => {
   } else temuanLainnya.value = undefined;
 };
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
+const historyData = ref<Array<any> | null>(null);
+const historyPageIndex = ref(0);
+
+const fetchHistoryData = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noRm: props.patientData?.patient?.noRm,
+      key: "pemeriksaan_mata",
+    });
+
+    if (response && response.payload) {
+      historyData.value = response.payload;
+      historyPageIndex.value = 0;
+    } else {
+      historyData.value = null;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data compare untuk Temuan Lainnya:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const showDialogCompare = async () => {
+  await fetchHistoryData();
+  compareDialog.value = true;
+};
+
+const leftHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value];
+});
+
+const rightHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  return historyData.value[historyPageIndex.value + 1];
+});
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 2 < historyData.value.length;
+});
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value -= 2;
+  }
+};
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value += 2;
+  }
+};
+
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
@@ -130,12 +186,13 @@ defineExpose({
                   />
                 </div>
               </div>
-              <div
-                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
-              >
-                <HistoriTemuanLainnya />
-                <div class="border border-adameds-300 mx-[15px]"></div>
-                <HistoriTemuanLainnya />
+              <div class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto gap-x-4">
+                <HistoriTemuanLainnya v-if="leftHistoryItem" :history="leftHistoryItem.data" />
+                <div v-else class="text-center text-grey-400 self-start pt-4">Tidak ada riwayat.</div>
+
+                <div v-if="rightHistoryItem" class="border border-adameds-300"></div>
+                
+                <HistoriTemuanLainnya v-if="rightHistoryItem" :history="rightHistoryItem.data" />
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
