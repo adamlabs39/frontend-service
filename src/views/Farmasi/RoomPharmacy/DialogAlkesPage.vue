@@ -39,6 +39,18 @@ const closeDialog = () => {
 const medicalItemsStore = useMedicalItemStore();
 const alkesPayload = ref<any[]>([]);
 
+const preselectAlkesFromPayload = () => {
+  const itemUuid = props.payloadEdit?.itemMedis?.uuid;
+  qty.value = props.payloadEdit?.qty ?? qty.value;
+  if (!itemUuid) {
+    alkesItem.value = null;
+    return;
+  }
+  const selected =
+    alkesPayload.value.find((item: any) => item.uuid === itemUuid) || null;
+  alkesItem.value = selected;
+};
+
 // Fetch Alkes
 const fetchAlkes = async () => {
   try {
@@ -48,6 +60,7 @@ const fetchAlkes = async () => {
     } else {
       alkesPayload.value = [];
     }
+    preselectAlkesFromPayload();
   } catch (error) {
     console.error("Failed to fetch data", error);
     alkesPayload.value = [];
@@ -77,17 +90,16 @@ const editAlkes = async () => {
   }
 };
 
+const resetForm = () => {
+  alkesItem.value = null;
+  qty.value = 0;
+};
+
 watch(
   () => props.isDialogVisible,
-  (newValue) => {
-    if (newValue) {
-      if (props.payloadEdit) {
-        const selectedAlkes = alkesPayload.value.find(
-          (item: any) => props.payloadEdit.itemMedis.uuid == item.uuid
-        );
-        alkesItem.value = selectedAlkes;
-      }
-    }
+  (visible) => {
+    if (!visible) return;
+    preselectAlkesFromPayload();
   }
 );
 
@@ -170,7 +182,7 @@ onMounted(() => {
     <template #footer>
       <div class="flex justify-end">
         <CustomButton
-          @click=""
+          @click="resetForm"
           label="Reset"
           outlined
           borderColor="border-grey-200"
