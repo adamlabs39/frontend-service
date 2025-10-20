@@ -16,6 +16,7 @@ import ReturUnit from "./PengeluaranBarang/ReturUnit.vue";
 import type { SidebarBody } from "@/utils/Interface";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import PermintaanBarang from "./PermintaanBarang.vue";
+import { shallowRef } from "vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -47,7 +48,7 @@ const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
 };
 
-const currentComponent = ref(PermintaanBarang);
+const currentComponent = shallowRef(PermintaanBarang);
 const selectedKey = ref("permintaan-barang");
 const lokasiStok = ref();
 
