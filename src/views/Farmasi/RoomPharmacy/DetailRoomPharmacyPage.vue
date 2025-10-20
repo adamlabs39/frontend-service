@@ -484,24 +484,20 @@ onMounted(() => {
         </div>
         <hr class="mt-5 border-[1px] border-grey-200" />
         <!-- Verifikasi -->
-        <div class="grid grid-cols-[40%,20%,40%]">
-          <div class="flex">
-            <div class="mt-[20px]">
-              <CustomButton
-                label="Batal Order"
-                backgroundColor="bg-danger-300"
-                borderColor="border-danger-300"
-                textColor="text-white"
-                @click="openCancelDialog(payloadDetail)"
-              />
-              <CustomButton
-                label="Pindah Lokasi Order"
-                class="ml-[10px]"
-                @click="openMovingLocationDialog(payloadDetail)"
-              />
-            </div>
-          </div>
-          <div class="mt-[20px] ml-[-10px]">
+        <div class="flex justify-between items-center py-1">
+          <div class="flex gap-2">
+            <CustomButton
+              label="Batal Order"
+              backgroundColor="bg-danger-300"
+              borderColor="border-danger-300"
+              textColor="text-white"
+              @click="openCancelDialog(payloadDetail)"
+            />
+            <CustomButton
+              label="Pindah Lokasi Order"
+              class=""
+              @click="openMovingLocationDialog(payloadDetail)"
+            />
             <CustomButton @click="cetakDialog = true">
               <div class="flex gap-2 items-center">
                 <PhPrinter :size="18" color="#ffffff" weight="fill" />
@@ -509,16 +505,12 @@ onMounted(() => {
               </div>
             </CustomButton>
           </div>
-          <div class="flex justify-end">
-            <div class="mt-[20px]">
-              <CustomButton
-                :disabled="activedVerif"
-                @click="verify"
-                label="Verifikasi"
-                class="ml-[20px]"
-              />
-            </div>
-          </div>
+          <CustomButton
+            :disabled="activedVerif"
+            @click="verify"
+            label="Verifikasi"
+            class=""
+          />
         </div>
       </div>
     </div>
