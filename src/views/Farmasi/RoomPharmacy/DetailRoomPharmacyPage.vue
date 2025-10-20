@@ -34,10 +34,13 @@ const MedicalItemPayload = ref();
 
 // Fetch MedicalItem
 const fetchMedicalItem = async () => {
-  const itemMedisName = props.payloadDetail.alkesItems[0].itemMedis.uuid;
+  const itemMedisName = props.payloadDetail?.alkesItems?.[0]?.uuid;
+  if (!itemMedisName) {
+    MedicalItemPayload.value = [];
+    return;
+  }
   try {
     const response = await MedicalItemStore.getAvailableStockApi(itemMedisName);
-
     if (response && response.payload) {
       MedicalItemPayload.value = response.payload;
     } else {
@@ -178,13 +181,26 @@ const movingLocationDialogConfig = ref<any>({
 });
 
 const openMovingLocationDialog = (data: any = {}) => {
+  console.log("[DetailRoomPharmacy] openMovingLocationDialog payload:", data);
   movingLocationDialogConfig.value = { data };
   movingLocationDialog.value = true;
 };
 
-onMounted(() => {
-  fetchMedicalItem();
-});
+watch(
+  () => props.payloadDetail.alkesItems,
+  () => {
+    if (props.payloadDetail.alkesItems?.length) {
+      fetchMedicalItem();
+    }
+  },
+  { immediate: true }
+);
+
+console.log("payloadDetail", props.payloadDetail);
+
+// onMounted(() => {
+//   fetchMedicalItem();
+// });
 </script>
 
 <template>
@@ -484,7 +500,7 @@ onMounted(() => {
         </div>
         <hr class="mt-5 border-[1px] border-grey-200" />
         <!-- Verifikasi -->
-        <div class="flex justify-between items-center py-1">
+        <div class="flex justify-between items-center py-5">
           <div class="flex gap-2">
             <CustomButton
               label="Batal Order"
@@ -517,7 +533,7 @@ onMounted(() => {
   </div>
 
   <!-- Cetak Dialog -->
-  <CustomDialog v-model:visible="cetakDialog" width="435px">
+  <CustomDialog v-model:visible="cetakDialog" width="500px">
     <template #header>Cetak</template>
     <template #body>
       <div class="flex gap-3 mt-[20px]">

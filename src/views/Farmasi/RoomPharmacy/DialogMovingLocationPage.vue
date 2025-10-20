@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, toRaw } from "vue";
 import { useRoomPharmacyStore } from "@/stores/farmasi/RoomPharmacy";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
@@ -56,7 +56,7 @@ const movingLocation = async () => {
   } catch (error) {
     console.error("Failed to process the data:", error);
   }
-  destinationLocation.value = ""
+  destinationLocation.value = "";
   closeDialog();
   emit("data-updated");
 };
@@ -69,19 +69,28 @@ watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
-      if (props.payloadMoving) {    
+      if (props.payloadMoving) {
         const selectedAlkes = StockLocationPayload.value.find(
-          (item: any) => props.payloadMoving.lokasiStokUuid == item.uuid        
+          (item: any) => props.payloadMoving.lokasiStokUuid == item.uuid
         );
-        startingLocation.value = selectedAlkes.uuid
+        // Hindari error jika selectedAlkes belum ditemukan
+        startingLocation.value = selectedAlkes?.uuid || "";
       }
+      // Log saat dialog dibuka dengan payload terbaru
+      console.log("payloadMoving (visible):", toRaw(props.payloadMoving));
     }
   }
 );
+
+console.log("payloadMoving:", props.payloadMoving);
 </script>
 
 <template>
-  <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="550px">
+  <CustomDialog
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    width="550px"
+  >
     <template #header>Pindah Lokasi Order</template>
     <template #body>
       <div class="grid grid-cols-[45%,10%,45%]">
@@ -125,7 +134,11 @@ watch(
           textColor="text-grey-300"
           @click="closeDialog"
         />
-        <CustomButton label="Pindahkan" class="ml-[10px]" @click="movingLocation" />
+        <CustomButton
+          label="Pindahkan"
+          class="ml-[10px]"
+          @click="movingLocation"
+        />
       </div>
     </template>
   </CustomDialog>
