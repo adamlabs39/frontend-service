@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { InputNumberInputEvent } from "primevue/inputnumber";
-import { computed, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 type FormatType = "decimal" | "currency" | undefined;
+import type { RoundingMode } from "primevue/inputnumber";
 
 const props = defineProps({
   modelValue: {
@@ -71,6 +72,10 @@ const props = defineProps({
   readOnly: {
     type: Boolean,
     default: false,
+  },
+  roundingMode: {
+    type: String as () => RoundingMode,
+    default: "halfExpand",
   },
 });
 
@@ -175,6 +180,7 @@ defineExpose({
           placeholderColor: invalid ? '#e9594c' : '#90969E',
         }"
         :readonly="readOnly"
+        :roundingMode="roundingMode"
       >
         <template #incrementbuttonicon>
           <PhPlus :size="20" />

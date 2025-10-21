@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription";
 import { utilsStore } from "@/stores/utils";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";

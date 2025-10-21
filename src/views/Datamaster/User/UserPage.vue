@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, watch, onBeforeMount } from "vue";
 import { useRoute, onBeforeRouteLeave } from "vue-router";
+import * as XLSX from "xlsx-js-style";
 import type { MenuItem } from "primevue/menuitem";
 import { useUserStore } from "@/stores/user";
 import { utilsStore } from "@/stores/utils";
@@ -94,10 +95,8 @@ const fetchUserData = async () => {
       name: searchQuery.value,
       role: selectedRole.value || undefined,
     });
-    console.log("API Response:", response);
 
     if (response && response.payload) {
-      console.log("Response contains payload:", response.payload);
       userProperties.value.total = response.properties.totalItem;
       userPayload.value = response.payload;
     } else {
@@ -136,12 +135,13 @@ const faskesUuid = computed(() => {
   return authStore.getFaskesUuid;
 });
 
-watch(faskesUuid, (newValue,oldValue) => {
-  fetchUserData();
-  console.log("fasekes uuid", faskesUuid.value);
-  console.log("new uuid", newValue);
-  console.log("old uuid", oldValue);
-},{immediate:true});
+watch(
+  faskesUuid,
+  (newValue, oldValue) => {
+    fetchUserData();
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   fetchUserData();
@@ -151,8 +151,6 @@ onMounted(() => {
 const hasData = computed(
   () => userPayload.value && userPayload.value.length > 0
 );
-
-console.log(userPayload.value);
 
 const metaKey = ref(true);
 const selectedData = ref();
@@ -188,6 +186,219 @@ const confirmDelete = async (item: any) => {
       UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
+  }
+};
+
+// Export Excel
+const downloadExportExcel = async () => {
+  try {
+    const response = await userStore.exportApi();
+    const rows = response.payload;
+    if (!rows || rows.length === 0) {
+      console.error("No data available for export");
+      return;
+    }
+
+    // Prepare Data for Export
+    const title = ["DATAMASTER USER"];
+    const data = [];
+
+    // Header Row (Kosong untuk baris kedua tanpa border)
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      Username: "Username",
+      Email: "Email",
+      Phone: "Phone",
+      Status: "Status",
+    });
+
+    // Data Rows
+    for (let i = 0; i < rows.length; i++) {
+      data.push({
+        No: i + 1,
+        Username: rows[i].username,
+        Email: rows[i].email,
+        Phone: rows[i].phone ?? '-',
+        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+      });
+    }
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Add Title and Merge Cells
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+
+    // Style Title
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:E1");
+
+    // Start formatting from row 3 (index 2 in array)
+    for (let row = 2; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        // Apply border only to row 3 and beyond (table rows)
+        if (row >= 2) {
+          worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+          worksheet[cellAddress].s.border = {
+            top: { style: "thin" },
+            bottom: { style: "thin" },
+            left: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        // Align header cells (row 3)
+        if (row === 2 || col === 0) {
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+        }
+
+        // Fill header with background color (row 3)
+        if (row === 2) {
+          worksheet[cellAddress].s.fill = {
+            fgColor: { rgb: "9fe2db" },
+          };
+        }
+      }
+    }
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster User");
+    XLSX.writeFile(workbook, `Datamaster User.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+const downloadFormatExcel = async () => {
+  try {
+    // Prepare Data for Export
+    const data = [];
+
+    // Header Row
+    data.push({
+      No: "No",
+      Role: "Role*",
+      Username: "Username*",
+      Password: "Password*",
+      Email: "Email*",
+      TipePraktisi: "Tipe Praktisi*",
+      KodeHFIS: "Kode HFIS (BPJS)",
+      SIP: "SIP",
+      STR: "STR",
+      KodeAntrian: "Kode Antrian Dokter",
+      TipePegawai: "Tipe Pegawai*",
+      GelarAwal: "Gelar Awal*",
+      GelarAkhir: "Gelar Akhir*",
+      NamaPegawai: "Nama Pegawai*",
+      NIK: "NIK*",
+      TanggalLahir: "Tanggal Lahir*",
+      JenisKelamin: "Jenis Kelamin*",
+    });
+
+    // Add Empty Rows (4 empty rows to match the example)
+
+    data.push({
+      No: "1",
+      Role: "dokter spesialis",
+      Username: "dokteradam",
+      Password: "dokteradam123",
+      Email: "dokteradam@gmail.com",
+      TipePraktisi: "Dokter",
+      KodeHFIS: "BPJS-001",
+      SIP: "12345",
+      STR: "1234567890",
+      KodeAntrian: "A01",
+      TipePegawai: "1",
+      GelarAwal: "dr",
+      GelarAkhir: "Sp.An",
+      NamaPegawai: "dr. Adam,Sp.An",
+      NIK: "3125678907654321",
+      TanggalLahir: "7/1/2003",
+      JenisKelamin: "Laki-laki",
+    });
+    data.push({
+      No: "2",
+      Role: "admin lab",
+      Username: "analisadam",
+      Password: "analisadam123",
+      Email: "analisadam@gmail.com",
+      TipePraktisi: "Non-Dokter",
+      KodeHFIS: "-",
+      SIP: "54321",
+      STR: "9876543210",
+      KodeAntrian: "-",
+      TipePegawai: "2",
+      GelarAwal: "-",
+      GelarAkhir: "-",
+      NamaPegawai: "Analis Adam",
+      NIK: "3225678906543267",
+      TanggalLahir: "12/26/2004",
+      JenisKelamin: "Perempuan",
+    });
+
+    // Create Workbook and Worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    // Column Widths
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    // Apply Styles to Cells
+    const range = XLSX.utils.decode_range("A1:C5");
+
+    // Append Worksheet to Workbook and Save
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Pegawai"
+    );
+    XLSX.writeFile(workbook, `Format Datamaster User.xlsx`);
+  } catch (error) {
+    console.error("Error while exporting Excel", error);
+  }
+};
+const handleFileUpload = async (file: File) => {
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
+  try {
+    const response = await userStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
+    fetchUserData();
+    console.log("File uploaded successfully:", response);
+  } catch (error) {
+    console.error("Error uploading file:", error);
   }
 };
 </script>
@@ -303,7 +514,7 @@ const confirmDelete = async (item: any) => {
                 @click="
                   deleteDialog(
                     'delete',
-                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    `${slotProps.data.name}`,
                     slotProps.data
                   )
                 "
@@ -326,6 +537,9 @@ const confirmDelete = async (item: any) => {
         :rows="userProperties.page_size"
         :totalRecords="userProperties.total"
         @page="handlePage"
+        @import="handleFileUpload"
+        @export="downloadExportExcel"
+        @download="downloadFormatExcel"
       />
     </template>
   </Card>

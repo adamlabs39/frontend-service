@@ -13,6 +13,7 @@ import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { useDiagnosisStore } from "@/stores/datamaster/diagnosis";
 import { epochToDate } from "@/utils/Helpers";
+import { PhBuildings } from "@phosphor-icons/vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -31,6 +32,10 @@ const props = defineProps({
   sessionUuid: {
     type: String,
     default: "",
+  },
+  patientData: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
@@ -94,27 +99,20 @@ const setFormData = () => {
       }
     });
 
-    setValues({
-      diagnosis: primerData[0].diagnosis,
-      diagnosisUuid: primerData[0].diagnosisUuid,
-      diferensial: primerData[0].diferensial,
-      diferensialUuid: primerData[0].diferensialUuid,
-      petugas: primerData[0].petugas,
-      datas: sekunderData,
-    });
-    // const tempArrRiwayatKeluarga = tempAnamnesis.riwayatKeluarga
-    //   .trim()
-    //   .split(",");
-    // setValues({
-    //   anamnesis: tempAnamnesis.anamnesis,
-    //   keluhanUtama: tempAnamnesis.keluhanUtama,
-    //   riwayatPenyakit: tempAnamnesis.riwayatPenyakit,
-    //   riwayatPengobatan: tempAnamnesis.riwayatPengobatan,
-    //   catatan: tempAnamnesis.catatan,
-    //   riwayatKeluarga: tempArrRiwayatKeluarga,
-    //   pernahDirawat: tempAnamnesis.pernahDirawat,
-    //   petugas: tempAnamnesis.petugas,
-    // });
+    if (primerData.length > 0) {
+      setValues({
+        diagnosis: primerData[0].diagnosis,
+        diagnosisUuid: primerData[0].diagnosisUuid,
+        diferensial: primerData[0].diferensial,
+        diferensialUuid: primerData[0].diferensialUuid,
+        petugas: primerData[0].petugas,
+        datas: sekunderData,
+      });
+    } else {
+      setValues({
+        datas: sekunderData,
+      });
+    }
   } else resetForm();
 };
 
@@ -144,7 +142,6 @@ onBeforeMount(async () => {
   setFormData();
 });
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
@@ -152,34 +149,40 @@ watch(storedRMData, (newRM) => {
 
 const onSubmit = handleSubmit(async (values: any) => {
   const tempData = [];
-  const tempDiagnosisPrimer: any = {
-    diagnosisUuid: values.diagnosis.uuid,
-    diagnosis: values.diagnosis.name,
-    diferensialUuid: values.diferensial ? values.diferensial.uuid : "",
-    diferensial: values.diferensial ? values.diferensial.name : "",
-    tipe: "primer",
-  };
-  if (values.pegawai) {
-    tempDiagnosisPrimer.petugas = values.petugas;
-  }
-  tempData.push(tempDiagnosisPrimer);
-  values.datas.forEach((sekunderData: any) => {
-    const tempDiagnosisSekunder: any = {
-      diagnosisUuid: sekunderData.diagnosis.uuid,
-      diagnosis: sekunderData.diagnosis.name,
-      diferensialUuid: sekunderData.diferensial
-        ? sekunderData.diferensial.uuid
-        : "",
-      diferensial: sekunderData.diferensial
-        ? sekunderData.diferensial.name
-        : "",
-      tipe: "sekunder",
+  if (values.diagnosis) {
+    const tempDiagnosisPrimer: any = {
+      diagnosisUuid: values.diagnosis.uuid,
+      diagnosis: values.diagnosis.name,
+      diferensialUuid: values.diferensial ? values.diferensial.uuid : "",
+      diferensial: values.diferensial ? values.diferensial.name : "",
+      tipe: "primer",
     };
-    if (sekunderData.pegawai) {
-      tempDiagnosisSekunder.petugas = sekunderData.petugas;
+    if (values.petugas) {
+      tempDiagnosisPrimer.petugas = values.petugas;
     }
-    tempData.push(tempDiagnosisSekunder);
-  });
+    tempData.push(tempDiagnosisPrimer);
+  }
+  
+  if (values.datas) {
+    values.datas.forEach((sekunderData: any) => {
+      const tempDiagnosisSekunder: any = {
+        diagnosisUuid: sekunderData.diagnosis.uuid,
+        diagnosis: sekunderData.diagnosis.name,
+        diferensialUuid: sekunderData.diferensial
+          ? sekunderData.diferensial.uuid
+          : "",
+        diferensial: sekunderData.diferensial
+          ? sekunderData.diferensial.name
+          : "",
+        tipe: "sekunder",
+      };
+      if (sekunderData.petugas) {
+        tempDiagnosisSekunder.petugas = sekunderData.petugas;
+      }
+      tempData.push(tempDiagnosisSekunder);
+    });
+  }
+
   try {
     storeUtils.setLoading(true);
     const response = await rekamMedisStore.insertAssesment({
@@ -218,12 +221,83 @@ const addDiagnosis = () => {
 };
 
 const onEditClick = () => {
-  currentMethod.value = "form"; // Mengubah method menjadi 'form'
+  currentMethod.value = "form";
 };
 
 const compareDialog = ref(false);
-const showDialogCompare = () => {
+const historyData = ref<Array<any> | null>(null);
+const historyPageIndex = ref(0);
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
+
+const fetchHistoryData = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noRm: props.patientData?.patient?.noRm,
+      key: "diagnosis_dokter",
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
+    });
+
+    if (response && response.payload) {
+      historyData.value = response.payload;
+      historyPageIndex.value = 0;
+    } else {
+      historyData.value = null;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data compare:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const showDialogCompare = async () => {
+  await fetchHistoryData();
   compareDialog.value = true;
+};
+
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (compareDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+    }
+});
+
+
+const leftHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value];
+});
+
+const rightHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  return historyData.value[historyPageIndex.value + 1];
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 2 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value -= 2;
+  }
+};
+
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value += 2;
+  }
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -421,30 +495,28 @@ defineExpose({
         <div class="py-5 flex flex-col gap-[19px]">
           <CustomInfoRow
             label="Primer"
-            :value="diagnosis && diagnosis != '' ? diagnosis.name : '-'"
+            :value="diagnosis && diagnosis.name ? diagnosis.name : '-'"
           />
           <CustomInfoRow
             label="Diagnosis Diferensial"
-            :value="diferensial && diferensial != '' ? diferensial.name : '-'"
+            :value="diferensial && diferensial.name ? diferensial.name : '-'"
           />
-          <div v-for="data in fields">
-            <div class="flex flex-col gap-[19px]">
+          <div v-for="data in fields" :key="data.key">
+            <div class="flex flex-col gap-[19px] mt-2">
               <CustomInfoRow
                 label="Sekunder"
-                :value="data.value.diagnosis.name"
+                :value="data.value.diagnosis ? data.value.diagnosis.name : '-'"
               />
               <CustomInfoRow
                 label="Diagnosis Diferensial"
-                :value="data.value.diferensial.name"
+                :value="data.value.diferensial ? data.value.diferensial.name : '-'"
               />
             </div>
           </div>
           <hr class="border-grey-200" />
           <CustomInfoRow
             label="Petugas Input"
-            :value="
-              fields.length ? fields[fields.length - 1]?.value.petugas : petugas
-            "
+            :value="petugas"
           />
           <CustomInfoRow
             label="Jam Input"
@@ -452,7 +524,6 @@ defineExpose({
           />
         </div>
       </div>
-      <!-- Dialog compare -->
       <CustomDialog
         class=""
         v-model:visible="compareDialog"
@@ -461,34 +532,46 @@ defineExpose({
       >
         <template #header>Diagnosis Dokter (ICD-10)</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
-            <div class="flex flex-col overflow-auto">
-              <div class="mb-[18px] flex justify-between">
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] h-full overflow-auto">
+            <div class="flex flex-col overflow-auto pr-4">
+              <div class="mb-[18px] flex justify-between items-center">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
                 </div>
-                <div class="flex">
+                <div class="flex items-center">
+                   <CustomSelect
+                    v-model="selectedFilter"
+                    :options="filterOptions"
+                    optionLabel="name"
+                    optionValue="value"
+                    :show-label="false"
+                    class="w-40 mr-4"
+                  />
                   <CustomButton
-                    @click="() => {}"
+                    @click="previousHistory"
+                    :disabled="!canGoToPrevious"
                     class="!rounded-md mr-[10px]"
                     size="small"
                     icon="PhCaretLeft"
                   />
                   <CustomButton
-                    @click="() => {}"
+                    @click="nextHistory"
+                    :disabled="!canGoToNext"
                     class="!rounded-md"
                     size="small"
                     icon="PhCaretRight"
                   />
                 </div>
               </div>
-              <div
-                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto"
-              >
-                <HistoriDiagnosaDokter />
-                <div class="border border-adameds-300 mx-[15px]"></div>
-                <HistoriDiagnosaDokter />
-              </div>
+               <div class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto gap-x-4">
+                <HistoriDiagnosaDokter v-if="leftHistoryItem" :history="leftHistoryItem" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
+
+                <div v-if="rightHistoryItem" class="border border-adameds-300"></div>
+
+                <HistoriDiagnosaDokter v-if="rightHistoryItem" :history="rightHistoryItem" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
+            </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
             <div class="flex flex-col overflow-hidden">

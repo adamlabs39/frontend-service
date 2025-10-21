@@ -163,6 +163,10 @@ const listDoa = ref([
 const emit = defineEmits(["editAsesmen"]);
 
 const setFormData = () => {
+  console.log(
+    "rekamMedisStore.openedRekamMedis",
+    rekamMedisStore.openedRekamMedis.data.triase
+  );
   if (rekamMedisStore.openedRekamMedis.data.triase) {
     const tempTriase = rekamMedisStore.openedRekamMedis.data.triase;
     setValues({
@@ -187,8 +191,9 @@ const setFormData = () => {
       petugas: tempTriase.petugas,
     });
     countKesimpulan();
+  } else {
+    resetForm();
   }
-  resetForm();
 };
 
 onBeforeMount(() => {

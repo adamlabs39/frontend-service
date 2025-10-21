@@ -35,7 +35,7 @@ const fetchItemGigiData = async () => {
     );
 
     if (response && response.payload) {
-      itemGigiProperties.value.total = response.properties.total;
+      itemGigiProperties.value.total = response.properties.totalItem;
       itemGigiPayload.value = response.payload;
     } else {
       itemGigiPayload.value = [];
@@ -78,7 +78,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  openDialog("detail", "Detail Data", selectedData.value);
+  openDialog("detail", "Detail Data Item Gigi", selectedData.value);
 };
 
 // Dialog Management
@@ -142,7 +142,7 @@ const downloadExportExcel = async () => {
       Display: "Display SATUSEHAT",
       Name: "Nama Item Gigi",
       Catatan: "Catatan",
-      Status: "Status",
+      // Status: "Status",
     });
 
     // Data Rows
@@ -155,7 +155,7 @@ const downloadExportExcel = async () => {
         Display: rows[i].display,
         Name: rows[i].name,
         Catatan: rows[i].catatan ?? "-",
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+        // Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -174,7 +174,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -182,7 +182,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -235,26 +235,46 @@ const downloadFormatExcel = async () => {
     const data = [];
 
     // Header Row
-  data.push({
+    data.push({
       No: "No",
-      Kategori:"Kategori*",
-      Referensi:"Referensi*",
-      Code: "Kode Diagnosis*",
-      Display:"Display*",
-      Name: "Nama Diagnosis (ICD-10)*",
-      Catatan:"Catatan"
+      Kategori: "Kategori Gigi*",
+      Referensi: "Referensi Sistem*",
+      Code: "Code SATUSEHAT*",
+      Display: "Display SATUSEHAT*",
+      Name: "Nama Item Gigi*",
+      Catatan: "Catatan",
+      Gambar: "Gambar",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    
-      data.push({ No: "1",Kategori:"Permukaan Gigi",Referensi:"[reference sistem satu sehat] 1", Code: "IG-001",Display:"Surface [Identifier] Tooth 1", Name: "Partial Erupterd", Catatan:"-" });
+
+    data.push({
+      No: "1",
+      Kategori: "Restorasi",
+      Referensi: "http://snomed.info/sct",
+      Code: "468993001",
+      Display: "Dental implant system",
+      Name: "ipx = Implan",
+      Catatan: "-",
+      Gambar: "",
+    });
+    data.push({
+      No: "2",
+      Kategori: "Keadaan Gigi",
+      Referensi: "http://snomed.info/sct",
+      Code: "255579002",
+      Display: "Dental caries",
+      Name: "karies lingual",
+      Catatan: "-",
+      Gambar: "",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -262,14 +282,17 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
 
-  
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Item Gigi");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Item Gigi"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Item Gigi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -301,7 +324,7 @@ const handleFileUpload = async (file: File) => {
         pageType="item-gigi"
         isSuperAdmin
         @update:valueSearch="searchQuery = $event"
-        @tambah-data="openDialog('add', 'Tambah Data Gigi FDI')"
+        @tambah-data="openDialog('add', 'Tambah Data Item Gigi')"
         @reload-data="fetchItemGigiData()"
       />
     </template>
@@ -342,7 +365,7 @@ const handleFileUpload = async (file: File) => {
           </template>
         </Column>
         <Column
-          field="kategoriGigiName"
+          field="kategoriGigi.name"
           header="Kategori Gigi"
           headerClass="bg-adameds-50"
         ></Column>
@@ -352,7 +375,7 @@ const handleFileUpload = async (file: File) => {
           class="w-1/3"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
+        <!-- <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
         >
@@ -375,7 +398,7 @@ const handleFileUpload = async (file: File) => {
               />
             </div>
           </template>
-        </Column>
+        </Column> -->
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
@@ -405,7 +428,7 @@ const handleFileUpload = async (file: File) => {
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
                 @click="
-                  openDialog('edit', 'Edit Data Gigi FDI', slotProps.data)
+                  openDialog('edit', 'Edit Data Item Gigi', slotProps.data)
                 "
               >
                 <img src="@/assets/icons/edit.svg" alt="" />

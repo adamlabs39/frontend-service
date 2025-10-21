@@ -8,8 +8,14 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
-
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
+
+const props = defineProps({
+  nomorSurat: {
+    type: String,
+    default: "",
+  },
+});
 
 const schema = toTypedSchema(
   yup.object({
@@ -21,7 +27,7 @@ const schema = toTypedSchema(
   }).noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setFieldValue } = useForm({
   validationSchema: schema,
 });
 
@@ -32,8 +38,8 @@ const [larangan] = defineField("larangan");
 const [keterangan] = defineField("keterangan");
 
 const submitForm = handleSubmit((values) => {
-  console.log(values);
   emit("update:dataSurat", values);
+  return values;
 });
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
@@ -46,6 +52,17 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+
+watch(
+  () => props.nomorSurat,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue("noSurat", newVal);
+    }
+  },
+  { immediate: true } //
+);
+
 
 defineExpose({
   submitForm,

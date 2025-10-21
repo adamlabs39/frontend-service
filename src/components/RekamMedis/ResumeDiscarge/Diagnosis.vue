@@ -1,33 +1,22 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-const diagnosis = ref<any[]>([]);
 
-onMounted(() => {
-  diagnosis.value = [
-    {
-      namaDiagnosis: "Diagnosis Primer",
-      tipeDiagnosis: "Primer",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-    {
-      namaDiagnosis: "Diagnosis Sekunder",
-      tipeDiagnosis: "Sekunder",
-    },
-  ];
+const props = defineProps({
+  diagnosisData: {
+    type: Array as PropType<any>,
+    default: () => [],
+  },
 });
-const selectedPemeriksaan = ref();
+
+const diagnosis = computed(() => {
+  props.diagnosisData.forEach((diagnosis: any) => {
+    diagnosis.diagnosis = diagnosis.diagnosis.replace("~", `\n`);
+  });
+  return props.diagnosisData;
+});
+
+const selectedPemeriksaan = ref<any[]>([]);
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -39,15 +28,23 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+const printSelectedData = () => {
+  return selectedPemeriksaan.value;
+};
 
 defineExpose({
   open,
   close,
+  printSelectedData,
 });
 </script>
 
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
+  <CustomAccordion
+    initial-state="0"
+    header-class="bg-adameds-50"
+    ref="accordion"
+  >
     <template #header> Diagnosis </template>
     <template #content>
       <DataTable
@@ -67,13 +64,13 @@ defineExpose({
             </div>
           </template>
         </Column>
+        <Column header="Nama Diagnosis" headerClass="bg-adameds-50">
+          <template #body="{ data }">
+            <div v-html="data.diagnosis.replace(/\n/g, '<br>')"></div>
+          </template>
+        </Column>
         <Column
-          field="namaDiagnosis"
-          header="Nama Diagnosis"
-          headerClass="bg-adameds-50"
-        ></Column>
-        <Column
-          field="tipeDiagnosis"
+          field="tipe"
           header="Tipe Diagnosis"
           headerClass="bg-adameds-50"
         >
@@ -94,11 +91,11 @@ defineExpose({
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box)  {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box) {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon){
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon) {
   @apply text-white;
 }
 </style>

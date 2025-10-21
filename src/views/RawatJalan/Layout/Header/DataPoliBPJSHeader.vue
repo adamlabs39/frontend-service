@@ -33,8 +33,6 @@ const props = defineProps({
   },
 });
 
-
-
 // Store
 const praktisiStore = usePraktisiStore();
 const UseUtilsStore = utilsStore();
@@ -46,42 +44,27 @@ const praktisiProperties = ref({
 });
 
 // Search Dokter
-const searchQuery = ref<string>("");
+const searchDoctor = ref<string>("");
 
+const selectedTab = ref("");
 // Fetch data Praktisi dari API
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    // let isDoctor = true;
-    // let isNonDoctor = false;
-    
-    // const response = await praktisiStore.getApi({
-    //   page: praktisiProperties.value.page,
-    //   limit: praktisiProperties.value.page_size,
-    //   name: searchQuery.value,
-    //   doctor: isDoctor,
-    //   non_doctor: isNonDoctor,
-    // });
+    const params = {
+      page: praktisiProperties.value.page,
+      limit: 9999,
+      name: searchDoctor.value,
+      isDoctor: true,
+    };
 
-    const response = await praktisiStore.getAktifApi()
+    const response = await praktisiStore.getApi(params);
 
     if (response && response.payload) {
-      praktisiPayload.value = response.payload
+      praktisiPayload.value = response.payload;
     } else {
       praktisiPayload.value = [];
     }
-
-    // if (response && response.payload) {
-    //   praktisiProperties.value.total = response.properties.total;
-    //   praktisiPayload.value = [...response.payload];
-    //   // console.log(`COba`,praktisiPayload.value);
-    //    if (response.payload.length === praktisiProperties.value.page_size) {
-    //     praktisiProperties.value.page += 1;
-    //     await fetchPraktisiData(); 
-    //   }
-    // } else {
-    //   praktisiPayload.value = [];
-    // }
   } catch (error) {
     console.error("Failed to fetch data", error);
     praktisiPayload.value = [];
@@ -89,8 +72,6 @@ const fetchPraktisiData = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
-
-
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -117,8 +98,14 @@ const onPaymentMethodSelect = (label: string) => {
 };
 
 const resetFilter = () => {
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
+  selectedTab.value = "2";
+  // emit("search");
 
   switch (props.currentRouteName) {
     case "rawat-jalan-poli":
@@ -141,7 +128,6 @@ const resetFilter = () => {
   selectedPaymentMethod.value = [];
 };
 
-
 const setFilter = (dataFilter: FilterAdmisi) => {
   selectedPaymentMethod.value = dataFilter.paymentMethod
     ? [dataFilter.paymentMethod]
@@ -154,13 +140,11 @@ const setFilter = (dataFilter: FilterAdmisi) => {
     : new Date();
   searchPatientFilter.value = dataFilter.q ?? "";
   searchDokterFilter.value = dataFilter.dpjp ?? "";
-}
-
+};
 
 const searchData = (dataString: any) => {
   let filter = {} as FilterAdmisi;
 
-  
   filter.startDate = `${dateToEpoch(
     setTimeForDate(startDateFilter.value, 0, 0, 0)
   )}`;
@@ -176,12 +160,9 @@ const searchData = (dataString: any) => {
 
   // FIXME Belum bisa multiple
 
-  
-  console.log('test',props.filterMenu); 
   filter.poly = [props.filterMenu.uuid ?? ""];
   filter.dpjp = searchDokterFilter.value ?? "";
-
-
+  filter.status = selectedTab.value;
   return filter;
 };
 
@@ -190,35 +171,37 @@ defineExpose({
   searchData,
 });
 
-const emit = defineEmits(["search", "payment"]);
+const emit = defineEmits(["search", "reload-data", "payment", "reset"]);
 
 onMounted(() => {
-  setFilter(props.filterData)
- 
+  setFilter(props.filterData);
   fetchPraktisiData();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
 
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
 });
-
 
 // Ketika tombol "Cari" diklik, emit event searchExecuted
 </script>
 
 <template>
-   <!-- {{ filterData }} -->
+  <!-- {{ filterData }} -->
 
-   <!-- {{ praktisiPayload }} -->
+  <!-- {{ praktisiPayload }} -->
   <CustomAccordion :openWithHeader="false" noBorder initial-state="0">
     <template #header>
       <!-- {{ currentRouteName }} -->
 
       <div class="flex items-center w-full gap-5 mr-2.5">
-        <CustomButton icon="PhArrowClockwise" />
+        <CustomButton icon="PhArrowClockwise" @click="emit('reload-data')" />
         <div
           class="leading-10 text-adameds-300 text-heading"
           v-if="currentRouteName == 'rawat-jalan-poli'"
         >
-          {{
-          filterMenu.name}}
+          {{ filterMenu.name }}
         </div>
         <CustomBreadCrumb
           v-else-if="
@@ -290,12 +273,14 @@ onMounted(() => {
           v-model="startDateFilter"
           label="Tanggal"
           class="w-[200px]"
+          :max-date="endDateFilter"
         />
         <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
         <CustomDatePicker
           v-model="endDateFilter"
           :showLabel="false"
           class="mt-auto w-[200px]"
+          :min-date="startDateFilter"
         />
         <CustomButton
           icon="PhMagnifyingGlass"
@@ -304,7 +289,7 @@ onMounted(() => {
           @click="$emit('search')"
         />
         <CustomButton
-          @click="resetFilter"
+          @click="$emit('reset')"
           label="Reset"
           outlined
           borderColor="border-adameds-300"

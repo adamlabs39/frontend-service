@@ -26,7 +26,7 @@ const searchQuery = ref<string>("");
 
 // Fetch Faskes Data from API
 const fetchFaskesData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await faskesStore.getApi(
       faskesProperties.value.page,
@@ -44,7 +44,7 @@ const fetchFaskesData = async () => {
     console.error("Failed to fetch data", error);
     faskesPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -53,7 +53,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchFaskesData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -103,14 +103,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await faskesStore.deleteApi(item.uuid);
       fetchFaskesData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -131,8 +131,8 @@ const downloadExportExcel = async () => {
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       Kode: "Kode Faskes",
@@ -165,7 +165,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -173,7 +173,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -226,23 +226,32 @@ const downloadFormatExcel = async () => {
     const data = [];
 
     // Header Row
-  data.push({
+    data.push({
       No: "No",
       Code: "Kode Faskes*",
       Name: "Nama Faskes*",
+      IHS: "IHS Number*",
+      ClientId: "Client Id*",
+      ClientSecret: "Client Secret*",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    
-      data.push({ No: "1", Code: "IHC.JKT", Name: "Klinik IHC Jakarta" });
 
+    data.push({
+      No: "1",
+      Code: "IHC.JKT",
+      Name: "Klinik IHC Jakarta",
+      IHS: "100099999",
+      ClientId: "rbwuDA1RInx6Cn7g6PQgJGE2pM5QDwIAzLDGx2W43",
+      ClientSecret: "91YrsW3hKdqPuLby8qfcAgAm6gwFhgkQKJW96zX0dYQy6AAqdkGbqgP",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -250,14 +259,17 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
 
-  
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Faskes");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Faskes"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Faskes.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -265,15 +277,15 @@ const downloadFormatExcel = async () => {
 };
 
 const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData()
-  dataUpload.append('file',file);
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
 
   try {
     const response = await faskesStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchFaskesData()
-    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+    fetchFaskesData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error('Error uploading file:', error); // Log error jika upload gagal
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -289,7 +301,7 @@ const handleFileUpload = async (file: File) => {
         page-type="faskes"
         @update:valueSearch="searchQuery = $event"
         @tambah-data="openDialog('add', 'Tambah Data')"
-         @reload-data="fetchFaskesData()"
+        @reload-data="fetchFaskesData()"
       />
     </template>
 
@@ -321,7 +333,11 @@ const handleFileUpload = async (file: File) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ (faskesProperties.page - 1) * faskesProperties.page_size + slotProps.index + 1 }}
+              {{
+                (faskesProperties.page - 1) * faskesProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -375,7 +391,13 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -389,7 +411,7 @@ const handleFileUpload = async (file: File) => {
         :title="dialogConfig.title"
         :method="dialogConfig.method"
         :payload="dialogConfig.data"
-         @data-updated="fetchFaskesData"
+        @data-updated="fetchFaskesData"
       />
       <DialogDelete
         v-model:isDialogVisible="isDeleteDialogVisible"

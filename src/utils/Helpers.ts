@@ -1,9 +1,9 @@
-export function formatPrice(price: number){
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR'
+export function formatPrice(price: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
   }).format(price);
-};
+}
 
 export function formatDate(date: Date, reverse: boolean = false) {
   if (date) {
@@ -96,6 +96,21 @@ export function setDateToTime(date: Date) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
+export function formatStringDate(
+  date: string,
+  format: "dateTime" | "date" | "time" = "date"
+) {
+  const newDate = new Date(date);
+
+  if (format === "dateTime") {
+    return formatDateTime(newDate);
+  } else if (format === "date") {
+    return formatDate(newDate);
+  } else if (format === "time") {
+    return formatTime(newDate);
+  }
+}
+
 export function countAge(date: Date) {
   const now = new Date();
   let tahun = now.getFullYear() - date.getFullYear();
@@ -117,6 +132,41 @@ export function countAge(date: Date) {
   }
 
   return { tahun, bulan, hari };
+}
+
+export async function convertImageToBase64(url: string) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+import JsBarcode from "jsbarcode";
+import QRCode from "qrcode";
+
+export function generateBarcode(barcodeValue: string) {
+  var canvas = document.createElement("canvas");
+
+  JsBarcode(canvas, barcodeValue, {
+    format: "CODE128",
+    displayValue: false,
+  });
+
+  return canvas.toDataURL("image/png");
+}
+
+export async function generateQRCode(QRCodeValue: string) {
+  try {
+    const url = await QRCode.toDataURL(QRCodeValue);
+    return url;
+  } catch (err) {
+    throw err;
+  }
 }
 
 import type { Module, SubModule, Feature, Allow } from "@/utils/Interface";
@@ -161,3 +211,46 @@ export function checkPermission(
   }
   return true;
 }
+
+export const numberToWords = (angka: number): string => {
+    const bilangan = [
+        '', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'
+    ];
+
+    const format = (n: number): string => {
+        if (n < 12) {
+            return bilangan[n];
+        }
+        if (n < 20) {
+            return bilangan[n - 10] + ' belas';
+        }
+        if (n < 100) {
+            return bilangan[Math.floor(n / 10)] + ' puluh ' + bilangan[n % 10];
+        }
+        if (n < 200) {
+            return 'seratus ' + format(n - 100);
+        }
+        if (n < 1000) {
+            return bilangan[Math.floor(n / 100)] + ' ratus ' + format(n % 100);
+        }
+        if (n < 2000) {
+            return 'seribu ' + format(n - 1000);
+        }
+        if (n < 1000000) {
+            return format(Math.floor(n / 1000)) + ' ribu ' + format(n % 1000);
+        }
+        if (n < 1000000000) {
+            return format(Math.floor(n / 1000000)) + ' juta ' + format(n % 1000000);
+        }
+        if (n < 1000000000000) {
+            return format(Math.floor(n / 1000000000)) + ' miliar ' + format(n % 1000000000);
+        }
+        if (n < 1000000000000000) {
+            return format(Math.floor(n / 1000000000000)) + ' triliun ' + format(n % 1000000000000);
+        }
+        return '';
+    };
+
+    const result = format(angka).replace(/\s+/g, ' ').trim();
+    return result.charAt(0).toUpperCase() + result.slice(1);
+};

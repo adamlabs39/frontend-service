@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, type PropType } from "vue";
+import { ref, watch, type PropType } from "vue";
 
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
-import TambahDataKonfigurasiLayar from "../Konfigurasi/TambahDataKonfigurasiLayar.vue";
+import TambahDataKonfigurasiLayar from "../Konfigurasi/KonfigurasiLayar/SectionTambahKonfigurasiLayar.vue";
+import { useDebounceFn } from "@vueuse/core";
 
 const props = defineProps({
   title: {
@@ -21,16 +22,34 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  availableTipeLayar: {
+    type: Array,
+    default: () => [],
+  },
 });
 
+const emit = defineEmits(["search", "reset", "daftar", "refresh"]);
+
+function handleRefresh() {
+  emit("refresh");
+}
+
+const searchQuery = ref("");
 const selectedLayar = ref<any>();
-const itemLayar = ref([
-  { name: "Layar 3 x 3 Panggilan", code: "L-1" },
-  { name: "Layar 3 x 2 Panggilan", code: "L-2" },
-  { name: "Layar 3 List & 3 Panggilan", code: "L-3" },
-  { name: "Layar 2 List & 2 Panggilan", code: "L-4" },
-  { name: "Layar 1 List, 1 Panggilan, 1 Gambar", code: "L-5" },
-]);
+const resetKey = ref(0);
+
+// Fungsi untuk melakukan pencarian
+const performSearch = () => {
+  emit(
+    "search",
+    searchQuery.value,
+    selectedLayar.value,
+    selectedPaymentMethod.value
+  );
+};
+
+// Debounced search function dengan delay 500ms
+const debouncedSearch = useDebounceFn(performSearch, 500);
 
 const dialogData = ref({
   isVisible: false,
@@ -58,8 +77,6 @@ function handleClose() {
   dialogData.value.isVisible = false;
 }
 
-// !SECTION
-
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
   if (selectedPaymentMethod.value.includes(label)) {
@@ -69,6 +86,15 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+
+  // Trigger auto-search dengan debounce ketika chip dipilih
+  debouncedSearch();
+};
+
+// Handle search button click
+const handleSearchClick = () => {
+  // Langsung jalankan performSearch tanpa debounce untuk tombol cari
+  performSearch();
 };
 
 const filters = [selectedPaymentMethod];
@@ -76,9 +102,28 @@ const filters = [selectedPaymentMethod];
 const resetFilter = () => {
   filters.forEach((filter) => {
     filter.value = [];
-    selectedLayar.value = null;
   });
+  selectedLayar.value = null;
+  searchQuery.value = "";
+  resetKey.value++;
+
+  emit("reset");
 };
+
+watch(
+  () => props.availableTipeLayar,
+  (newOptions) => {
+    const exists =
+      Array.isArray(newOptions) &&
+      newOptions.some(
+        (opt: any) => String(opt.code) === String(selectedLayar.value)
+      );
+    if (!exists && selectedLayar.value != null) {
+      selectedLayar.value = null;
+    }
+  }
+);
+
 defineExpose({
   resetFilter,
 });
@@ -87,9 +132,14 @@ defineExpose({
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
-      <div class="flex items-center w-full gap-5 mr-2.5">
-        <CustomButton label="" icon="PhArrowClockwise" />
-        <div class="flex items-center justify-between">
+      <div class="flex gap-5 items-center mr-2.5 w-full">
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="resetFilter"
+          title="refresh"
+        />
+        <div class="flex justify-between items-center">
           <div
             class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
           >
@@ -116,17 +166,19 @@ defineExpose({
         <div class="flex mt-[10px]">
           <CustomTextfield
             v-if="search"
+            v-model="searchQuery"
             :label="`Cari Layar`"
             prependIcon="PhMagnifyingGlass"
             :placeholder="`Cari Nama Layar`"
-            class="w-1/2 mr-5"
+            class="mr-5 w-1/2"
           >
           </CustomTextfield>
           <CustomSelect
+            :key="resetKey"
             v-model="selectedLayar"
-            :options="itemLayar"
+            :options="availableTipeLayar"
             optionValue="code"
-            optionLabel="name"
+            optionLabel="tipe_layar"
             class="w-1/2"
             :is-loading="false"
             label="Tipe Layar"
@@ -136,6 +188,7 @@ defineExpose({
             icon="PhMagnifyingGlass"
             label="Cari"
             class="ml-5 mr-[10px] mt-auto w-[95px]"
+            @click="handleSearchClick"
           />
           <CustomButton
             @click="resetFilter"
@@ -197,5 +250,6 @@ defineExpose({
     :title="dialogData.title"
     :method="dialogData.method"
     @close="handleClose"
+    @refresh="handleRefresh"
   />
 </template>

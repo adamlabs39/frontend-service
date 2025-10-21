@@ -43,6 +43,14 @@ const props = defineProps({
   maxDate: {
     type: Date,
   },
+  view: {
+    type: String as PropType<"date" | "month" | "year">,
+    default: "date",
+  },
+  dateFormat: {
+    type: String,
+    default: "dd-mm-yy",
+  },
 });
 
 const emit = defineEmits(["update:modelValue", "input", "date-select"]);
@@ -107,7 +115,8 @@ const value = computed({
           :placeholder="placeHolder"
           :disabled="disabled"
           selectionMode="single"
-          dateFormat="dd-mm-yy"
+          :dateFormat="dateFormat"
+          :view="view"
           :manualInput="false"
           fluid
           :pt:pcInputText:root:class="{

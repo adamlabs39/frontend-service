@@ -18,7 +18,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  FormTindakanDialog("detail", "Detail Data", selectedData.value);
+  FormTindakanDialog("detail", "Detail Data Tarif Tindakan", selectedData.value);
 };
 const isTambahTindakanDialogVisible = ref(false);
 const isDeleteDialogVisible = ref(false);
@@ -95,9 +95,9 @@ const confirmDelete = () => {
     <Column field="pelayanan" header="Pelayanan" headerClass="bg-adameds-50">
       <template #body="slotProps">
         <div class="flex flex-wrap gap-2 text-nowrap">
-          <div v-for="items in slotProps.data.pelayanan" :key="items">
+          <div v-for="items in slotProps.data.tagUnitPelayanan" :key="items">
             <CustomChip
-              :label="items.unitPelayananName"
+              :label="items.unitPelayanan"
               :showCheckedIcon="false"
               border-color="border-none"
               bg-color="bg-adameds-300"
@@ -114,7 +114,7 @@ const confirmDelete = () => {
     >
       <template #body="slotProps">
         <div class="flex flex-wrap gap-2 text-nowrap">
-          <div v-for="items in slotProps.data.penjamin" :key="items">
+          <div v-for="items in slotProps.data.tagPenjamin" :key="items">
             <CustomChip
               :label="items.penjaminName"
               :showCheckedIcon="false"
@@ -164,7 +164,7 @@ const confirmDelete = () => {
             label=""
             background-color="bg-[#3D84E5] rounded-lg"
             class="h-6 w-[26px] p-0"
-            @click="FormTindakanDialog('edit', 'Edit Data', slotProps.data)"
+            @click="FormTindakanDialog('edit', 'Edit Data Tarif Tindakan', slotProps.data)"
           >
             <img src="@/assets/icons/edit.svg" alt="" />
           </CustomButton>

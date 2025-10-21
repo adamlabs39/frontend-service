@@ -7,12 +7,14 @@ import { utilsStore } from "@/stores/utils";
 import { useRouter } from "vue-router";
 
 import { useForm } from "vee-validate";
+import { useSettingStore } from "@/stores/setting";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const UseUtilsStore = utilsStore();
+const settingStore = useSettingStore();
 
 const schema = toTypedSchema(
   yup.object({
@@ -28,6 +30,10 @@ const onSubmit = handleSubmit(async (values) => {
   UseUtilsStore.setLoading(true);
   try {
     await authStore.loginApi(values);
+    const userData = JSON.parse(localStorage.getItem("user") ?? "");
+    if (userData.faskesUuid) {
+      await fetchSettingProfilFaskesData();
+    }
     router.push("dashboard");
   } catch (error: any) {
     console.log(error.message);
@@ -45,6 +51,20 @@ const getImage = (image: string) => {
   const imgUrl = new URL(`../assets/images/Login/${image}.png`, import.meta.url)
     .href;
   return imgUrl;
+};
+
+const fetchSettingProfilFaskesData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await settingStore.getProfilFaskesApi();
+    if (response) {
+      UseUtilsStore.setProfilFaskes(response);
+    } else {
+      console.error("Unexpected response Structure", response);
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+  }
 };
 </script>
 

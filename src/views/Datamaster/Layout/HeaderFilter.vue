@@ -218,7 +218,11 @@ interface FilterChip {
             v-model="valueSearch"
             :label="isSuperAdmin ? 'Pencarian' : `Cari ${pageLabel}`"
             :placeholder="
-              isSuperAdmin ? 'Cari Display Gigi' : `Cari ${pageLabel}`
+              isSuperAdmin
+                ? props.pageType === 'item-gigi'
+                  ? 'Cari Item Gigi'
+                  : 'Cari Display Gigi'
+                : `Cari ${pageLabel}`
             "
             class="grow"
             prependIcon="PhMagnifyingGlass"

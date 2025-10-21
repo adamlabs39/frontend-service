@@ -23,6 +23,10 @@ const props = defineProps({
     type: Boolean,
     default: true, // Default to show import button
   },
+  noPagination: {
+    type: Boolean,
+    default: false, // Default to show import button
+  },
 });
 
 const emit = defineEmits(["page", "export", "import","download"]);
@@ -51,7 +55,6 @@ const onError = (event: any) => {
         v-if="showImport"
         mode="basic"
         accept=".xls,.xlsx"
-        :maxFileSize="1000000"
         label="Import"
         chooseLabel="Import"
         auto
@@ -90,6 +93,7 @@ const onError = (event: any) => {
       :rows="rows"
       :totalRecords="totalRecords"
       @page="handlePage"
+      :noPagination="noPagination"
     />
   </div>
 </template>

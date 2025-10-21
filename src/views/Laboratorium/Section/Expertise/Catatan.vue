@@ -1,38 +1,65 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, type PropType } from "vue";
+import type { MenuItem } from "primevue/menuitem";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 
-const submitForm = () => {
-  console.log("Submited Catatan");
-};
-defineExpose({
-  submitForm,
+const props = defineProps({
+  pageType: {
+    type: String,
+    required: true,
+  },
+  dataBreadCrumb: {
+    type: Array as PropType<MenuItem[]>,
+    default: () => [],
+  },
+  formType: {
+    type: String,
+    default: "",
+  },
+  isDetail: {
+    type: Boolean,
+    required: false,
+  },
+  openedPatientData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
+});
+
+const plainCatatanAnalis = computed(() => {
+  const html = props.openedPatientData?.catatanAnalis || "";
+  const tempEl = document.createElement("div");
+
+  const cleanHtml = html.replace(/<br\s*\/?>/gi, "\n");
+  tempEl.innerHTML = cleanHtml;
+
+  return (tempEl.textContent || "")
+    .replace(/\n{2,}/g, "\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
 });
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" initial-state="0">
     <template #header>
-        <div class="flex justify-between w-full align-middle">
-            <div class="flex">
-            <p class="leading-10 text-bold text-heading">Catatan</p>
-            </div>
+      <div class="flex justify-between w-full align-middle">
+        <div class="flex">
+          <p class="leading-10 text-bold text-heading">Catatan</p>
         </div>
+      </div>
     </template>
     <template #content>
-        <div class="pt-5">
-            <div class="grid grid-cols-3 gap-4">
-                <div class="basis-1/4">
-                    <p class="text-xs font-bold underline underline-offset-2">
-                        Catatan
-                    </p>
-                    <p>Ini adalah catatan</p>
-                </div>
-            </div>
+      <div class="pt-5">
+        <div class="grid grid-cols-3 gap-4">
+          <div class="basis-1/4">
+            <p>{{ plainCatatanAnalis }}</p>
+          </div>
         </div>
+      </div>
     </template>
-     <template #collapseIcon>
+    <template #collapseIcon>
       <CustomButton
         icon="PhCaretUp"
         backgroundColor="bg-transparent"

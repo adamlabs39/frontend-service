@@ -278,6 +278,9 @@ export const useRoleStore = defineStore({
     async deleteApi(uuid: string, payload = {}) {
       return apiDatamasterDelete(`/datamaster/role/${uuid}`, payload);
     },
+    async importApi(payload = {}) {
+      return apiDatamasterPost(`/datamaster/role/import`, payload);
+    },
     async exportApi(payload = {}) {
       return apiDatamasterGet(`/datamaster/role/export`, payload);
     },

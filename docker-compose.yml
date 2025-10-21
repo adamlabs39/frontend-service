@@ -1,19 +1,16 @@
-version: '3.9'
 services:
   adameds_frontend:
     container_name: adameds-frontend
     image: adameds-frontend:dev
-    build: .
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+      no_cache: true
     ports:
       - 5520:5520
     networks:
       - adameds-bridge-networks
-    environment:
-      VITE_BASE_URL: ${VITE_BASE_URL}
-      VITE_BASE_AUTH: ${VITE_BASE_AUTH}
-      VITE_URL_SETTING : ${VITE_URL_SETTING}
-      VITE_BASE_DATAMASTER: ${VITE_BASE_DATAMASTER}
-      VITE_BASE_ADMISI: ${VITE_BASE_ADMISI}
+    restart: always
 networks:
   adameds-bridge-networks:
     driver: bridge

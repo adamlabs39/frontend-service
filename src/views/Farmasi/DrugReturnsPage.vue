@@ -191,7 +191,7 @@ const onRowSelectAlkes = (event: any) => {
 
 onMounted(() => {
   fetchStockLocation();
-  fetchDrugRetur();
+  fetchDrugRetur(); 
 });
 </script>
 
@@ -406,7 +406,7 @@ onMounted(() => {
           <Column header="Pasien" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <p class="font-semibold">{{ slotProps.data.patient.name }}</p>
+                <p class="font-semibold">{{ slotProps.data.patient?.name }}</p>
               </div>
               <div class="flex flex-wrap mt-[3px]">
                 <CustomChip
@@ -524,7 +524,7 @@ onMounted(() => {
           <Column header="Pasien" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <p class="font-semibold">{{ slotProps.data.patient.name }}</p>
+                <p class="font-semibold">{{ slotProps.data.patient?.name }}</p>
               </div>
               <div class="flex flex-wrap mt-[3px]">
                 <CustomChip

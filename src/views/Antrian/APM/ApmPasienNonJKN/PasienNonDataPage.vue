@@ -2,20 +2,28 @@
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CardAktivitas from "@/components/Antrian/CardAktivitas.vue";
-import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { computed, onMounted, ref } from "vue";
 import PlusIcon from "@/components/icons/PlusIcon.vue";
+import OrnamentAntrian from "@/components/Antrian/OrnamentAntrian.vue";
+import NavbarAntrian from "@/components/Antrian/NavbarAntrian.vue";
+import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
+import { utilsStore } from "@/stores/utils";
+import { useApmFlowStore } from "@/utils/apmFlow";
 
 const router = useRouter();
+const route = useRoute();
 
 const handleHome = () => {
-  router.push("/antrian/apm/aktif");
+  router.push("/antrian/apm/aktif/pasien/non-jkn");
 };
-const handleBerhasil = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/berhasil");
-};
-const handlePoli = () => {
-  router.push("/antrian/apm/aktif/pasien/non-jkn/poli-umum");
+
+const handlePoli = (poli: any) => {
+  // Simpan pilihan poli di store, jangan kirim query sensitif
+  apmFlow.setSelectedPoli(poli?.uuid || "", poli?.name || "");
+  router.push({
+    path: "/antrian/apm/aktif/pasien/non-jkn/poli",
+  });
 };
 
 const props = defineProps({
@@ -33,81 +41,97 @@ const props = defineProps({
   },
 });
 
-const dataPasien = ref({
-  noRM: "001827",
-  nik: "327012371204102",
-  nama: "Nama Lengkap Pasien Jika",
-  tanggalLahir: "01 Januari 2000",
-  gender: "Laki-laki",
+const jadwalDokterStore = useJadwalDokterStore();
+const useUtilsStore = utilsStore();
+const apmFlow = useApmFlowStore();
+
+const jadwalPoliPayload = ref<any[]>([]);
+const jadwalPoliProperties = ref({
+  name: "",
 });
 
-const cardAktivitasUmum = ref({
-  keterangan: "Umum",
-});
-const cardAktivitasAnak = ref({
-  keterangan: "Anak",
-});
-const cardAktivitasMata = ref({
-  keterangan: "Mata",
-});
-const cardAktivitasKandungan = ref({
-  keterangan: "Kandungan",
+const pasienDataPayload = ref();
+
+const inputNoIdentity = computed(() => apmFlow.noIdentity || "");
+
+const fetchGetPoli = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await jadwalDokterStore.getApiPoli(
+      jadwalPoliProperties.value.name
+    );
+    console.log("Hasil dari response Daftar Pasien:", response);
+    if (response && response.payload) {
+      jadwalPoliPayload.value = response.payload;
+    }
+  } catch (error) {
+    console.log("Error:", error);
+    jadwalPoliPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
+};
+
+const patientStatus = ref<string>("");
+
+// Helper functions
+const formatDateId = (iso?: string) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  try {
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(d);
+  } catch {
+    return iso;
+  }
+};
+
+const mapGender = (g?: string) => {
+  if (!g) return "";
+  const m = g.toLowerCase();
+  if (m === "male") return "Laki-laki";
+  if (m === "female") return "Perempuan";
+  return g;
+};
+
+onMounted(() => {
+  // Ambil status & data dari store, bukan dari route.query
+  const status = apmFlow.patientStatus || "";
+  patientStatus.value = status;
+
+  if (status === "success" && apmFlow.patientData) {
+    pasienDataPayload.value = apmFlow.patientData;
+  } else if (status === "not_found") {
+    console.log("Data pasien tidak ditemukan");
+  }
+
+  fetchGetPoli();
 });
 </script>
 
 <template #body>
-  <div class="bg-adameds-75">
+  <div class="flex flex-col py-5 w-full min-h-screen">
     <div
-      class="flex justify-between gap-5 pr-5 mt-[15px] bg-adameds-300 rounded-xl max-md:flex-wrap shadow-md py-0 mx-3"
+      class="flex relative z-10 gap-5 justify-between py-0 pr-5 mx-3 rounded-xl shadow-md bg-adameds-300 max-md:flex-wrap"
     >
-      <div
-        class="flex justify-between w-full gap-5 text-sm leading-5 text-white whitespace-nowrap max-md:flex-wrap"
-      >
-        <!-- Logo and Divider -->
-        <div
-          class="flex gap-1 justify-center items-center px-2.5 rounded-lg shadow-sm bg-white"
-        >
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds-logo.png"
-            class="shrink-0 self-stretch my-auto mx-1 aspect-square w-[70px] h-[70px]"
-          />
-          <div class="bg-adameds-300 w-[2px] h-[50px] my-auto rounded-md"></div>
-          <img
-            loading="lazy"
-            src="@/assets/images/adameds.png"
-            class="self-stretch object-cover w-[120px] my-auto shrink-0 mx-1"
-          />
-        </div>
-
-        <!-- Main Title and Subtitle -->
-        <div class="flex flex-col mx-1 my-auto">
-          <!-- Added mx-4 for spacing -->
-          <div class="mb-1 font-bold text-MD">
-            Anjungan Pendaftaran Pribadi (APM)
-          </div>
-          <div class="text-sm">Klinik Adameds</div>
-        </div>
-
-        <!-- Clock and Date -->
-        <div class="flex flex-col my-auto ml-auto text-right">
-          <!-- Align text to the right -->
-          <div class="text-lg font-bold">09:00 AM</div>
-          <div class="text-sm">Senin, 01 Jan 2024</div>
-        </div>
-      </div>
+      <NavbarAntrian />
     </div>
-    <div class="relative items-center justify-center mb-4 mt-14 mx-36">
-      <div class="overflow-hidden rounded-3xl">
-        <div
-          class="bg-white bg-opacity-30 w-full h-[540px] items-center justify-center"
-        >
+    <div class="flex relative flex-1 justify-center items-center mx-36">
+      <div
+        class="flex overflow-hidden flex-col justify-center w-full rounded-3xl"
+      >
+        <div class="bg-white bg-opacity-30 w-full h-[640px] space-y-14">
+          <!-- Header -->
           <div class="grid grid-cols-3 gap-4 pt-10">
             <div
-              class="flex justify-between w-48 h-10 bg-white shadow-md rounded-xl"
+              class="flex justify-between h-10 bg-white rounded-xl shadow-md w-fit"
             >
               <div
-                class="flex items-center gap-2 text-sm leading-5 text-adameds-300 whitespace-nowrap"
+                class="flex gap-2 items-center text-sm leading-5 whitespace-nowrap text-adameds-300"
               >
                 <!-- Logo Container -->
                 <div
@@ -125,13 +149,13 @@ const cardAktivitasKandungan = ref({
 
             <!-- Title Container (Center) -->
             <div
-              class="flex items-center justify-center col-span-1 text-2xl font-extrabold text-adameds-300"
+              class="flex col-span-1 justify-center items-center text-2xl font-extrabold text-adameds-300"
             >
               Data Pasien
             </div>
 
             <!-- Button Container (Right) -->
-            <div class="flex items-center justify-end col-span-1 mr-6">
+            <div class="flex col-span-1 justify-end items-center mr-6">
               <CustomButton
                 label="< &nbsp Kembali"
                 outlined
@@ -143,63 +167,83 @@ const cardAktivitasKandungan = ref({
             </div>
           </div>
 
-          <div class="flex flex-col items-center px-20">
-            <div class="grid grid-cols-9 text-sm pt-14 gap-x-4 gap-y-2">
-              <div class="font-bold">NIK</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.nik }}</div>
-              <div class="font-bold">Nama</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.nama }}</div>
-              <div class="pr-2 font-bold">Jenis Kelamin</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.gender }}</div>
+          <!-- Data Pasien -->
+          <div class="flex justify-around">
+            <div
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
+              <div class="font-bold whitespace-nowrap">No. Identitas</div>
+              <div class="text-center">:</div>
+              <div>{{ pasienDataPayload?.noIdentity || inputNoIdentity }}</div>
+              <!-- ... existing code ... -->
 
-              <div class="font-bold">No.RM</div>
-              <div class="col-span-2">: &nbsp {{ dataPasien.noRM }}</div>
-              <div class="font-bold">Tgl. Lahir</div>
-              <div class="col-span-2">
-                : &nbsp {{ dataPasien.tanggalLahir }}
+              <div class="font-bold whitespace-nowrap">No. RM</div>
+              <div class="text-center">:</div>
+              <div>{{ pasienDataPayload?.noRm || "-" }}</div>
+            </div>
+
+            <!-- Hanya tampilkan kolom kedua jika pasien lama -->
+            <div
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
+              <div class="font-bold whitespace-nowrap">Nama</div>
+              <div class="text-center">:</div>
+              <div>{{ pasienDataPayload?.name || "-" }}</div>
+
+              <div class="font-bold whitespace-nowrap">Tgl. Lahir</div>
+              <div class="text-center">:</div>
+              <div>
+                {{
+                  formatDateId(pasienDataPayload?.birthDetail?.birthDate) || "-"
+                }}
               </div>
+            </div>
+
+            <!-- Hanya tampilkan kolom ketiga jika pasien lama -->
+            <div
+              class="grid grid-cols-[max-content_1ch_minmax(0,1fr)] gap-x-3 gap-y-1"
+            >
+              <div class="font-bold whitespace-nowrap">Jenis Kelamin</div>
+              <div class="text-center">:</div>
+              <div>{{ mapGender(pasienDataPayload?.gender) || "-" }}</div>
             </div>
           </div>
 
-          <div class="px-20 pt-8">
-            <div class="justify-start pl-1 text-lg font-bold">Daftar Poli</div>
-            <hr class="bg-black h-[2px] my-2 ml-1" />
-            <div class="justify-start pl-1 text-sm text-adameds-300">
-              Silahkan Pilih Poli
-            </div>
-          </div>
+          <!-- Content -->
+          <div class="flex gap-6 justify-center">
+            <div class="col-span-5 px-32 space-y-7 w-full">
+              <div class="">
+                <div class="justify-start pl-1 text-lg font-bold">
+                  Daftar Poli
+                </div>
+                <hr class="bg-black h-[2px] my-2 ml-1" />
+                <div class="justify-start pl-1 mb-8 text-sm text-adameds-300">
+                  Silahkan Pilih Poli
+                </div>
+              </div>
 
-          <div class="flex flex-col items-center h-[220px] justify-center">
-            <div class="grid grid-cols-4 gap-x-12">
-              <div class="w-[180px] h-[140px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasUmum"
-                  class="transition-transform duration-300 hover:scale-95"
-                  @click="handlePoli"
-                />
-              </div>
-              <div class="w-[180px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasAnak"
-                  class="transition-transform duration-300 hover:scale-95"
-                />
-              </div>
-              <div class="w-[180px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasMata"
-                  class="transition-transform duration-300 hover:scale-95"
-                />
-              </div>
-              <div class="w-[180px]">
-                <CardAktivitas
-                  :cardAktivitas="cardAktivitasKandungan"
-                  class="transition-transform duration-300 hover:scale-95"
-                />
+              <div class="flex flex-col items-center h-[220px] justify-center">
+                <div>
+                  <div class="grid grid-cols-4 gap-x-6 gap-y-6 w-full">
+                    <div
+                      v-for="item in jadwalPoliPayload"
+                      :key="item.uuid || item.id"
+                      class="w-[220px] h-[120px]"
+                    >
+                      <CardAktivitas
+                        :cardAktivitas="item.name"
+                        class="transition-transform duration-300 hover:scale-95"
+                        @click="handlePoli(item)"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <OrnamentAntrian />
   </div>
 </template>

@@ -5,23 +5,32 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { useDebounceFn } from "@vueuse/core";
 
-const props=defineProps({
-  title:{
-    type:String,
-    default:"Title"
+const props = defineProps({
+  title: {
+    type: String,
+    default: "Title",
   },
-  filter:{
-    type:Boolean,
-    default:true
+  filter: {
+    type: Boolean,
+    default: true,
   },
-  search:{
-    type:Boolean,
-    default:true
-  }
-})
+  search: {
+    type: Boolean,
+    default: true,
+  },
+});
 
-// !SECTION
+const searchQuery = ref("");
+
+const emit = defineEmits(["search", "reset", "daftar"]);
+
+const performSearch = () => {
+  emit("search", searchQuery.value, selectedPaymentMethod.value);
+};
+
+const debouncedSearch = useDebounceFn(performSearch, 500);
 
 const selectedPaymentMethod = ref<string[]>([]);
 const onPaymentMethodSelect = (label: string) => {
@@ -32,27 +41,34 @@ const onPaymentMethodSelect = (label: string) => {
   } else {
     selectedPaymentMethod.value.push(label);
   }
+
+  // Trigger auto-search dengan debounce ketika chip dipilih
+  debouncedSearch();
 };
 
-const filters = [
-  selectedPaymentMethod,
-];
+const filters = [selectedPaymentMethod];
 
 const resetFilter = () => {
   filters.forEach((filter) => {
     filter.value = [];
   });
+
+  searchQuery.value = "";
+
+  emit("reset");
 };
-defineExpose({
-  resetFilter,
-});
 </script>
 
 <template>
   <CustomAccordion :openWithHeader="false" noBorder>
     <template #header>
-      <div class="flex  items-center justify-between w-full gap-5 mr-2.5">
-        <CustomButton label="" icon="PhArrowClockwise" />
+      <div class="flex gap-5 justify-between items-center mr-2.5 w-full">
+        <CustomButton
+          label=""
+          icon="PhArrowClockwise"
+          @click="resetFilter"
+          title="refresh"
+        />
         <div
           class="grow font-semibold text-heading text-adameds-300 leading-[30px]"
         >
@@ -62,13 +78,32 @@ defineExpose({
       </div>
     </template>
     <template #content>
-        <div class="flex flex-col gap-2.5 mt-2.5">
-          <CustomTextfield v-if="search"
-            :label="`Cari Layar`" 
+      <div class="flex flex-col gap-2.5 mt-2.5">
+        <div class="flex">
+          <CustomTextfield
+            v-if="search"
+            :label="`Cari Layar`"
             prependIcon="PhMagnifyingGlass"
             :placeholder="`Cari Nama Layar`"
+            class="grow"
+            v-model="searchQuery"
           >
-        </CustomTextfield>
+          </CustomTextfield>
+          <CustomButton
+            icon="PhMagnifyingGlass"
+            label="Cari"
+            class="ml-5 mr-[10px] mt-auto w-[95px]"
+            @click="performSearch"
+          />
+          <CustomButton
+            label="Reset"
+            @click="resetFilter"
+            outlined
+            borderColor="border-adameds-300"
+            textColor="text-adameds-300"
+            class="mt-auto w-[70px]"
+          />
+        </div>
         <div class="font-semibold text-SM text-grey-300">
           <div class="flex mb-[10px] mt-5">
             <div class="w-[15%]">Filter Status</div>

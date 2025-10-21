@@ -8,49 +8,6 @@ const props = defineProps({
     default: () => [],
   },
 });
-const kunjunganRawatInap = ref([
-  {
-    id: 1,
-    tglRegistrasi: "10-10-2024 09:00",
-    noRegistrasi: "2407010049",
-    noRM: "00-00-00",
-    namaPasien: "Nama Lengkap Pasien",
-    ruangan: "Mawar 1A",
-    dokter: "dr. Nama Dokter Sp. D",
-    subMenu: [
-      {
-        id: 1,
-        jenisKelamin: "L",
-        tglLahir: "01-01-2000",
-        umur: "24 Tahun 2 Bulan 4 Hari",
-        alamat: "Jl. Ijo Abang no. 17",
-        statusKeluarPasien: "Atas Persetujuan Dokter",
-        kondisiKeluar: "Stabil",
-        noBed: "1",
-      },
-    ],
-  },
-  {
-    id: 2,
-    tglRegistrasi: "10-10-2024 09:00",
-    noRegistrasi: "2407010049",
-    noRM: "00-00-00",
-    namaPasien: "Nama Lengkap Pasien",
-    ruangan: "Mawar 1B",
-    dokter: "dr. Nama Dokter Sp. Og",
-    subMenu: [], // Add submenu items here if any
-  },
-  {
-    id: 3,
-    tglRegistrasi: "10-10-2024 09:00",
-    noRegistrasi: "2407010049",
-    noRM: "00-00-00",
-    namaPasien: "Nama Lengkap Pasien",
-    ruangan: "Melati",
-    dokter: "dr. Nama Dokter Sp. Og",
-    subMenu: [], // Add submenu items here if any
-  },
-]);
 
 const expandedRows = ref<any[]>([]);
 </script>
@@ -85,7 +42,7 @@ const expandedRows = ref<any[]>([]);
       style="min-width: 120px"
     >
       <template #body="{ data }">
-        {{ epochToDate(data.tglRegistrasi, "dateTime") }}
+        {{ epochToDate(data.tanggalDaftar, "dateTime") }}
       </template>
     </Column>
     <Column
@@ -96,7 +53,7 @@ const expandedRows = ref<any[]>([]);
       style="min-width: 120px"
     >
       <template #body="{ data }">
-        {{ data.noreg }}
+        {{ data.noReg }}
       </template>
     </Column>
     <Column
@@ -129,7 +86,7 @@ const expandedRows = ref<any[]>([]);
       style="min-width: 100px"
     >
       <template #body="{ data }">
-        {{ data.patient.ruangan ?? "-" }}
+        {{ data.monitoringRoom?.room?.name ?? "-" }}
       </template>
     </Column>
     <Column
@@ -140,7 +97,7 @@ const expandedRows = ref<any[]>([]);
       style="min-width: 100px"
     >
       <template #body="{ data }">
-        {{ data.practitioner.nama }}
+        {{ data.practitioner?.pegawai?.name }}
       </template>
     </Column>
 
@@ -166,7 +123,11 @@ const expandedRows = ref<any[]>([]);
             header="Tgl. Lahir"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              {{ data.patient.birthDetail.birthDate.substring(0, 10) }}
+            </template>
+          </Column>
           <Column
             field="patient.birthDetail.birthDate"
             header="Umur"
@@ -186,17 +147,34 @@ const expandedRows = ref<any[]>([]);
             class="text-black text-SM"
           ></Column>
           <Column
-            field="patient.address.fullAddress"
+            field="kondisiPasienPulang" 
             header="Status Keluar Pasien"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              <span v-if="data.kondisiPasienPulang === '359746009'">Stabil</span>
+              <span v-else-if="data.kondisiPasienPulang === '162668006'">Tidak Stabil</span>
+              <span v-else-if="data.kondisiPasienPulang === '268910001'">Perbaikan</span>
+              <span v-else>{{ data.kondisiPasienPulang }}</span>
+            </template>
+          </Column>
           <Column
-            field="patient.address.fullAddress"
+            field="statusPulang" 
             header="Kondisi Keluar"
             header-class="text-black bg-adameds-50"
             class="text-black text-SM"
-          ></Column>
+          >
+            <template #body="{ data }">
+              <span v-if="data.statusPulang === 'home'">Pulang atas persetujuan dokter</span>
+              <span v-else-if="data.statusPulang === 'aadvice'">Pulang atas permintaan sendiri</span>
+              <span v-else-if="data.statusPulang === 'other-hcf'">Dirujuk</span>
+              <span v-else-if="data.statusPulang === 'exp-lt48h'">Meninggal &lt; 48 jam</span>
+              <span v-else-if="data.statusPulang === 'exp-gt48h'">Meninggal &gt; 48 jam</span>
+              <span v-else-if="data.statusPulang === 'oth'">Lain-lain</span>
+              <span v-else>{{ data.statusPulang }}</span>
+            </template>
+          </Column>
           <Column
             field="noBed"
             header="No. Bed"
@@ -204,7 +182,7 @@ const expandedRows = ref<any[]>([]);
             class="text-black text-SM"
           >
             <template #body="{ data }">
-              {{ data.patient.ruangan ?? "-" }}
+              {{ data.monitoringRoom?.noBed ?? "-" }}
             </template>
           </Column>
         </DataTable>

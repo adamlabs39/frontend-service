@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, ref, type PropType } from "vue";
+import { computed, onMounted, onUpdated, ref, type PropType } from "vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
@@ -40,9 +40,10 @@ const props = defineProps({
   },
 });
 
+
 const fetchProvinsi = async () => {
   try {
-    const response = await districtStore.getProvinsiApi(); // Ambil data provinsi
+    const response = await districtStore.getProvinsiApi(); 
     if (response && response.payload) {
       provinsiPayload.value = response.payload;
     } else {
@@ -56,7 +57,7 @@ const fetchProvinsi = async () => {
 
 const fetchKabupaten = async (provinsiId: string) => {
   try {
-    const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
+    const response = await districtStore.getKabupatenApi(provinsiId); 
     if (response && response.payload) {
       kabupatenPayload.value = response.payload;
     } else {
@@ -73,7 +74,7 @@ const fetchKabupaten = async (provinsiId: string) => {
 
 const fetchKecamatan = async (kabupatenId: string) => {
   try {
-    const response = await districtStore.getKecamatanApi(kabupatenId); // Berikan ID kabupaten sebagai parameter
+    const response = await districtStore.getKecamatanApi(kabupatenId);
     if (response && response.payload) {
       kecamatanPayload.value = response.payload;
     } else {
@@ -89,7 +90,7 @@ const fetchKecamatan = async (kabupatenId: string) => {
 
 const fetchKelurahan = async (kecamatanId: string) => {
   try {
-    const response = await districtStore.getKelurahanApi(kecamatanId); // Berikan ID kecamatan sebagai parameter
+    const response = await districtStore.getKelurahanApi(kecamatanId); 
     if (response && response.payload) {
       kelurahanPayload.value = response.payload;
     } else {
@@ -107,6 +108,27 @@ const kabupatenPayload = ref<any[]>([]);
 const kecamatanPayload = ref<any[]>([]);
 const kelurahanPayload = ref<any[]>([]);
 
+const maxBirthTime = computed(() => {
+  const selectedDate = birthDetailDate.value;
+  if (!selectedDate) {
+    return new Date();
+  }
+
+  const today = new Date();
+  
+  today.setHours(0, 0, 0, 0);
+  const normalizedSelectedDate = new Date(selectedDate);
+  normalizedSelectedDate.setHours(0, 0, 0, 0);
+
+  if (normalizedSelectedDate.getTime() === today.getTime()) {
+    const maxTime = new Date();
+    maxTime.setSeconds(59, 999); 
+    return maxTime;
+  } else {
+    return undefined;
+  }
+});
+
 const setFormData = async (data: any, uuid: string = "") => {
   if (Object.keys(data).length) {
     let tempPatientData = data;
@@ -123,6 +145,7 @@ const setFormData = async (data: any, uuid: string = "") => {
       let tempBirthTime = setTimeToDate(tempPatientData.newBorn.birthTimeBaby);
 
       tempPatientData.birthTime = tempBirthTime;
+      tempPatientData.multipleBirth = tempPatientData.newBorn.multipleBirth;
     }
 
     if (uuid || data.uuid) {
@@ -148,7 +171,7 @@ onUpdated(() => {
 const timer = ref<any>();
 const listDataPatient = ref([]);
 const loadingSearchPatient = ref(false);
-const searchPatientData = async (filter: string) => {
+const searchPatientData = async (query: string = "") => {
   if (timer.value) {
     clearTimeout(timer.value);
     timer.value = null;
@@ -157,18 +180,33 @@ const searchPatientData = async (filter: string) => {
     loadingSearchPatient.value = true;
     try {
       const response = await masterPasienStore.getMasterPasien({
-        q: filter,
+        q: query,
+        limit: 9999,
+        status: 'aktif'
       });
       if (response && response.payload) {
-        listDataPatient.value = response.payload;
-      } else listDataPatient.value = [];
+        listDataPatient.value = response.payload.map((patient: { name: any; noRm: any; }) => {
+          return {
+            ...patient,
+            searchableText: `${patient.name} ${patient.noRm}`
+          };
+        });
+      } else {
+        listDataPatient.value = [];
+      }
     } catch (error) {
       console.error("Failed to fetch data", error);
-      return [];
+      listDataPatient.value = [];
     } finally {
+      loadingSearchPatient.value = false;
     }
-    loadingSearchPatient.value = false;
   }, 800);
+};
+
+const fetchInitialPatientList = () => {
+  if (listDataPatient.value.length === 0) {
+    searchPatientData("");
+  }
 };
 
 const setSelectedPatientData = async (data: any) => {
@@ -190,6 +228,7 @@ const setSelectedPatientData = async (data: any) => {
 const selectedDataPatient = ref<any>();
 const patientAge = ref("");
 
+
 const schema = toTypedSchema(
   yup
     .object({
@@ -209,7 +248,29 @@ const schema = toTypedSchema(
         ),
       name: yup.string().required("Nama lengkap harus diisi"),
       identity: yup.string().required("Identitas harus dipilih"),
-      noIdentity: yup.string().required("No identitas harus diisi"),
+      noIdentity: yup
+          .string()
+          .required("No identitas harus diisi")
+          .when(["identity"], (identityValues, schema) => {
+            const identity = Array.isArray(identityValues)
+              ? identityValues[0]
+              : identityValues;
+
+            if (identity === "KTP") {
+              return schema.min(16, "No identitas KTP minimal 16 karakter");
+            }
+
+            if (identity === "Passport") {
+              return schema
+                .min(9, "No identitas Passport minimal 9 karakter")
+                .matches(
+                  /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/,
+                  "No identitas Passport harus mengandung huruf dan angka"
+                );
+            }
+
+            return schema;
+          }),
       birthDetail: yup
         .object({
           birthPlace: yup.string().required("Tempat lahir harus diisi"),
@@ -376,13 +437,14 @@ defineExpose({
             placeHolder="Cari Nama / No. RM"
             class="grow mr-[30px]"
             :class="{ '': pageType != 'datamaster' }"
-            optionLabel="name"
+            optionLabel="searchableText"
             optionValue=""
             :options="listDataPatient"
             prependIcon="PhMagnifyingGlass"
             :disabled="withoutIdentity || isNewBorn || isDetail"
             :isLoading="loadingSearchPatient"
             @filter="searchPatientData"
+            @click="fetchInitialPatientList"
           >
             <template #customOptions="{ option }">
               {{ option.name }} ~ {{ option.noRm }}
@@ -546,6 +608,7 @@ defineExpose({
             :disabled="isDetail"
             :invalid="!!errors.birthTime"
             :invalidMessage="errors.birthTime"
+            :maxDate="maxBirthTime"
           />
           <CustomTextfield
             v-if="!withoutIdentity && !isNewBorn"
@@ -742,16 +805,11 @@ defineExpose({
               :invalidMessage="errors['address.rw']"
             />
           </div>
-          <!-- FIXME Dummy -->
-          <CustomSelect
+          <CustomTextfield
             v-model="addressPostalCode"
             label="Kode Pos"
-            placeHolder="Pilih Kode Pos"
+            placeholder="Kode Pos"
             class=""
-            optionLabel=""
-            optionValue=""
-            :showFilter="false"
-            :options="['10110', '40115', '60241']"
             :disabled="isDetail"
             :invalid="!!errors['address.postalCode']"
             :invalidMessage="errors['address.postalCode']"
