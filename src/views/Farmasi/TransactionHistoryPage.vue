@@ -151,7 +151,7 @@ const StockLocationPayload = ref<any[]>([]);
 // Fetch Stock Location
 const fetchStockLocation = async () => {
   try {
-    const response = await StockLocationStore.getApi();
+    const response = await StockLocationStore.getApi(1, 999999);
 
     if (response && response.payload) {
       StockLocationPayload.value = response.payload;
