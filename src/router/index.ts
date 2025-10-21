@@ -13,7 +13,7 @@ import PaymentView from "@/views/Pembayaran/PaymentView.vue";
 import PharmacyView from "@/views/Farmasi/PharmacyView.vue";
 import AntrianView from "@/views/Antrian/AntrianView.vue";
 import LaboratoriumView from "@/views/Laboratorium/LaboratoriumView.vue";
-import ApmAktifView from "@/views/Antrian/APM/ApmAktifView.vue";
+import ApmAktifView from "@/views/Antrian/APM/ApmMainMenu.vue";
 import RawatInapView from "@/views/RawatInap/RawatInapView.vue";
 import FisioterapiView from "@/views/Fisioterapi/FisioterapiView.vue";
 
@@ -28,11 +28,13 @@ import AdmisiReportPage from "@/views/Admisi/AdmisiReportPage.vue";
 // NOTE Pembayaran
 import CashierPage from "@/views/Pembayaran/CashierPage.vue";
 import Cashier2Page from "@/views/Pembayaran/Cashier2Page.vue";
-import TransactionPage from "@/views/Pembayaran/TransactionPage.vue";
+import TransactionPage from "@/views/Pembayaran/Transaction/Pelayanan.vue";
+import APSOTC from "@/views/Pembayaran/Transaction/APS&OTC.vue";
 import ClosedBillPage from "@/views/Pembayaran/ClosedBillPage.vue";
 import PembayaranKunjunganPage from "@/views/Pembayaran/Report/PembayaranKunjunganPage.vue";
 import ClosingCashierPage from "@/views/Pembayaran/Report/ClosingCashierPage.vue";
 import LaporanPendapatanPage from "@/views/Pembayaran/Report/LaporanPendapatanPage.vue";
+import PelunasanPage from "@/views/Pembayaran/layout/PelunasanPage.vue";
 
 // NOTE Farmasi
 import DoctorPrescriptionPage from "@/views/Farmasi/DoctorPrescription/DoctorPrescriptionPage.vue";
@@ -62,6 +64,9 @@ import RevenueRecapPage from "@/views/Farmasi/Report/RevenueRecapPage.vue";
 import BPJSPageMonitoringKunjunganPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
 import ProfilFaskesPage from "@/views/SettingPage/Template/ProfilFaskes/ProfilFaskesPage.vue";
 import KonfigurasiIntegrasiPage from "@/views/SettingPage/Template/KonfigurasiIntegrasi/KonfigurasiIntegrasiPage.vue";
+import PoliPage from "@/views/RawatJalan/Page/PoliPage.vue";
+import BPJSMonitoringPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
+import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
 
 // NOTE Setting
 import PermissionMenuPage from "@/views/SettingPage/Template/PermissionMenu/PermissionMenuPage.vue";
@@ -93,15 +98,17 @@ import GigiFDIPage from "@/views/Datamaster/SuperAdmin/GigiFDI/GigiFDIPage.vue";
 import KategoriGigi from "@/views/Datamaster/SuperAdmin/KategoriGigi/KategoriGigi.vue";
 import ItemGigiPage from "@/views/Datamaster/SuperAdmin/ItemGigi/ItemGigiPage.vue";
 import OklusiPage from "@/views/Datamaster/SuperAdmin/Oklusi/OklusiPage.vue";
+import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPage.vue";
 
 // NOTE Page Antrian
 import LayarAntrianPage from "@/views/Antrian/Layar/LayarAntrianPage.vue";
-import DataAntrianPage from "@/views/Antrian/DataAntrian/DataAntrianPage.vue";
+import DataAntrianPage from "@/views/Antrian/DataAntrian/AntrianPage.vue";
 import ApmPage from "@/views/Antrian/APM/ApmPage.vue";
-import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayarPage.vue";
-import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalPage.vue";
+import KonfigurasiLayarPage from "@/views/Antrian/Konfigurasi/KonfigurasiLayar/KonfigurasiLayarPage.vue";
+import KonfigurasiJadwalPage from "@/views/Antrian/Konfigurasi/KonfigurasiJadwalDokter/KonfigurasiJadwalPage.vue";
 import DaftarPasienPage from "@/views/Antrian/APM/ApmPasienJKN/DaftarPasienPage.vue";
 import PasienDataPage from "@/views/Antrian/APM/ApmPasienJKN/PasienDataPage.vue";
+import PasienPoliPage from "@/views/Antrian/APM/ApmPasienJKN/PasienPoliPage.vue";
 import DaftarPasienNonPage from "@/views/Antrian/APM/ApmPasienNonJKN/DaftarPasienNonPage.vue";
 import PasienNonDataPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonDataPage.vue";
 import CheckinPendaftaranPage from "@/views/Antrian/APM/ApmCheckin/CheckinPendaftaranPage.vue";
@@ -111,15 +118,18 @@ import PrintDataPage from "@/views/Antrian/APM/ApmPrint/PrintDataPage.vue";
 import PasienBerhasilPage from "@/views/Antrian/APM/ApmPasienJKN/PasienBerhasilPage.vue";
 import PasienNonPoliPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonPoliPage.vue";
 import PasienNonBerhasilPage from "@/views/Antrian/APM/ApmPasienNonJKN/PasienNonBerhasilPage.vue";
+import FarmasiPage from "@/views/Antrian/APM/APMFarmasi/FarmasiPage.vue";
+import DaftarFarmasiPage from "@/views/Antrian/APM/APMFarmasi/FarmasiDaftarPage.vue";
+import FarmasiBerhasilPage from "@/views/Antrian/APM/APMFarmasi/FarmasiBerhasilPage.vue";
 
 // NOTE Page Laboratorium
 import OrderPage from "@/views/Laboratorium/OrderLab/OrderPage.vue";
 import HasilPemeriksaanPage from "@/views/Laboratorium/HasilPemeriksaan/HasilPemeriksaanPage.vue";
 import ExpertisePage from "@/views/Laboratorium/Expertise/ExpertisePage.vue";
 import KategoriPemeriksaanPage from "@/views/Laboratorium/Masterdata/KategoriPemeriksaanPage.vue";
-import KelompokPemeriksaanPage from "@/views/Laboratorium/Masterdata/KelompokPemeriksaanPage.vue";
+import KelompokPemeriksaanPage from "@/views/Laboratorium/Masterdata/KelompokPemeriksaan/KelompokPemeriksaanPage.vue";
 import ItemPemeriksaanLabPage from "@/views/Laboratorium/Masterdata/ItemPemeriksaan/ItemPemeriksaanLabPage.vue";
-import SpesimenPage from "@/views/Laboratorium/Masterdata/SpesimenPage.vue";
+import SpesimenPage from "@/views/Laboratorium/Masterdata/Spesimen/SpesimenPage.vue";
 import KunjunganLabPage from "@/views/Laboratorium/Report/KunjunganLabPage.vue";
 import WaktuTungguLabPage from "@/views/Laboratorium/Report/WaktuTungguLabPage.vue";
 import RekapJumlahPemeriksaanLabPage from "@/views/Laboratorium/Report/RekapJumlahPemeriksaanLabPage.vue";
@@ -130,6 +140,7 @@ import RuanganRIPage from "@/views/RawatInap/Page/RuanganPage.vue";
 import PerpindahanBangsal from "@/views/RawatInap/Page/PerpindahanBangsal.vue";
 import BPJSMonitoringRIPage from "@/views/RawatInap/Page/BPJSMonitoringPage.vue";
 import LaporanPageRI from "@/views/RawatInap/Page/LaporanPage.vue";
+
 // NOTE Page IGD
 import IGDView from "@/views/IGD/IGDView.vue";
 import PasienIgdPage from "@/views/IGD/PasienIgd/PasienIgdPage.vue";
@@ -141,6 +152,7 @@ import PembatalanDirawatPage from "@/views/IGD/Laporan/PembatalanDirawat.vue";
 import RekapTindakanPasien from "@/views/IGD/Laporan/RekapTindakanPasien.vue";
 import BPJSPage from "@/views/IGD/BPJS/BPJSPage.vue";
 import LaporanIGDPage from "@/views/IGD/Laporan/LaporanPage.vue";
+
 // NOTE FISIOTERAPI DATAMASTER
 import BedRuanganPage from "@/views/Fisioterapi/BedRuanganPage.vue";
 
@@ -155,8 +167,23 @@ import KunjunganPage from "@/views/Fisioterapi/Report/KunjunganPage.vue";
 import RekapitulasiKunjunganJenisFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiKunjunganJenisFisioterapiPage.vue";
 import RekapitulasiTerapiPage from "@/views/Fisioterapi/Report/RekapitulasiTerapiPage.vue";
 import RekapitulasiPendapatanFisioterapiPage from "@/views/Fisioterapi/Report/RekapitulasiPendapatanFisioterapiPage.vue";
+
 // NOTE Page Inventory
-import InventoryPurchasePage from "@/views/Inventory/Page/PengadaanBarang/InventoryPurchasePage.vue";
+import PurchaseOfSupplierPage from "@/views/Inventory/Page/PengadaanBarang/PembelianBarangSupplier/PurchaseOfSupplierPage.vue";
+import VerificationOfGoodsPurchasePage from "@/views/Inventory/Page/PengadaanBarang/VerifikasiPembelianBarangSupplier/VerificationOfGoodsPurchasePage.vue";
+import SupplierReturnsPage from "@/views/Inventory/Page/PengadaanBarang/ReturPenggantian/SupplierReturnsPage.vue";
+import UnitDeliveryVerificationPage from "@/views/Inventory/Page/PengeluaranBarang/VerifikasiPengirimanUnit/UnitDeliveryVerificationPage.vue";
+import UnitOfExpenditurePage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnit/UnitOfExpenditurePage.vue";
+import PurchaseAcceptancePage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelian/PurchaseAcceptancePage.vue"
+import ReturnReceiptPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnit/ReturnReceiptPage.vue"
+import SupplierPage from "@/views/Inventory/Page/Datamaster/SupplierPage.vue";
+import RateHistoryPage from "@/views/Inventory/Page/RiwayatTarif/RateHistoryPage.vue";
+import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
+import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
+import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
+import StockAndMutationCardsPage from "@/views/Inventory/Page/KartustokMutasi/StockAndMutationCardsPage.vue";
+import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
+import InventoryView from "@/views/Inventory/InventoryView.vue";
 
 // NOTE Training
 import TrainingView from "@/views/Training/TrainingView.vue";
@@ -172,31 +199,13 @@ import RekapTindakanPage from "@/views/Laporan/RekapTindakanPage.vue";
 import RekapPemeriksaanPage from "@/views/Laporan/RekapPemeriksaanPage.vue";
 import RekapPendapatan from "@/views/Laporan/RekapPendapatanPage.vue";
 import RekapDiagnosis from "@/views/Laporan/RekapDiagnosisPage.vue";
-
 // !SECTION
+
 // NOTE Test Component
 import TestComponentNaya from "@/views/TestComponentNaya.vue";
 import TestComponentAdamNew from "@/views/TestComponentAdamNew.vue";
 import TestComponentAlex from "@/views/TestComponentAlex.vue";
 import TestComponentFahmi from "@/views/TestComponentFahmi.vue";
-import KomponenTarifPage from "@/views/Datamaster/KomponenTarif/KomponenTarifPage.vue";
-import PoliPage from "@/views/RawatJalan/Page/PoliPage.vue";
-import BPJSMonitoringPage from "@/views/RawatJalan/Page/BPJSMonitoringPage.vue";
-import LaporanPage from "@/views/RawatJalan/Page/LaporanPage.vue";
-import InventoryView from "@/views/Inventory/InventoryView.vue";
-import VerificationPurchasePage from "@/views/Inventory/Page/PengadaanBarang/VerificationPurchasePage.vue";
-import ReturPage from "@/views/Inventory/Page/PengadaanBarang/ReturPage.vue";
-import PengirimanUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengirimanUnitPage.vue";
-import PengeluaranUnitPage from "@/views/Inventory/Page/PengeluaranBarang/PengeluaranUnitPage.vue";
-import PenerimaanPembelianPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanPembelianPage.vue";
-import PenerimaanReturUnitPage from "@/views/Inventory/Page/PenerimaanBarang/PenerimaanReturUnitPage.vue";
-import DatamasterSupplierPage from "@/views/Inventory/Page/Datamaster/DatamasterSupplierPage.vue";
-import RiwayatTarifPage from "@/views/Inventory/Page/RiwayatTarif/RiwayatTarifPage.vue";
-import ObatExpiredPage from "@/views/Inventory/Page/Laporan/ObatExpiredPage.vue";
-import PersediaanPage from "@/views/Inventory/Page/Laporan/PersediaanPage.vue";
-import StokAdjustmentPage from "@/views/Inventory/Page/StokAdjustment/StokAdjustmentPage.vue";
-import KartustokMutasiPage from "@/views/Inventory/Page/KartustokMutasi/KartustokMutasiPage.vue";
-import StokOpnamePage from "@/views/Inventory/Page/StokOpname/StokOpnamePage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -219,8 +228,7 @@ const router = createRouter({
       component: DashboardView,
     },
 
-    // RAWAT JALAN
-
+    // SECTION Router RAWAT JALAN
     {
       path: "/rawat-jalan",
       name: "rawat-jalan",
@@ -280,7 +288,9 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: LaporanPage, requiresAuth: true },
       component: RawatJalanView,
     },
+    // !SECTION
 
+    // SECTION Router Setting
     {
       path: "/setting/profil-faskes",
       name: "setting-profil-faskes",
@@ -291,7 +301,6 @@ const router = createRouter({
       },
       component: SettingView,
     },
-
     {
       path: "/setting/konfigurasi-integrasi",
       name: "setting-konfigurasi-integrasi",
@@ -331,8 +340,9 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: SystemPage, requiresAuth: true },
       component: SettingView,
     },
+    // !SECTION
 
-    // NOTE Datamaster
+    // SECTION Router Datamaster
     {
       path: "/datamaster",
       name: "datamaster",
@@ -419,13 +429,13 @@ const router = createRouter({
     {
       path: "/datamaster/praktisi",
       name: "datamaster-paktisi",
-      meta: { layout: SidebarLayout, page: PraktisiPage },
+      meta: { layout: SidebarLayout, page: PraktisiPage, requiresAuth: true },
       component: DatamasterView,
     },
     {
       path: "/datamaster/pegawai",
       name: "datamaster-pegawai",
-      meta: { layout: SidebarLayout, page: PegawaiPage },
+      meta: { layout: SidebarLayout, page: PegawaiPage, requiresAuth: true },
       component: DatamasterView,
     },
     {
@@ -497,7 +507,9 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: OklusiPage, requiresAuth: true },
       component: DatamasterView,
     },
-    // NOTE Admisi
+    // !SECTION
+
+    // SECTION Router Admisi
     {
       path: "/admisi",
       name: "admisi",
@@ -568,6 +580,7 @@ const router = createRouter({
       path: "/admisi/laporan/kunjungan",
       name: "admisi-laporan-kunjungan",
       meta: {
+        pageType: "kunjungan",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -578,6 +591,7 @@ const router = createRouter({
       path: "/admisi/laporan/penjamin",
       name: "admisi-laporan-penjamin",
       meta: {
+        pageType: "penjamin",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -588,6 +602,7 @@ const router = createRouter({
       path: "/admisi/laporan/batal-kunjungan",
       name: "admisi-laporan-batal-kunjungan",
       meta: {
+        pageType: "batal-kunjungan",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -598,6 +613,7 @@ const router = createRouter({
       path: "/admisi/laporan/status-kamar",
       name: "admisi-laporan-status-kamar",
       meta: {
+        pageType: "status-kamar",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -608,6 +624,7 @@ const router = createRouter({
       path: "/admisi/laporan/keperawatan-inap-pasien",
       name: "admisi-laporan-keperawatan-inap-pasien",
       meta: {
+        pageType: "keperawatan-inap-pasien",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -618,6 +635,7 @@ const router = createRouter({
       path: "/admisi/laporan/bayi-baru-lahir",
       name: "admisi-laporan-bayi-baru-lahir",
       meta: {
+        pageType: "bayi-baru-lahir",
         layout: SidebarLayout,
         page: AdmisiReportPage,
         requiresAuth: true,
@@ -625,8 +643,8 @@ const router = createRouter({
       component: AdmisiView,
     },
     {
-      path: "/admisi/laporan/rekap-jumlah-pasien-BPJS",
-      name: "admisi-laporan-rekap-jumlah-pasien-BPJS",
+      path: "/admisi/laporan/rekap-kunjungan",
+      name: "admisi-laporan-rekap-kunjungan",
       meta: {
         layout: SidebarLayout,
         page: AdmisiReportPage,
@@ -634,8 +652,9 @@ const router = createRouter({
       },
       component: AdmisiView,
     },
+    // !SECTION
 
-    // NOTE Antrian
+    // SECTION Router Antrian
     {
       path: "/antrian",
       name: "antrian",
@@ -706,6 +725,30 @@ const router = createRouter({
       component: PasienDataPage,
     },
     {
+      path: "/antrian/apm/aktif/pasien/jkn/poli",
+      name: "antrian-apm-aktif-pasien-jkn-poli",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: PasienPoliPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi",
+      name: "antrian-apm-aktif-pasien-farmasi",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: FarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/daftar",
+      name: "antrian-apm-aktif-pasien-farmasi-daftar",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: DaftarFarmasiPage,
+    },
+    {
+      path: "/antrian/apm/aktif/pasien/farmasi/berhasil",
+      name: "antrian-apm-aktif-pasien-farmasi-berhasil",
+      meta: { layout: DefaultLayout, requiresAuth: true },
+      component: FarmasiBerhasilPage,
+    },
+    {
       path: "/antrian/apm/aktif/pasien/jkn/berhasil",
       name: "antrian-apm-aktif-pasien-jkn-berhasil",
       meta: { layout: DefaultLayout, requiresAuth: true },
@@ -724,8 +767,8 @@ const router = createRouter({
       component: PasienNonDataPage,
     },
     {
-      path: "/antrian/apm/aktif/pasien/non-jkn/poli-umum",
-      name: "antrian-apm-aktif-pasien-non-jkn-poli-umum",
+      path: "/antrian/apm/aktif/pasien/non-jkn/poli",
+      name: "antrian-apm-aktif-pasien-non-jkn-poli",
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PasienNonPoliPage,
     },
@@ -759,8 +802,9 @@ const router = createRouter({
       meta: { layout: DefaultLayout, requiresAuth: true },
       component: PrintDataPage,
     },
+    // !SECTION
 
-    // NOTE Laboratorium
+    // SECTION Router Laboratorium
     {
       path: "/laboratorium",
       name: "laboratorium",
@@ -811,7 +855,11 @@ const router = createRouter({
     {
       path: "/laboratorium/datamaster/item-pemeriksaan",
       name: "laboratorium-datamaster/item-pemeriksaan",
-      meta: { layout: SidebarLayout, page: ItemPemeriksaanLabPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: ItemPemeriksaanLabPage,
+        requiresAuth: true,
+      },
       component: LaboratoriumView,
     },
     {
@@ -856,8 +904,9 @@ const router = createRouter({
       },
       component: LaboratoriumView,
     },
+    // !SECTION
 
-    // NOTE Pembayaran
+    // SECTION Router Pembayaran
     {
       path: "/pembayaran",
       name: "pembayaran",
@@ -869,12 +918,32 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: CashierPage, requiresAuth: true },
       component: PaymentView,
     },
+    // {
+    //   path: "/pembayaran/transaksi",
+    //   name: "pembayaran-transaksi",
+    //   meta: {
+    //     layout: SidebarLayout,
+    //     page: TransactionPage,
+    //     requiresAuth: true,
+    //   },
+    //   component: PaymentView,
+    // },
     {
-      path: "/pembayaran/transaksi",
-      name: "pembayaran-transaksi",
+      path: "/pembayaran/transaksi/pelayanan",
+      name: "pembayaran-transaksi-pelayanan",
       meta: {
         layout: SidebarLayout,
         page: TransactionPage,
+        requiresAuth: true,
+      },
+      component: PaymentView,
+    },
+    {
+      path: "/pembayaran/transaksi/APSOTC",
+      name: "pembayaran-transaksi-APSOTC",
+      meta: {
+        layout: SidebarLayout,
+        page: APSOTC,
         requiresAuth: true,
       },
       component: PaymentView,
@@ -885,6 +954,17 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: ClosedBillPage, requiresAuth: true },
       component: PaymentView,
     },
+    {
+      path: "/pembayaran/closed-bill/:billUuid/pelunasan",
+      name: "pembayaran-pelunasan",
+      meta: {
+        layout: SidebarLayout,
+        page: PelunasanPage, 
+        requiresAuth: true,
+      },
+      component: PaymentView, 
+      props: true
+    },
     {
       path: "/pembayaran/laporan/pendapatan",
       name: "pembayaran-laporan-pendapatan",
@@ -915,8 +995,9 @@ const router = createRouter({
       },
       component: PaymentView,
     },
+    // !SECTION
 
-    // NOTE Farmasi
+    // SECTION Router Farmasi
     {
       path: "/farmasi",
       name: "farmasi",
@@ -968,7 +1049,6 @@ const router = createRouter({
       },
       component: PharmacyView,
     },
-
     // NOTE Farmasi/Datamaster
     {
       path: "/farmasi/datamaster/aturan-pakai",
@@ -1060,7 +1140,6 @@ const router = createRouter({
       },
       component: PharmacyView,
     },
-
     // NOTE Farmasi/Laporan
     {
       path: "/farmasi/laporan/pendapatan",
@@ -1088,8 +1167,9 @@ const router = createRouter({
       },
       component: PharmacyView,
     },
+    // !SECTION
 
-    // NOTE Rawat Inap
+    // SECTION Router Rawat Inap
     {
       path: "/rawat-inap",
       name: "rawat-inap",
@@ -1165,8 +1245,9 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: LaporanPageRI, requiresAuth: true },
       component: RawatInapView,
     },
+    // !SECTION
 
-    // NOTE IGD
+    // SECTION Router IGD
     {
       path: "/igd",
       name: "igd",
@@ -1214,9 +1295,9 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: LaporanIGDPage, requiresAuth: true },
       component: IGDView,
     },
+    // !SECTION
 
-    // NOTE FISIOTERAPI
-
+    // SECTION FISIOTERAPI
     {
       path: "/fisioterapi",
       name: "fisioterapi",
@@ -1232,7 +1313,6 @@ const router = createRouter({
       },
       component: FisioterapiView,
     },
-
     // NOTE FISIOTERAPI DATAMASTER
     {
       path: "/fisioterapi/datamaster/bed-ruangan",
@@ -1240,7 +1320,6 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: BedRuanganPage, requiresAuth: true },
       component: FisioterapiView,
     },
-
     // NOTE ORDER FISIOTERAPI
     {
       path: "/fisioterapi/order-fisioterapi",
@@ -1282,9 +1361,7 @@ const router = createRouter({
       },
       component: FisioterapiView,
     },
-
     // NOTE FISIOTERAPI LAPORAN
-
     {
       path: "/fisioterapi/laporan/kunjungan",
       name: "fisioterapi-laporan-kunjungan",
@@ -1321,8 +1398,9 @@ const router = createRouter({
       },
       component: FisioterapiView,
     },
+    // !SECTION
 
-    // NOTE Inventory
+    // SECTION Inventory
     {
       path: "/inventory",
       name: "inventory",
@@ -1333,7 +1411,7 @@ const router = createRouter({
       name: "inventory-pengadaan-barang-pembelian-barang-supplier",
       meta: {
         layout: SidebarLayout,
-        page: InventoryPurchasePage,
+        page: PurchaseOfSupplierPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1343,7 +1421,7 @@ const router = createRouter({
       name: "inventory-pengadaan-barang-verifikasi-pembelian-barang-supplier",
       meta: {
         layout: SidebarLayout,
-        page: VerificationPurchasePage,
+        page: VerificationOfGoodsPurchasePage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1351,7 +1429,11 @@ const router = createRouter({
     {
       path: "/inventory/pengadaan-barang/retur-penggantian-barang-supplier",
       name: "inventory-pengadaan-barang-retur-penggantian-barang-supplier",
-      meta: { layout: SidebarLayout, page: ReturPage, requiresAuth: true },
+      meta: {
+        layout: SidebarLayout,
+        page: SupplierReturnsPage,
+        requiresAuth: true,
+      },
       component: InventoryView,
     },
     {
@@ -1359,7 +1441,7 @@ const router = createRouter({
       name: "inventory-pengeluaran-barang-verifikasi-pengiriman-unit",
       meta: {
         layout: SidebarLayout,
-        page: PengirimanUnitPage,
+        page: UnitDeliveryVerificationPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1369,7 +1451,7 @@ const router = createRouter({
       name: "inventory-pengeluaran-barang-pengeluaran-unit",
       meta: {
         layout: SidebarLayout,
-        page: PengeluaranUnitPage,
+        page: UnitOfExpenditurePage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1379,7 +1461,7 @@ const router = createRouter({
       name: "inventory-penerimaan-barang-penerimaan-pembelian",
       meta: {
         layout: SidebarLayout,
-        page: PenerimaanPembelianPage,
+        page: PurchaseAcceptancePage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1389,7 +1471,7 @@ const router = createRouter({
       name: "inventory-penerimaan-barang-penerimaan-retur-unit",
       meta: {
         layout: SidebarLayout,
-        page: PenerimaanReturUnitPage,
+        page: ReturnReceiptPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1399,7 +1481,7 @@ const router = createRouter({
       name: "inventory-datamaster-supplier",
       meta: {
         layout: SidebarLayout,
-        page: DatamasterSupplierPage,
+        page: SupplierPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1409,7 +1491,7 @@ const router = createRouter({
       name: "inventory-riwayat-tarif",
       meta: {
         layout: SidebarLayout,
-        page: RiwayatTarifPage,
+        page: RateHistoryPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1419,7 +1501,7 @@ const router = createRouter({
       name: "inventory-kartustok-mutasi",
       meta: {
         layout: SidebarLayout,
-        page: KartustokMutasiPage,
+        page: StockAndMutationCardsPage,
         requiresAuth: true,
       },
       component: InventoryView,
@@ -1456,8 +1538,9 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: PersediaanPage, requiresAuth: true },
       component: InventoryView,
     },
+    // !SECTION
 
-    // NOTE Training
+    // SECTION Training
     {
       path: "/training",
       name: "training",
@@ -1499,8 +1582,9 @@ const router = createRouter({
       },
       component: TrainingView,
     },
+    // !SECTION
 
-    // NOTE Laporan
+    // SECTION Laporan
     {
       path: "/laporan",
       name: "laporan",
@@ -1552,6 +1636,7 @@ const router = createRouter({
       meta: { layout: SidebarLayout, page: RekapDiagnosis, requiresAuth: true },
       component: LaporanView,
     },
+    // !SECTION
 
     // NOTE Test Component
     {

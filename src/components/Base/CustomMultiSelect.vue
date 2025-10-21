@@ -180,6 +180,7 @@ const getObjectValue = (key: string, object: any) => {
           focusBorderColor: '#D0D5DD',
           hoverBorderColor: '#D0D5DD',
         }"
+        :virtualScrollerOptions="{ itemSize: 38 }"
       >
         <template
           v-if="

@@ -19,11 +19,11 @@ const props = defineProps({
       />
       <span class="leading-6">Bed {{ props.bedData.noBed }}</span>
       <span class="font-bold leading-6">
-        - {{ props.bedData.patient.noRm }}</span
+        - {{ props.bedData.patient?.noRm }}</span
       >
     </div>
     <div class="mb-1 font-semibold text-SM">
-      {{ props.bedData.patient.name }}
+      {{ props.bedData.patient?.name }}
     </div>
     <div class="flex">
       <CustomChip

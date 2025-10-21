@@ -35,7 +35,7 @@ const fetchOrganisasiData = async () => {
     );
 
     if (response && response.payload) {
-      organisasiProperties.value.total = response.properties.total;
+      organisasiProperties.value.total = Number(response.properties.totalItem);
       organisasiPayload.value = response.payload;
     } else {
       organisasiPayload.value = [];
@@ -91,7 +91,7 @@ const dialogConfig = ref<any>({
   data: null,
 });
 
-const openDialog = (method: string, title: string, data: any = null) => {
+const openDialog = async (method: string, title: string, data: any = null) => {
   dialogConfig.value = { method, title, data };
   isTambahDataDialogVisible.value = true;
 };
@@ -161,13 +161,13 @@ const downloadExportExcel = async () => {
         Phone: rows[i].phone,
         Email: rows[i].email,
         Url: rows[i].url,
-        Provinsi: rows[i].kelurahan.Kecamatan.Kabupaten.Province.name ?? "-",
-        Kabupaten: rows[i].kelurahan.Kecamatan.Kabupaten.name ?? "-",
-        Kecamatan: rows[i].kelurahan.Kecamatan.name ?? "-",
-        Kelurahan: rows[i].kelurahan.name ?? "-",
-        KodePos: rows[i].kodePos ?? "-",
-        Alamat: rows[i].alamat ?? "-",
-        PartOf: rows[i].PartOf ?? "-",
+        Provinsi: rows[i].province ?? "-",
+        Kabupaten: rows[i].city ?? "-",
+        Kecamatan: rows[i].district ?? "-",
+        Kelurahan: rows[i].village ?? "-",
+        KodePos: rows[i].postalCode ?? "-",
+        Alamat: rows[i].fullAddress ?? "-",
+        PartOf: rows[i].partOf ?? "-",
         PartOfName: rows[i].partOfName ?? "-",
         IDSatusehat: rows[i].satuSehatId ?? "-",
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
@@ -189,7 +189,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -197,7 +197,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -250,25 +250,29 @@ const downloadFormatExcel = async () => {
     const data = [];
 
     // Header Row
-  data.push({
-    No: "No",
+    data.push({
+      No: "No",
+      IHS: "IHS Number*",
       Kode: "Kode Organisasi*",
       Nama: "Nama Organisasi*",
       Phone: "No. Telepon*",
       Email: "Email*",
       Url: "URL*",
-      Provinsi: "Provinsi",
-      Kabupaten: "Kab/Kota",
-      Kecamatan: "Kecamatan",
-      Kelurahan: "Kelurahan/Desa",
+      Provinsi: "Provinsi*",
+      Kabupaten: "Kab/Kota*",
+      Kecamatan: "Kecamatan*",
+      Kelurahan: "Kelurahan/Desa*",
       KodePos: "Kode Pos*",
       Alamat: "Alamat*",
-      PartOf: "Part Of*",
+      PartOf: "Part Of Name",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    
-      data.push({ No: "1", Kode: "DLB-005",
+
+    data.push({
+      No: "1",
+      IHS: "123-dhbfjhegj",
+      Kode: "DLB-005",
       Nama: "Departemen Laboratorium",
       Phone: "(032) 888 987",
       Email: "dept.lab@gmail.com",
@@ -279,15 +283,15 @@ const downloadFormatExcel = async () => {
       Kelurahan: "Keputih",
       KodePos: "62271",
       Alamat: "Sukolilo regency park 01",
-      PartOf: "-", });
-
+      PartOf: "",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -295,14 +299,17 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
 
-  
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Organisasi");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Organisasi"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Organisasi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -341,7 +348,7 @@ const handleFileUpload = async (file: File) => {
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
-      v-else
+        v-else
         :value="organisasiPayload"
         tableStyle="min-width: 50rem"
         class="text-xs"
@@ -364,7 +371,8 @@ const handleFileUpload = async (file: File) => {
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{
-                (organisasiProperties.page - 1) * organisasiProperties.page_size +
+                (organisasiProperties.page - 1) *
+                  organisasiProperties.page_size +
                 slotProps.index +
                 1
               }}

@@ -12,7 +12,7 @@ export const useReportCloseCashierStore = defineStore({
       startDate: number = 0,
       endDate: number = 0,
       type: string = "",
-     
+    
       payload = {}
     ) {
       return apiPembayaranGet(

@@ -18,8 +18,20 @@ const sidebarBodyList = ref<SidebarBody[]>([
       {
         name: "Transaksi",
         icon: "PayMoneyIcon",
-        type: linkType.LINK,
-        url: "/pembayaran/transaksi",
+        type: linkType.DROPDOWN,
+        // url: "/pembayaran/transaksi",
+        child:[
+          {
+            name: "Pelayanan",
+            type: linkType.LINK,
+            url: "/pembayaran/transaksi/Pelayanan",
+          },
+          {
+            name: "APS & OTC",
+            type: linkType.LINK,
+            url: "/pembayaran/transaksi/APSOTC",
+          },
+        ],
       },
       {
         name: "Closed Bill",

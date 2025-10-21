@@ -1,16 +1,17 @@
 <script lang="ts" setup>
+import { onMounted, computed, nextTick, watchEffect, ref, watch } from "vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/yup";
+import * as yup from "yup";
+import { useSupplierStore } from "@/stores/inventory/supplier";
+import { useDistrictStore } from "@/stores/datamaster/district";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import CustomMultiSelect from "@/components/Base/CustomMultiSelect.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { computed, ref, watch } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/yup";
-import * as yup from "yup";
-import { useDistrictStore } from "@/stores/datamaster/district";
-import { onMounted } from "vue";
+import CustomChip from "@/components/Base/CustomChip.vue";
 
 const props = defineProps({
   isDialogVisible: {
@@ -19,76 +20,60 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: "",
+  },
+  method: {
+    type: String,
+  },
+  payload: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
-const dialogTambahSupplier = ref({
-  isVisible: false,
-  title: "Tambah Data Supplier",
-});
-const emit = defineEmits(["update:isDialogVisible", "submitSupplierData"]);
-
-function updateVisibility(value: boolean) {
-  emit("update:isDialogVisible", value);
-}
+const kategoriItem = ref([
+  { name: "Medis", value: "medis" },
+  { name: "Non-Medis", value: "non-medis" },
+]);
 
 const schema = computed(() =>
   toTypedSchema(
     yup.object({
-      code: yup.string().required("Code Harus Diisi"),
-      name: yup.string().required("Nama Haruus Diisi"),
-      selectedProvinceId: yup.string().notRequired(),
-      selectedRegencyId: yup.string().notRequired(),
-      selectedDistrictId: yup.string().notRequired(),
-      selectedVillageId:yup.string().notRequired(),
-      alamat: yup.string().required("Alamat Harus Diisi"),
-      noTelpon: yup.string().required("Phone Harus Diisi"),
-      kategoriItemSelected: yup
-        .array()
-        .of(yup.string().required("Poli harus dipilih"))
-        .min(1, "Harus dipilih")
-        .required("Unit Pelayanan harus dipilih"),
-      status: yup.bool(),
-    })
+      code: yup.string().required("Kode Supplier harus diisi"),
+      name: yup.string().required("Nama Supplier harus diisi"),
+      provinsiCode: yup.string().notRequired(),
+      kabupatenCode: yup.string().notRequired(),
+      kecamatanCode: yup.string().notRequired(),
+      kelurahanCode: yup.string().notRequired(),
+      alamat: yup.string().required("Alamat harus diisi"),
+      noTlp: yup.string().required("No. Telepon harus diisi"),
+      kategori: yup.array().min(1, "Minimal 1 kategori item harus dipilih").required("Kategori Item harus dipilih"),
+      status: yup.bool().default(true),
+    }).noUnknown()
   )
 );
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+
+const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
   validationSchema: schema,
-  initialValues: {
-    code: "",
-    name: "",
-    selectedProvinceId: "",
-    selectedRegencyId: "",
-    selectedDistrictId: "",
-    selectedVillageId:"",
-    alamat: "",
-    noTelpon: "",
-    status: false,
-  },
 });
+
 const [code] = defineField("code");
 const [name] = defineField("name");
-const [selectedProvinceId] = defineField("selectedProvinceId");
-const [selectedRegencyId] = defineField("selectedRegencyId");
-const [selectedDistrictId] = defineField("selectedDistrictId");
-const [selectedVillageId] = defineField("selectedVillageId");
+const [provinsiCode] = defineField("provinsiCode");
+const [kabupatenCode] = defineField("kabupatenCode");
+const [kecamatanCode] = defineField("kecamatanCode");
+const [kelurahanCode] = defineField("kelurahanCode");
 const [alamat] = defineField("alamat");
-const [noTelpon] = defineField("noTelpon");
-const [kategoriItemSelected] = defineField("kategoriItemSelected");
+const [noTlp] = defineField("noTlp");
+const [kategori] = defineField("kategori");
 const [status] = defineField("status");
 
+// State Management
 const districtStore = useDistrictStore();
-
 const provinsiPayload = ref<any[]>([]);
 const kabupatenPayload = ref<any[]>([]);
 const kecamatanPayload = ref<any[]>([]);
 const kelurahanPayload = ref<any[]>([]);
-
-const kategoriItem = ref([
-  { id: 1, name: "Medis" },
-  { id: 2, name: "Non-Medis" },
-]);
+const isUpdating = ref(false); // mencegah duplikasi request API
 
 // Fetch Provinsi
 const fetchProvinsi = async () => {
@@ -105,7 +90,7 @@ const fetchProvinsi = async () => {
   }
 };
 
-// Fetch Kabupaten berdasarkan Provinsi terpilih
+// Fetch Kabupaten
 const fetchKabupaten = async (provinsiId: string) => {
   try {
     const response = await districtStore.getKabupatenApi(provinsiId); // Berikan ID provinsi sebagai parameter
@@ -150,143 +135,271 @@ const fetchKelurahan = async (kecamatanId: string) => {
   }
 };
 
-watch(
-  () => [
-    selectedProvinceId.value,
-    selectedRegencyId.value,
-    selectedDistrictId.value,
-  ],
-  ([newProvinceId, newRegencyId, newDistrictId]) => {
-    if (newProvinceId) fetchKabupaten(newProvinceId);
-    if (newRegencyId) fetchKecamatan(newRegencyId);
-    if (newDistrictId) {
-      fetchKelurahan(newDistrictId);
-      // fetchPostalCode(newRegencyId || '', newDistrictId);
+const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
+
+const SupplierStore = useSupplierStore();
+
+const onSubmit = handleSubmit(async (values: any) => {  
+  try {
+    const newPayload = {
+      name: values.name,
+      code: values.code,
+      provinsi_code: values.provinsiCode,
+      kabupaten_code: values.kabupatenCode,
+      kelurahan_code: values.kelurahanCode,
+      kecamatan_code: values.kecamatanCode,
+      alamat: values.alamat,
+      no_tlp: values.noTlp,
+      supplier_items: values.kategori.map((kategori: string) => ({
+        kategori_item: kategori
+      })),
+      status: values.status
+    }    
+    
+    if (method.value === "edit") {
+      if (!props.payload || !props.payload.uuid) {
+        throw new Error("UUID is missing for edit operation");
+      }
+      const uuid = props.payload.uuid;
+      const response = await SupplierStore.putApi(uuid, newPayload);
+      emit("data-updated");
+    } else if (method.value === "add") {
+      const response = await SupplierStore.postApi(newPayload);
+      emit("data-updated");
     }
+    closeDialog();
+  } catch (error) {
+    console.error("Failed to process the data:", error);
   }
-);
-onMounted(() => {
-  fetchProvinsi();
 });
 
-const onSubmit = handleSubmit((values: any) => {
-  // console.log(values);
-  emit("submitSupplierData", values);
-  closeDialog();
-});
+const method = ref(props.method);
+const title = ref(props.title);
+
+const updateVisibility = (value: any) => {
+  emit("update:isDialogVisible", value);
+};
+
+const resetDialogMode = () => {
+  method.value = props.method;
+  title.value = props.title;
+};
 
 const closeDialog = () => {
   emit("update:isDialogVisible", false);
+  resetDialogMode();
   resetForm();
 };
+
+const handleEdit = () => {
+  method.value = "edit";
+  title.value = "Edit Data";
+};
+
+// Watcher Provinsi
+watch(provinsiCode, async (newProvinsi) => {
+  if (isUpdating.value) return; // Hindari trigger watcher saat edit
+
+  if (newProvinsi) {
+    kabupatenCode.value = ""; // Reset kabupaten
+    kecamatanCode.value = ""; 
+    kelurahanCode.value = ""; 
+    kelurahanPayload.value = [];
+
+    await fetchKabupaten(newProvinsi);
+  }
+});
+
+// Watcher Kabupaten
+watch(kabupatenCode, async (newKabupaten) => {
+  if (isUpdating.value) return; 
+
+  if (newKabupaten) {
+    kecamatanCode.value = ""; 
+    kelurahanCode.value = ""; 
+    kelurahanPayload.value = [];
+
+    await fetchKecamatan(newKabupaten);
+  }
+});
+
+// Watcher Kecamatan
+watch(kecamatanCode, async (newKecamatan) => {
+  if (isUpdating.value) return;
+
+  if (newKecamatan) {
+    kelurahanCode.value = "";
+    await fetchKelurahan(newKecamatan);
+  }
+});
+
+// Watcher untuk Dialog (Edit)
+watchEffect(async () => {
+  if (props.isDialogVisible) {
+    isUpdating.value = true; 
+
+    resetDialogMode();
+
+    if (props.method !== "add" && props.payload) {
+      const selectedKategoriItem = props.payload.supplierItems?.map(
+        (item: any) => 
+          item.kategoriItem        
+      ) || [];
+
+      setValues({ 
+        ...props.payload,
+        kategori: selectedKategoriItem
+      });
+
+      
+      await nextTick(); // Tunggu Vue menyelesaikan update sebelum lanjut
+
+      // Atur kode wilayah tanpa memicu watcher
+      provinsiCode.value = props.payload.provinsiCode || "";
+      kabupatenCode.value = props.payload.kabupatenCode || "";
+      kecamatanCode.value = props.payload.kecamatanCode || "";
+      kelurahanCode.value = props.payload.kelurahanCode || "";
+
+      // Setelah semua nilai di-set, baru panggil API
+      if (provinsiCode.value) await fetchKabupaten(provinsiCode.value);
+      if (kabupatenCode.value) await fetchKecamatan(kabupatenCode.value);
+      if (kecamatanCode.value) await fetchKelurahan(kecamatanCode.value);
+    }
+
+    isUpdating.value = false; // Matikan flag setelah update selesai
+  } else {
+    resetForm();
+    resetDialogMode();
+  }
+});
+
+onMounted(() => {
+  fetchProvinsi();
+});
 </script>
 
 <template>
-  <CustomDialog
-    width="1000px"
-    :visible="isDialogVisible"
-    headerBg="bg-adameds-300"
-    @update:visible="updateVisibility"
-  >
-    <template #header>{{ title }}</template>
+  <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="750px">
+    <template #header>
+      <div v-if="method !== 'detail'" class="grid grid-cols-1">
+        <p>Tambah Data Supplier</p>
+      </div>
+      <div v-if="method === 'detail'" class="grid grid-cols-1">
+        <p>Detail Data Supplier</p>
+      </div>
+    </template>
     <template #body>
-      <div class="flex flex-col gap-2.5 py-5">
-        <div class="flex gap-7">
-          <CustomTextfield
-            label="Kode Supplier"
-            placeholder="Kode Supplier"
-            class="w-[150px]"
-            v-model="code"
-            :invalid="!!errors.code"
-            :invalidMessage="errors.code"
-          />
-          <CustomTextfield
-            label="Nama Supplier"
-            placeholder="Kode Supplier"
-            class="grow"
-            v-model="name"
-            :invalid="!!errors.name"
-            :invalidMessage="errors.name"
-          />
+      <div v-if="method !== 'detail'">
+        <div class="grid grid-cols-[25%,75%]">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Kode Supplier"
+              placeholder="Kode Supplier"
+              class="mr-2"
+              v-model="code"
+              :invalid="!!errors.code"
+              :invalidMessage="errors.code"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Nama Supplier"
+              placeholder="Kode Supplier"
+              class="ml-2"
+              v-model="name"
+              :invalid="!!errors.name"
+              :invalidMessage="errors.name"
+            />
+          </div>
         </div>
-        <div class="grid grid-cols-4 gap-7">
-          <CustomSelect
-            label="Provinsi"
-            placeHolder="Pilih Provinsi"
-            v-model="selectedProvinceId"
-            :options="provinsiPayload"
-            optionValue="code"
-            optionLabel="name"
-            :isLoading="false"
-            :invalid="!!errors.selectedProvinceId"
-            :invalidMessage="errors.selectedProvinceId"
-          />
-          <CustomSelect
-            label="Kabupaten"
-            placeHolder="Pilih Kabupaten"
-            v-model="selectedRegencyId"
-            :options="kabupatenPayload"
-            optionValue="code"
-            optionLabel="name"
-            :isLoading="false"
-            :invalid="!!errors.selectedRegencyId"
-            :invalidMessage="errors.selectedRegencyId"
-            :disabled="false"
-          />
-          <CustomSelect
-            label="Kecamatan"
-            placeHolder="Pilih Kecamtan"
-            v-model="selectedDistrictId"
-            :options="kecamatanPayload"
-            optionValue="code"
-            optionLabel="name"
-            :isLoading="false"
-            :invalid="!!errors.selectedDistrictId"
-            :invalidMessage="errors.selectedDistrictId"
-            :disabled="false"
-          />
-          <CustomTextfield
-            label="Kelurahan"
-            placeholder="Kelurahan"
-            class="grow"
-            v-model="selectedVillageId"
-            :invalid="!!errors.selectedVillageId"
-            :invalidMessage="errors.selectedVillageId"
-          />
+        <div class="grid grid-cols-4 gap-4">
+          <div class="mt-[20px]">
+            <CustomSelect
+              label="Provinsi"
+              placeHolder="Pilih Provinsi"
+              v-model="provinsiCode"
+              :options="provinsiPayload"
+              optionValue="code"
+              optionLabel="name"
+              :invalid="!!errors.provinsiCode"
+              :invalidMessage="errors.provinsiCode"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomSelect
+              label="Kabupaten"
+              placeHolder="Pilih Kabupaten"
+              v-model="kabupatenCode"
+              :options="kabupatenPayload"
+              optionValue="code"
+              optionLabel="name"
+              :invalid="!!errors.kabupatenCode"
+              :invalidMessage="errors.kabupatenCode"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomSelect
+              label="Kecamatan"
+              placeHolder="Pilih Kecamatan"
+              v-model="kecamatanCode"
+              :options="kecamatanPayload"
+              optionValue="code"
+              optionLabel="name"
+              :invalid="!!errors.kecamatanCode"
+              :invalidMessage="errors.kecamatanCode"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomSelect
+              label="Kelurahan"
+              placeHolder="Pilih Kelurahan"
+              v-model="kelurahanCode"
+              :options="kelurahanPayload"
+              optionValue="code"
+              optionLabel="name"
+              :invalid="!!errors.kelurahanCode"
+              :invalidMessage="errors.kelurahanCode"
+            />
+          </div>
         </div>
-        <div>
-          <CustomTextfield
-            label="Alamat"
-            placeholder="Alamat"
-            class="grow"
-            v-model="alamat"
-            :invalid="!!errors.alamat"
-            :invalidMessage="errors.alamat"
-          />
+        <div class="grid grid-cols-1">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Alamat"
+              placeholder="Alamat"
+              v-model="alamat"
+              :invalid="!!errors.alamat"
+              :invalidMessage="errors.alamat"
+            />
+          </div>
         </div>
-        <div class="flex gap-7">
-          <CustomTextfield
-            label="No. Telepon"
-            placeholder="0123456789"
-            class="w-[200px]"
-            v-model="noTelpon"
-            :invalid="!!errors.noTelpon"
-            :invalidMessage="errors.noTelpon"
-          />
-          <CustomMultiSelect
-            class="grow"
-            label="Kategori Item TOD"
-            :options="kategoriItem"
-            placeholder="Pilih Kategori Item"
-            v-model:modelValue="kategoriItemSelected"
-            optionValue="id"
-            optionLabel="name"
-            :invalid="!!errors.kategoriItemSelected"
-            :invalidMessage="errors.kategoriItemSelected"
-          />
+        <div class="grid grid-cols-[25%,75%]">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="No. Telepon"
+              placeholder="0812-XXXX-XXXX"
+              class="mr-2"
+              v-model="noTlp"
+              :invalid="!!errors.noTlp"
+              :invalidMessage="errors.noTlp"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomMultiSelect
+              class="ml-2"
+              label="Kategori Item"
+              v-model="kategori"
+              :options="kategoriItem"
+              placeholder="Pilih Kategori Item"
+              optionValue="value"
+              optionLabel="name"
+              :invalid="!!errors.kategori"
+              :invalidMessage="errors.kategori"
+            />
+          </div>
         </div>
-        <hr class="my-2.5 border-grey-200" />
-        <div>
+        <hr class="mt-[20px] border-grey-200" />
+        <div class="mt-[10px]">
           <CustomSwitch
             label="Status"
             v-model="status"
@@ -295,19 +408,122 @@ const closeDialog = () => {
           />
         </div>
       </div>
+      <div v-if="method === 'detail'">
+        <div class="grid grid-cols-[25%,75%]">
+          <!-- Kode Supplier -->
+          <div>
+            <p class="mt-[10px] font-bold">Kode Supplier</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.code }}</p>
+          </div>
+          <!-- Nama Supplier -->
+          <div>
+            <p class="mt-[10px] font-bold">Nama Supplier</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.name }}</p>
+          </div>
+          <!-- Provinsi -->
+          <div>
+            <p class="mt-[10px] font-bold">Provinsi</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.province.name }}</p>
+          </div>
+          <!-- Kabupaten -->
+          <div>
+            <p class="mt-[10px] font-bold">Kabupaten</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.kabupaten.name }}</p>
+          </div>
+          <!-- Kecamatan -->
+          <div>
+            <p class="mt-[10px] font-bold">Kecamatan</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.kecamatan.name }}</p>
+          </div>
+          <!-- Kelurahan -->
+          <div>
+            <p class="mt-[10px] font-bold">Kelurahan</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.kelurahan.name }}</p>
+          </div>
+          <!-- Alamat -->
+          <div>
+            <p class="mt-[10px] font-bold">Alamat</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.alamat }}</p>
+          </div>
+          <!-- No. Telepon -->
+          <div>
+            <p class="mt-[10px] font-bold">No. Telepon</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.noTlp }}</p>
+          </div>
+          <!-- No. Telepon -->
+          <div>
+            <p class="mt-[10px] font-bold">Kategori Item</p>
+          </div>
+          <div class="flex mt-[10px]">
+            :
+            <div class="ml-[5px]" v-for="items in payload.supplierItems" :key="items">
+              <CustomChip
+                :label="items.kategoriItem"
+                :showCheckedIcon="false"
+                borderColor="border-adameds-300"
+                bgColor="bg-adameds-300"
+                textColor="text-white"
+                customClass="h-6"
+              />
+            </div>
+          </div>
+        </div>
+        <hr class="mt-[20px] border border-slate-300" />
+        <div class="grid grid-cols-1">
+          <div class="flex">
+            <p class="mt-[20px] font-bold">
+              Status <span class="font-normal ml-[120px]">:</span>
+            </p>
+            <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex"
+              class="mt-[23px] ml-[5px]"
+            />
+          </div>
+        </div>
+      </div>
     </template>
     <template #footer>
       <div class="w-full">
         <div class="mt-5 flex justify-end gap-2.5">
           <CustomButton
+            v-if="method !== 'detail'"
             label="Reset"
-            borderColor="border-2 border-[#9DA4B1]"
-            background-color="bg-transparent"
-            text-color="text-grey-300"
-            
+            textColor="text-grey-300"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-grey-200"
             @click="resetForm"
           />
-          <CustomButton label="Simpan" @click="onSubmit" />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
         </div>
       </div>
     </template>

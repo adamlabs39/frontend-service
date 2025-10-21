@@ -48,7 +48,7 @@ const schema = computed(() =>
         phone: yup
           .string()
           .required("No. Handphone harus diisi")
-          .matches(phoneRegExp, "Format tidak sesuai"),
+          .matches(/^(\+62|62|0)8[1-9][0-9]{6,9}$/, "Format tidak sesuai"),
         email: yup
           .string()
           .required("Email harus diisi")
@@ -113,10 +113,10 @@ const fetchRole = async () => {
   }
 };
 
-onMounted(() => {
-  fetchPraktisi();
-  fetchRole();
-  handleChangeRole();
+onMounted(async () => {
+  await fetchPraktisi();
+  // await fetchRole();
+  // handleChangeRole();
 });
 
 const initialPermissionsState = ref(
@@ -166,7 +166,7 @@ const setRolePermissions = (rolePermissions: Module[]) => {
       subModule.checked = true;
 
       subModule.features.forEach((feature) => {
-        const matchingFeature = matchingSubModule.features.find(
+        const matchingFeature = matchingSubModule.features?.find(
           (roleFeat) => roleFeat.name === feature.name
         );
 
@@ -392,14 +392,17 @@ const onSubmit = handleSubmit(async (values: any) => {
 });
 
 onBeforeMount(async () => {
+  await fetchRole();
   if (props.method === "edit" && props.payload) {
     setValues({
       ...props.payload,
       practitionerUuid: props.payload.practitioner.uuid,
       roleUuid: props.payload.role.uuid,
     });
-    handleChangeRole();
-    // setRolePermissions(props.payload.permissions);
+    selectedRole.value = rolePayload.value.find(
+      (role) => role.uuid === roleUuid.value
+    );
+    setRolePermissions(props.payload.permissions);
   }
 });
 </script>

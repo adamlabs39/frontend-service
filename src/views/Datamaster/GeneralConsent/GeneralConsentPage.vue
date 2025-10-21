@@ -52,7 +52,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchGeneralConsentData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -77,7 +77,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  openDialog("detail", "Detail Data", selectedData.value);
+  openDialog("detail", "Detail Data General Consent", selectedData.value);
 };
 
 // Dialog Management
@@ -126,7 +126,7 @@ const confirmDelete = async (item: any) => {
       <HeaderFilter
         page-type="general"
         @update:valueSearch="searchQuery = $event"
-        @tambah-data="openDialog('add', 'Tambah Data')"
+        @tambah-data="openDialog('add', 'Tambah Data General Consent')"
         @reload-data="fetchGeneralConsentData()"
       />
     </template>
@@ -151,14 +151,15 @@ const confirmDelete = async (item: any) => {
           rowStripedBackground: '#F8F8F8',
         }"
       >
-      <Column headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full font-semibold text-center">No.</div>
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{
-                (generalConsentProperties.page - 1) * generalConsentProperties.page_size +
+                (generalConsentProperties.page - 1) *
+                  generalConsentProperties.page_size +
                 slotProps.index +
                 1
               }}
@@ -209,7 +210,13 @@ const confirmDelete = async (item: any) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data', slotProps.data)"
+                @click="
+                  openDialog(
+                    'edit',
+                    'Edit Data General Consent',
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -218,7 +225,11 @@ const confirmDelete = async (item: any) => {
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
                 @click="
-                  deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)
+                  deleteDialog(
+                    'delete',
+                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
                 "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />

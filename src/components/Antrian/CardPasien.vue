@@ -1,11 +1,15 @@
 <script lang="ts" setup>
-import BPJSIcon from '../icons/BPJSIcon.vue';
-import PlusIcon from '../icons/PlusIcon.vue';
+import BPJSIcon from "../icons/BPJSIcon.vue";
+import PlusIcon from "../icons/PlusIcon.vue";
 
 const props = defineProps({
   cardPasien: {
-    type: Object as () => { keterangan: string},
-    default: () => ({ keterangan: '' }),
+    type: Object as () => { keterangan: string },
+    default: () => ({ keterangan: "" }),
+  },
+  showPillIcon: {
+    type: Boolean,
+    default: false,
   },
 });
 </script>
@@ -28,13 +32,23 @@ const props = defineProps({
             alt=""
             class="w-[60px] h-[60px]"
           /> -->
-          <BPJSIcon class="text-white" :size="50" v-if="cardPasien.keterangan === 'Pasien JKN'"/>
-          <PlusIcon class="text-white" :size="50" v-if="cardPasien.keterangan === 'Pasien Non-JKN'"/>
+
+          <PillFillIcon class="text-white" v-if="showPillIcon" :size="50" />
+          <div v-else>
+            <BPJSIcon
+              class="text-white"
+              :size="50"
+              v-if="cardPasien.keterangan === 'Pasien JKN'"
+            />
+            <PlusIcon
+              class="text-white"
+              :size="50"
+              v-if="cardPasien.keterangan === 'Pasien Non-JKN'"
+            />
+          </div>
         </div>
         <div class="items-center justify-center my-auto ml-5">
-          <div
-            class="font-extrabold text-[22px] text-adameds-300"
-          >
+          <div class="font-extrabold text-[22px] text-adameds-300">
             {{ cardPasien.keterangan }}
           </div>
         </div>

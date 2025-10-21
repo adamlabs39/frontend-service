@@ -166,7 +166,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -174,7 +174,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
@@ -231,23 +231,48 @@ const downloadFormatExcel = async () => {
     const data = [];
 
     // Header Row
-  data.push({
-      No: "No",
-      Code: "Kode Diagnosis*",
-      Name: "Nama Diagnosis (ICD-10)*",
+    data.push({
+      Category: "Category",
+      Subcategory: "Subcategory",
+      EnglishName: "English Name",
+      IndonesianName: "Indonesian Name",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    
-      data.push({ No: "1", Code: "DIAG-001", Name: "Diagnosis 1" });
 
+    data.push({
+      Category: "A00",
+      Subcategory: "",
+      EnglishName: "Cholera",
+      IndonesianName: "Kolera",
+    });
+    data.push({
+      Category: "A00",
+      Subcategory: "0",
+      EnglishName: "Cholera due to Vibrio cholerae 01, biovar cholerae",
+      IndonesianName:
+        "Kolera yang disebabkan oleh Vibrio cholerae 01, biovar cholerae",
+    });
+    data.push({
+      Category: "A00",
+      Subcategory: "1",
+      EnglishName: "Cholera due to Vibrio cholerae 01, biovar el tor",
+      IndonesianName:
+        "Kolera yang disebabkan oleh Vibrio cholerae 01, biovar el tor",
+    });
+    data.push({
+      Category: "A00",
+      Subcategory: "9",
+      EnglishName: "Cholera, unspecified",
+      IndonesianName: "Kolera, tidak terspesifikasi",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -255,14 +280,17 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
 
-  
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Diagnosis");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Diagnosis"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Diagnosis (ICD-10).xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -325,7 +353,11 @@ const handleFileUpload = async (file: File) => {
           </template>
           <template #body="slotProps">
             <div class="flex items-center justify-center">
-              {{ (diagnosisProperties.page - 1) * diagnosisProperties.page_size + slotProps.index + 1 }}
+              {{
+                (diagnosisProperties.page - 1) * diagnosisProperties.page_size +
+                slotProps.index +
+                1
+              }}
             </div>
           </template>
         </Column>
@@ -339,7 +371,15 @@ const handleFileUpload = async (file: File) => {
           header="Nama Diagnosis"
           class="w-1/2"
           headerClass="bg-adameds-50"
-        ></Column>
+        >
+          <template #body="{ data }">
+            <div v-for="(name, i) in data.name?.split('~')" :key="name + i">
+              <b v-if="i == 0">{{ name }}</b>
+              <span v-else>{{ name }}</span>
+            </div>
+            <!-- <span v-html="data.name.replace('~', '<br/>')"></span> -->
+          </template>
+        </Column>
         <Column field="status" headerClass="bg-adameds-50">
           <template #header>
             <div class="w-full font-semibold text-center text-SM">Status</div>

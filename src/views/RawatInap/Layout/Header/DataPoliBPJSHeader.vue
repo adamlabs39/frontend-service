@@ -32,7 +32,15 @@ const props = defineProps({
   },
 });
 
-const selectedTab = ref("");
+const praktisiProperties = ref({
+  page: 1,
+  page_size: 9999,
+  total: 0,
+});
+
+const searchDoctor = ref<string>("");
+
+const selectedTab = ref("2");
 // Emit for Search and Payment
 const emit = defineEmits([
   "selectedTab",
@@ -58,7 +66,13 @@ const praktisiPayload = ref<any[]>([]);
 const fetchPraktisiData = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
 
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
@@ -100,12 +114,16 @@ const onPaymentMethodSelect = (label: string) => {
 
 // const filters = [selectedFilterPoli, selectedPaymentMethod];
 const resetForm = () => {
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
   searchPatientFilter.value = "";
   searchDokterFilter.value = "";
   selectedPaymentMethod.value = [];
-  selectedTab.value = "";
+  selectedTab.value = "2";
 };
 
 defineExpose({
@@ -114,6 +132,12 @@ defineExpose({
 
 onMounted(() => {
   fetchPraktisiData();
+  let date = new Date(),
+    y = date.getFullYear(),
+    m = date.getMonth();
+
+  startDateFilter.value = new Date(y, m, 1);
+  endDateFilter.value = new Date(y, m + 1, 0);
 });
 </script>
 
@@ -220,12 +244,13 @@ onMounted(() => {
           "
         />
         <!-- disini -->
-        <div class="flex"  v-if="currentRouteName === 'ruangan'">
+        <div class="flex" v-if="currentRouteName === 'ruangan'">
           <CustomDatePicker
             v-model="startDateFilter"
             label="Tanggal"
             class="w-[200px]"
             @update:modelValue="$emit('update:valueStartDate', startDateFilter)"
+            :max-date="endDateFilter"
           />
           <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
           <CustomDatePicker
@@ -233,6 +258,7 @@ onMounted(() => {
             :showLabel="false"
             class="mt-auto w-[200px]"
             @update:modelValue="$emit('update:valueEndDate', endDateFilter)"
+            :min-date="startDateFilter"
           />
         </div>
         <CustomButton
@@ -258,44 +284,42 @@ onMounted(() => {
           label=""
           icon="PhListBullets"
           class="w-[60px]"
-          :text-color="selectedTab === '' ? 'text-white' : 'text-adameds-300'"
+          :text-color="selectedTab === '2' ? 'text-white' : 'text-adameds-300'"
           :border-color="
-            selectedTab === '' ? 'border-none' : 'border-adameds-300'
+            selectedTab === '2' ? 'border-none' : 'border-adameds-300'
           "
-          :class="selectedTab === '' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = ''))"
-          :outlined="selectedTab !== ''"
+          :class="selectedTab === '2' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '2'))"
+          :outlined="selectedTab !== '2'"
         />
         <!-- Filter = {{ props.filter }} -->
         <CustomButton
           label="DIRAWAT"
           class="grow"
-          :text-color="selectedTab === '3' ? 'text-white' : 'text-adameds-300'"
+          :text-color="selectedTab === '1' ? 'text-white' : 'text-adameds-300'"
           :border-color="
-            selectedTab === '3' ? 'border-none' : 'border-adameds-300'
+            selectedTab === '1' ? 'border-none' : 'border-adameds-300'
           "
-          :class="selectedTab === '3' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '3'))"
-          :outlined="selectedTab !== '3'"
+          :class="selectedTab === '1' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '1'))"
+          :outlined="selectedTab !== '1'"
         />
         <CustomButton
           label="DISCHARGE"
           class="grow"
-          :text-color="selectedTab === '4' ? 'text-white' : 'text-adameds-300'"
+          :text-color="selectedTab === '0' ? 'text-white' : 'text-adameds-300'"
           :border-color="
-            selectedTab === '4' ? 'border-none' : 'border-adameds-300'
+            selectedTab === '0' ? 'border-none' : 'border-adameds-300'
           "
-          :class="selectedTab === '4' ? 'bg-adameds-300' : 'bg-white'"
-          @click="$emit('selectedTab', (selectedTab = '4'))"
-          :outlined="selectedTab !== '4'"
+          :class="selectedTab === '0' ? 'bg-adameds-300' : 'bg-white'"
+          @click="$emit('selectedTab', (selectedTab = '0'))"
+          :outlined="selectedTab !== '0'"
         />
       </div>
 
       <div
         class="font-semibold text-SM text-grey-300"
-        v-if="
-          currentRouteName === 'ruangan' || 'perpindahan-bangsal'
-        "
+        v-if="currentRouteName === 'ruangan' || 'perpindahan-bangsal'"
       >
         <div
           class="font-semibold text-SM text-grey-300"

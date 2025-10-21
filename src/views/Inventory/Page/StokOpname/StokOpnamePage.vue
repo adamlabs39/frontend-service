@@ -1,259 +1,318 @@
 <script setup lang="ts">
-import { onBeforeRouteLeave, useRoute } from "vue-router";
-import HeaderStokOpname from "../../Layout/HeaderStokOpname.vue";
-import { onMounted, ref } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import type { MenuItem } from "primevue/menuitem";
-import NoData from "@/components/section/NoData.vue";
-import TambahStokOpname from "./TambahStokOpname.vue";
+import { useStokOpnameStore } from "@/stores/inventory/stokOpname";
+import { utilsStore } from "@/stores/utils";
+import { epochToDate } from "@/utils/Helpers";
+import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
-import DetailSelesaiSO from "./DetailSelesaiSO.vue";
-import DetailDraft from "./DetailDraft.vue";
+import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
+import CustomAccordion from "@/components/Base/CustomAccordion.vue";
+import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import CustomPaginator from "@/components/Base/CustomPaginator.vue";
+import NoData from "@/components/section/NoData.vue";
+import AddStokOpname from "./AddStokOpnamePage.vue";
+import DetailStokOpname from "./DetailStokOpnamePage.vue";
 
-const route = useRoute();
-
+// Title Label
 const pageType = ref("");
-const dataBreadCrumb = ref<MenuItem[]>([{}]);
-const dataStokOpname = ref<any[]>([]);
-const detailStokOpname = ref();
+const dataBreadCrumb = ref<MenuItem[]>([]);
 
-const updatePageType = (path: string) => {
-  dataBreadCrumb.value = [];
-  let tempArrPath = path.split("/");
-  pageType.value = tempArrPath[2] ?? "";
-  dataBreadCrumb.value = [
-    {
-      label: pageType.value == "stok-opname" ? "Stok Opname" : "",
-    },
-  ];
-  //   console.log(pageType.value);
-};
-
-const changeSection = (label: string, data: any = null) => {
-  dataBreadCrumb.value = [{ label }]; // Pastikan ini direset
-  if (data) {
-    detailStokOpname.value = data; // Simpan data detail
-  }
-};
-
-onBeforeRouteLeave((to, from) => {
-  updatePageType(to.path);
-});
-onMounted(() => {
-  updatePageType(route.path);
-});
-
-const handleSimpanDraft = (data: any) => {
-  if (dataStokOpname.value === null) {
-    dataStokOpname.value = [];
-  }
-  dataStokOpname.value.push(data);
-  dataBreadCrumb.value[0].label = "Stok Opname";
-};
-
-const handleSimpanAkhiriSO = (data: any) => {
-  if (dataStokOpname.value === null) {
-    dataStokOpname.value = [];
-  }
-  dataStokOpname.value.push(data);
-  dataBreadCrumb.value[0].label = "Stok Opname";
-};
-
-const handleRowClick = (rowData: any) => {
-  if (rowData.data.status === "SELESAI") {
-    changeSection("Detail Stok Selesai", rowData.data);
-  } else if (rowData.data.status === "DRAFT") {
-    changeSection("Detail Stok Draft", rowData.data);
-  }
-};
-
-const handleSimpanDraftdariDetail = () => {
-  dataBreadCrumb.value[0].label = "Stok Opname";
-}
-
-const handleSimpanAkhiriSOdariDetail = (data: any) => {
-  if (!dataStokOpname.value) {
-    dataStokOpname.value = [];
-  }
-
-  // Find the index of the item in dataStokOpname that matches the id or another unique property in `data`
-  const index = dataStokOpname.value.findIndex(item => item.id === data.id);
-  
-  if (index !== -1) {
-    // Update the status to 'SELESAI' for the found item
-    dataStokOpname.value[index].status = "SELESAI";
+const changeSection = (label: string) => {
+  if (dataBreadCrumb.value.length) {
+    dataBreadCrumb.value[0] = { label: label };
   } else {
-    // If the item is not found, push the data as a new entry with status SELESAI
-    dataStokOpname.value.push({ ...data, status: "SELESAI" });
+    dataBreadCrumb.value.push({ label: label });
   }
-
-  // Emit the event if needed, or just update the breadcrumb label
-  dataBreadCrumb.value[0].label = "Stok Opname";
 };
+
+// State Management
+const searchQuery = ref<string>("");
+const StokOpnameStore = useStokOpnameStore();
+const UseUtilsStore = utilsStore();
+const StokOpnamePayload = ref<any[]>([]);
+const StokOpnameProperties = ref({
+  page: 1,
+  page_size: 10,
+  total: 0,
+});
+
+// Check if Data Exists
+const hasData = computed(
+  () => StokOpnamePayload.value && StokOpnamePayload.value.length > 0
+);
+
+// Fetch Purchasing Of Supplier
+const fetchPurchasingOfSupplier = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await StokOpnameStore.getApi(
+      "0196a8ca-1fda-71ca-a133-7383413ef200",
+      StokOpnameProperties.value.page,
+      StokOpnameProperties.value.page_size
+    );
+
+    if (response && response.payload) {
+      StokOpnameProperties.value.total = response.properties.total;
+      StokOpnamePayload.value = response.payload;
+    } else {
+      StokOpnamePayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch data", error);
+    StokOpnamePayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+watch(searchQuery, (newValue) => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchPurchasingOfSupplier();
+  }, 500);
+});
+
+// Handle Pagination
+const handlePage = (event: any) => {
+  StokOpnameProperties.value.page = event.page + 1;
+  StokOpnameProperties.value.page_size = event.rows;
+  fetchPurchasingOfSupplier();
+};
+
+// Selected Row
+const metaKey = ref(true);
+const selectedData = ref();
+
+const onRowSelect = (event: any) => {
+  selectedData.value = event.data;
+  changeSection("Detail");
+};
+
+const closePurchaseOfSupplierPage = () => {
+  dataBreadCrumb.value.pop();
+  fetchPurchasingOfSupplier();
+};
+
+const closeEditPage = async () => {
+  dataBreadCrumb.value.pop();
+  dataBreadCrumb.value.pop();
+  await fetchPurchasingOfSupplier();
+};
+
+onMounted(() => {
+  fetchPurchasingOfSupplier();
+});
 </script>
 
 <template>
-  <!-- {{ dataStokOpname }} -->
-  <Card
-    v-if="dataBreadCrumb[0].label == 'Stok Opname'"
-    pt:body:class="h-full pt-0 overflow-auto"
-    pt:content:class="h-full overflow-auto"
-    class=""
-  >
-    <template #header>
-      <HeaderStokOpname
-        :data-bread-crumb="dataBreadCrumb"
-        :page-type="pageType"
-        @tambah-stok-opname="changeSection('Tambah Stok Opname')"
-      />
-    </template>
-    <template #content>
-      <DataTable
-        v-if="dataStokOpname && dataStokOpname.length"
-        @row-click="handleRowClick"
-        :value="dataStokOpname"
-        tableStyle="min-width: 50rem"
-        scrollable
-        scrollHeight="380px"
-        :pt="{ headerRow: 'text-SM' }"
-      >
-        <Column headerClass="bg-adameds-50">
+  <div>
+    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+      <template #header>
+        <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
-            <div class="font-semibold">Tgl. Cut Off</div>
-          </template>
-          <template #body="slotProps">
-            <div>
-              <div class="text-SM">{{ slotProps.data.tglCutOff }}</div>
-            </div>
-          </template>
-        </Column>
-        <Column headerClass="bg-adameds-50" class="w-[250px]">
-          <template #header>
-            <div class="font-semibold">No Stok Opname</div>
-          </template>
-          <template #body="slotProps">
-            <div>
-              <div class="text-SM">SO{{ slotProps.data.noStokOpname }}</div>
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.kategoriItem"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.jenisStok"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-              <CustomChip
-                :showCheckedIcon="false"
-                :label="slotProps.data.jenisItem"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                customClass="h-5 pr-[6px] border-none mr-[5px]"
-              />
-            </div>
-          </template>
-        </Column>
-
-        <Column headerClass="bg-adameds-50">
-          <template #header>
-            <div class="w-full font-semibold">Judul Stok Opname</div>
-          </template>
-          <template #body="slotProps">
-            <div>
-              <div class="font-bold text-SM">
-                {{ slotProps.data.judul }}
+            <div class="flex justify-between w-full align-middle">
+              <div class="flex">
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPurchasingOfSupplier"/>
+                <CustomBreadCrumb
+                  :home="{
+                    label: 'Stok Opname',
+                    home: true,
+                  }"
+                />
               </div>
+              <CustomButton
+                @click="changeSection('Tambah Stok Opname')"
+                icon="PhPlus"
+                label="Stok Opname"
+                class="mr-[10px]"
+              />
             </div>
           </template>
-        </Column>
-        <Column headerClass="bg-adameds-50">
-          <template #header>
-            <div class="w-full font-semibold">Petugas</div>
-          </template>
-          <template #body="slotProps">
-            <div class="font-semibold underline text-SM">
-              Petugas Stok Opname
-            </div>
-            <div class="font-normal text-normal">
-              {{ slotProps.data.petugasStokOpname }}
-            </div>
-            <div class="font-semibold underline text-SM">
-              Petugas Yang Merubah
-            </div>
-            <div class="font-normal text-normal">
-              {{ slotProps.data.petugasStokOpname }}
+          <template #content>
+            <div class="grid grid-cols-1 mt-[10px]">
+              <CustomTextfield
+                v-model="searchQuery"
+                label="Pencarian"
+                prependIcon="PhMagnifyingGlass"
+                placeholder="Cari No. Stok Opname / Nama Judul Stok Opname"
+              />
             </div>
           </template>
-        </Column>
-
-        <Column field="petugas" headerClass="bg-adameds-50">
-          <template #header>
-            <div class="font-semibold">Status</div>
-          </template>
-          <template #body="slotProps">
-            <CustomChip
-              :showCheckedIcon="false"
-              :label="slotProps.data.status"
-              :bgColor="
-                slotProps.data.status === 'SELESAI'
-                  ? 'bg-mint-75'
-                  : 'bg-warning-75'
-              "
-              :textColor="
-                slotProps.data.status === 'SELESAI'
-                  ? 'text-mint-400'
-                  : 'text-warning-300'
-              "
-              customClass="h-5 pr-[6px] border-none mr-[5px]"
+          <template #collapseIcon>
+            <CustomButton
+              icon="PhCaretUp"
+              backgroundColor="bg-adameds-75"
+              textColor="text-adameds-300"
             />
           </template>
-        </Column>
-      </DataTable>
-      <NoData v-else />
-    </template>
-    <template #footer>
-      <div class="flex justify-end">
-        <Paginator
-          :rows="10"
-          :totalRecords="120"
-          :rowsPerPageOptions="[10, 20, 30]"
-          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-          currentPageReportTemplate="{currentPage}"
+          <template #expandIcon>
+            <CustomButton
+              icon="PhCaretDown"
+              backgroundColor="bg-adameds-75"
+              textColor="text-adameds-300"
+            />
+          </template>
+        </CustomAccordion>
+      </template>
+      <template #content>
+        <NoData v-if="!hasData" />
+        <DataTable
+          v-else
+          :value="StokOpnamePayload"
+          v-model:selection="selectedData"
+          :metaKeySelection="metaKey"
+          @rowClick="onRowSelect"
+          stripedRows
+          class="text-xs"
+          scrollable
+          scrollHeight="flex"
+          :dt="{
+            rowSelectedColor: '#000000',
+            rowSelectedBackground: 'transparent',
+            bodyCellSelectedBorderColor: 'transparent',
+            bodyCellBorderColor: 'transparent',
+            rowStripedBackground: '#F8F8F8',
+          }"
         >
-          <template #start="slotProps">Total Data: 0</template>
-        </Paginator>
-      </div>
-    </template>
-  </Card>
-
-  <TambahStokOpname
-    v-else-if="dataBreadCrumb[0].label == 'Tambah Stok Opname'"
-    :pageType="pageType"
-    :dataBreadCrumb="dataBreadCrumb"
-    @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
-    @on-simpan-draft="handleSimpanDraft"
-    @on-simpan-akhiri-s-o="handleSimpanAkhiriSO"
-  />
-
-  <DetailSelesaiSO
-    :data-bread-crumb="dataBreadCrumb"
-    :page-type="pageType"
-    :detail-data="detailStokOpname"
-    v-else-if="dataBreadCrumb[0].label == 'Detail Stok Selesai'"
-    @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
-  />
-
-  <DetailDraft
-    :data-bread-crumb="dataBreadCrumb"
-    :page-type="pageType"
-    :detail-data="detailStokOpname"
-    v-else-if="dataBreadCrumb[0].label == 'Detail Stok Draft'"
-    @kembali="dataBreadCrumb[0].label = 'Stok Opname'"
-     @on-simpan-draft="handleSimpanDraftdariDetail"
-     @on-simpan-akhiri-s-o="handleSimpanAkhiriSOdariDetail"
-  />
+          <!-- Tgl. Cut Off -->
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="">Tgl. Cut Off</div>
+            </template>
+            <template #body="slotProps">
+              <div class="">
+                {{ epochToDate(slotProps.data.tanggalCutOff, "date") }}
+              </div>
+            </template>
+          </Column>
+          <!-- No. Stok Opname -->
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="">No. Stok Opname</div>
+            </template>
+            <template #body="slotProps">
+              <div class="mb-[5px]">{{ slotProps.data.noStokOpname }}</div>
+              <div class="flex flex-wrap">
+                <CustomChip
+                  v-if="slotProps.data.kategoriItem == 'medis'"
+                  label="MEDIS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                />
+                <CustomChip
+                  v-if="slotProps.data.kategoriItem == 'non-medis'"
+                  label="NON-MEDIS"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  class="ml-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItems == 'obat'"
+                  label="OBAT"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  class="ml-[5px]"
+                />
+                <CustomChip
+                  v-if="slotProps.data.jenisItems == 'alkes'"
+                  label="ALKES"
+                  :showCheckedIcon="false"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-300"
+                  textColor="text-white"
+                  class="ml-[5px]"
+                />
+              </div>
+            </template>
+          </Column>
+          <!-- Judul Stok Opname -->
+          <Column headerClass="bg-adameds-50 font-semibold text-SM">
+            <template #header>
+              <div class="">Judul Stok Opname</div>
+            </template>
+            <template #body="slotProps">
+              <div class="font-bold">{{ slotProps.data.judulStokOpname }}</div>
+            </template>
+          </Column>
+          <!-- Petugas -->
+          <Column headerClass="bg-adameds-50">
+            <template #header>
+              <div class="w-full font-semibold">Petugas</div>
+            </template>
+            <template #body="slotProps">
+              <div class="font-semibold underline text-SM">
+                Petugas Stok Opname
+              </div>
+              <div class="font-normal text-normal mb-[10px]">
+                {{ slotProps.data.petugasSo }}
+              </div>
+              <div class="font-semibold underline text-SM">
+                Petugas Yang Merubah
+              </div>
+              <div class="font-normal text-normal">
+                {{ slotProps.data.petugasPengubah }}
+              </div>
+            </template>
+          </Column>
+          <!-- Status -->
+          <Column field="status" headerClass="bg-adameds-50">
+            <template #header="">
+              <div class="w-full font-semibold text-center text-SM">Status</div>
+            </template>
+            <template #body="slotProps">
+              <div class="flex items-center justify-center">
+                <CustomChip
+                  v-if="slotProps.data.status == 'draft'"
+                  label="DRAFT"
+                  :showCheckedIcon="false"
+                  borderColor="border-warning-75"
+                  bgColor="bg-warning-75"
+                  textColor="text-warning-300"
+                />
+                <CustomChip
+                  v-if="slotProps.data.status == 'selesai'"
+                  label="SELESAI"
+                  :showCheckedIcon="false"
+                  borderColor="border-danger-300"
+                  bgColor="bg-danger-300"
+                  textColor="text-white"
+                />
+              </div>
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+      <template #footer>
+        <div class="flex justify-end">
+          <CustomPaginator
+            :rows="StokOpnameProperties.page_size"
+            :totalRecords="StokOpnameProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]"
+            @page="handlePage"
+          />
+        </div>
+      </template>
+    </Card>
+    <AddStokOpname
+      v-else-if="dataBreadCrumb[0].label == 'Tambah Stok Opname'"
+      :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType"
+      @back="closePurchaseOfSupplierPage"
+      @backEdit="closeEditPage"
+    />
+    <DetailStokOpname
+      v-else-if="dataBreadCrumb[0].label == 'Detail'"
+      :pageType="pageType"
+      :selectedData="selectedData"
+      @back="closePurchaseOfSupplierPage"
+    />
+  </div>
 </template>

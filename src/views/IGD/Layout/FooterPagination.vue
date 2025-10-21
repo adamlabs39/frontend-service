@@ -31,7 +31,8 @@ const emit = defineEmits([
   "update:valueCancle",
   "page",
   "update:cancleReason",
-  "update:cancleSelected"
+  "update:cancleSelected",
+  "export",
 ]);
 const cancleReason=ref<string>("")
 const handlePage = (event: any) => {
@@ -86,6 +87,7 @@ const handleCancleVisit=()=>{
       icon-type="fill"
       class="my-auto bg-adameds-300"
       label="Cetak"
+      @click="$emit('export')"
     />
     <CustomPaginator :rows="rows"
       :totalRecords="totalRecords"

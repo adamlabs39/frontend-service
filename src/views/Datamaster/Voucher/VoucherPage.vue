@@ -257,7 +257,7 @@ const downloadFormatExcel = async () => {
 
     // Add Empty Rows (4 empty rows to match the example)
     
-      data.push({ No: "1", Code: "VCR-001", Name: "Voucher Pegawai", Mulai:"26-02-2024", Berakhir:"26-03-2024", Jumlah:"10", Tipe:"persentase", Value:"30" });
+      data.push({ No: "1", Code: "VCR-001", Name: "Voucher Pegawai", Mulai:"2024-02-26", Berakhir:"2024-03-26", Jumlah:"10", Tipe:"persentase", Value:"30" });
 
 
     // Create Workbook and Worksheet

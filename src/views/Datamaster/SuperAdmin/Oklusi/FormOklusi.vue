@@ -31,13 +31,15 @@ const props = defineProps({
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    system: yup.string().required("Referensi Sistem harus diisi"),
-    code: yup.string().required("Kode SATUSEHAT harus diisi"),
-    display: yup.string().required("Display SATUSEHAT harus diisi"),
-    name: yup.string().required("Nama Kategori harus diisi"),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      system: yup.string().required("Referensi Sistem harus diisi"),
+      code: yup.string().required("Kode SATUSEHAT harus diisi"),
+      display: yup.string().required("Display SATUSEHAT harus diisi"),
+      name: yup.string().required("Nama Kategori harus diisi"),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -78,9 +80,9 @@ const onSubmit = handleSubmit(async (values: any) => {
 const method = ref(props.method);
 const title = ref(props.title);
 
-const updateVisibility= (value: any) => {
+const updateVisibility = (value: any) => {
   emit("update:isDialogVisible", value);
-}
+};
 
 const resetDialogMode = () => {
   method.value = props.method;
@@ -114,7 +116,6 @@ watch(
     }
   }
 );
-
 </script>
 
 <template>
@@ -162,14 +163,14 @@ watch(
         <!-- Divider -->
         <hr class="col-span-2 border-gray-200" />
         <!-- Status Switch -->
-        <CustomSwitch
+        <!-- <CustomSwitch
           v-model="status"
           :show-label="true"
           label="Status"
           sideLabel="NON-AKTIF"
           sideLabelTrue="AKTIF"
           class="col-span-2"
-        />
+        /> -->
       </div>
       <div v-else class="flex flex-col gap-5 mt-5">
         <CustomInfoRow label="Referensi Sistem SATUSEHAT" :value="system" />
@@ -177,18 +178,18 @@ watch(
         <CustomInfoRow label="Display SATUSEHAT" :value="display" />
         <CustomInfoRow label="Oklusi" :value="name" />
         <hr class="border-grey-200" />
-        <CustomInfoRow label="Status">
-            <template #value>
-              <CustomChip
+        <!-- <CustomInfoRow label="Status">
+          <template #value>
+            <CustomChip
               :label="status ? 'AKTIF' : 'NON-AKTIF'"
               :textColor="status ? 'text-white' : 'text-[#80868d]'"
               :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
               :borderColor="status ? 'border-none' : 'border-[#80868d]'"
               :icon-color="status ? 'white' : '#80868d'"
               customClass="text-xs font-semibold h-5 flex w-fit"
-            />              </template>
-        </CustomInfoRow>
-        
+            />
+          </template>
+        </CustomInfoRow> -->
       </div>
     </template>
 

@@ -111,26 +111,28 @@ const emit = defineEmits([
 
 const schemaProfilFaskes = computed(() =>
   toTypedSchema(
-    yup.object({
-      code: yup.string().required("Kode wajib diisi"),
-      name: yup.string().required("Nama Faskes wajib diisi"),
-      fullAddress: yup.string().required("Alamat wajib diisi"),
-      addressUuid: yup.string(),
-      lat:yup.string(),
-      long:yup.string(),
-      cover: yup.string(),
-      logo: yup.string(),
-      bgWarna: yup.string(),
-      selectedProvinceId: yup.string().required("Provinsi wajib dipilih"),
-      selectedRegencyId: yup.string().required("Kabupaten wajib dipilih"),
-      selectedDistrictId: yup.string().required("Kecamatan wajib dipilih"),
-      selectedVillageId: yup.string().required("Kelurahan wajib dipilih"),
-      postalCodeId: yup.string().required("Kode Pos wajib diisi"),
-      phone: yup.string().required("No Telpon wajib diisi"),
-      email: yup.string().required("Email wajib diisi"),
-      website: yup.string().required("Website wajib diisi"),
-      urlGmaps: yup.string().required("Link Google Maps wajib diisi"),
-    }).noUnknown()
+    yup
+      .object({
+        code: yup.string().required("Kode wajib diisi"),
+        name: yup.string().required("Nama Faskes wajib diisi"),
+        fullAddress: yup.string().required("Alamat wajib diisi"),
+        addressUuid: yup.string(),
+        lat: yup.string(),
+        long: yup.string(),
+        cover: yup.string(),
+        logo: yup.string(),
+        bgWarna: yup.string(),
+        selectedProvinceId: yup.string().required("Provinsi wajib dipilih"),
+        selectedRegencyId: yup.string().required("Kabupaten wajib dipilih"),
+        selectedDistrictId: yup.string().required("Kecamatan wajib dipilih"),
+        selectedVillageId: yup.string().required("Kelurahan wajib dipilih"),
+        postalCodeId: yup.string().required("Kode Pos wajib diisi"),
+        phone: yup.string().required("No Telpon wajib diisi"),
+        email: yup.string().required("Email wajib diisi"),
+        website: yup.string().required("Website wajib diisi"),
+        urlGmaps: yup.string().required("Link Google Maps wajib diisi"),
+      })
+      .noUnknown()
   )
 );
 
@@ -146,10 +148,10 @@ const {
     name: props.profilFaskesResponse.name,
     fullAddress: props.profilFaskesResponse.address.fullAddress || "",
     addressUuid: props.profilFaskesResponse.addressUuid,
-    lat:props.profilFaskesResponse.lat,
-    long:props.profilFaskesResponse.long,
+    lat: props.profilFaskesResponse.lat,
+    long: props.profilFaskesResponse.long,
     cover: "",
-    logo:"",
+    logo: "",
     bgWarna: "",
     selectedProvinceId: "",
     selectedRegencyId: "",
@@ -199,8 +201,8 @@ const resetForm = () => {
       website: "",
       urlGmaps: "",
       lat: "",
-      long:"",
-      cover: ""
+      long: "",
+      cover: "",
     },
   });
 };
@@ -227,7 +229,7 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
         (obj) => obj.code === values.selectedDistrictId
       )?.name,
       // FIXME : village is not in the payload
-      
+
       village: values.selectedVillageId,
 
       codeKabupaten: values.selectedRegencyId,
@@ -237,7 +239,7 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
       email: values.email,
       website: values.website,
       url_gmaps: values.urlGmaps,
-      lat:values.lat,
+      lat: values.lat,
       long: values.long,
     };
     const response = await settingStore.putProfilFaskesApi(payload);
@@ -249,12 +251,13 @@ const onSubmitProfilFaskes = handleSubmitProfilFaskes(async (values) => {
         ...props.profilFaskesResponse,
         ...payload,
       });
-      useUtilsStore.setLoading(false);
     } else {
       console.error("Failed to update profile:");
     }
   } catch (error) {
     console.error("Error during submission:", error);
+  } finally {
+    useUtilsStore.setLoading(false);
   }
 });
 
@@ -401,7 +404,10 @@ onMounted(() => {
           <CustomSelect
             label="Kelurahan"
             v-model="selectedVillageId"
-            :options="[{ code: '3578081002', name: 'Mojo' },...kelurahanPayload]"
+            :options="[
+              { code: '3578081002', name: 'Mojo' },
+              ...kelurahanPayload,
+            ]"
             optionValue="code"
             optionLabel="name"
             :isLoading="false"
@@ -486,9 +492,7 @@ onMounted(() => {
         </div>
         <div class="flex flex-col items-end justify-end w-full">
           <div class="flex flex-col justify-center w-full">
-            <div class="font-bold text-normal text-adameds-300">
-              Cover
-            </div>
+            <div class="font-bold text-normal text-adameds-300">Cover</div>
             <CustomDragDrop
               v-model="cover"
               :allowed-file-types="['image/png']"

@@ -32,6 +32,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const canvasOftalmologis = ref<HTMLCanvasElement | null>(null);
@@ -218,6 +222,7 @@ defineExpose({
           :method="method"
           type="skriningMata"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
+          :patientData="props.patientData"
         />
         <TemuanLainnya
           ref="temuanLainnya"
@@ -225,6 +230,7 @@ defineExpose({
           :method="method"
           type="temuanLainnya"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
+          :patientData="props.patientData"
         />
       </div>
     </template>

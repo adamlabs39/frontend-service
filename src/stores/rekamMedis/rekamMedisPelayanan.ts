@@ -13,6 +13,18 @@ export const useRekamMedisPelayananStore = defineStore({
     async getHistory(noRm = "", payload = {}) {
       return apiRekamMedisGet(`/pelayanan/history?no_rm=${noRm}`, payload);
     },
+    async getResumeMedis(
+      params: { rekamMedisUuid: string; pelayanan: string },
+      payload = {}
+    ) {
+      return apiRekamMedisGet(
+        `/pelayanan/resume?rekam_medis_uuid=${params.rekamMedisUuid}&pelayanan=${params.pelayanan}`,
+        payload
+      );
+    },
+    async putResumeMedis(payload = {}) {
+      return apiRekamMedisPut("/pelayanan/resume", payload);
+    },
 
     async getAllFiles(rekamMedisUuid = "", payload = {}) {
       return apiRekamMedisGet(
@@ -23,8 +35,17 @@ export const useRekamMedisPelayananStore = defineStore({
     async uploadFile(payload: {
       rekamMedisUuid: string;
       file: string;
-      fileType: string;
+      fileType:
+        | "surat_kontrol_rawat_jalan"
+        | "surat_permohonan_rawat_inap"
+        | "surat_keterangan_sakit"
+        | "surat_keterangan_sehat"
+        | "surat_rujuk_keluar_faskes"
+        | "surat_keterangan_meninggal"
+        | "resep_kacamata"
+        | "berkas";
       fileFormat: string;
+      namaFile: string;
       admissionType: string;
     }) {
       return apiRekamMedisPost(`/pelayanan/files`, payload);
@@ -37,6 +58,13 @@ export const useRekamMedisPelayananStore = defineStore({
         `/pelayanan/files?rekam_medis_uuid=${rekamMedisUuid}`,
         payload
       );
+    },
+    async discharge(payload: {
+      pelayanan: "ri" | "rj" | "igd" | "fisio";
+      rekamMedisUuid: string;
+      lokasiUuid: string;
+    }) {
+      return apiRekamMedisPut(`/pelayanan/discharge`, payload);
     },
   },
 });

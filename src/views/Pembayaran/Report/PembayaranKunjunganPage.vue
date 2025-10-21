@@ -12,17 +12,26 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import { dateToEpoch, epochToDate, formatPrice } from "@/utils/Helpers";
 import { useReportPembayaranKunjunganStore } from "@/stores/pembayaran/pembayaranKunjungan";
 import { utilsStore } from "@/stores/utils";
+import { downloadExportExcelPembayaranKunjungan } from '@/utils/exportexcelpayment';
 
-const startDateFilter = ref<Date>(new Date());
-const endDateFilter = ref<Date>(new Date());
+const today = new Date();
+// set 7 hari yang lalu
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(today.getDate() - 7);
+const startDateFilter = ref<Date>(sevenDaysAgo);
+const endDateFilter = ref<Date>(today);
 const reportType = ref("");
 const reportData = ref([1]);
 const expandedRows = ref();
 const searchQuery = ref<string>("");
-const shiftType = ref("0");
+const shiftType = ref("ALL");
+
+const searchResults = ref<any[]>([]); // Untuk menampung hasil dropdown
+const loadingSearch = ref(false);      
+const selectedPatientUuid = ref<string | null>(null); 
 
 const optionShiftItem = ref([
-  { label: "Semua", value: "0" },
+  { label: "Semua", value: "ALL" },
   { label: "Pagi", value: "1" },
   { label: "Siang", value: "2" },
   { label: "Malam", value: "3" },
@@ -45,39 +54,140 @@ const hasData = computed(
     pembayaranKunjunganPayload.value.length > 0
 );
 
+const paymentTypeMapping: { [key: string]: string } = {
+  'CASH' : 'Tunai',
+  'INSURANCE' : 'Asuransi'
+}
+
+//format price lokal(khusus kunjungan)
+const formatPriceLokal = (price: number) => {
+  if (typeof price !== 'number') return 'Rp 0';
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0, 
+  }).format(price);
+};
+
+watch(startDateFilter, (newDate) => {
+  if (newDate) {
+    newDate.setHours(0, 0, 0, 0);
+  }
+}, { immediate: true }); // immediate: true agar dijalankan saat pertama kali dimuat
+
+watch(endDateFilter, (newDate) => {
+  if (newDate) {
+    newDate.setHours(23, 59, 59, 999);
+  }
+}, { immediate: true }); // immediate: true agar dijalankan saat pertama kali dimuat
+
 // Fetch Revenue
 const fetchPembayaranKunjungan = async () => {
   UseUtilsStore.setLoading(true);
   try {
+    const startDate = new Date(startDateFilter.value);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(endDateFilter.value);
+    endDate.setHours(23, 59, 59, 999);
+
     const response = await reportPembayaranKunjunganStore.getApi(
       pembayaranKunjunganProperties.value.page,
       pembayaranKunjunganProperties.value.page_size,
-      dateToEpoch(startDateFilter.value),
-      dateToEpoch(endDateFilter.value),
-      shiftType.value
+      dateToEpoch(startDate),
+      dateToEpoch(endDate),
+      shiftType.value,
+      selectedPatientUuid.value || '' 
     );
 
-    if (response && response.payload) {
-      pembayaranKunjunganProperties.value.total = response.properties.total;
-      pembayaranKunjunganPayload.value = response.payload;
+    const plainResponse = JSON.parse(JSON.stringify(response));
+    
+    if (plainResponse && plainResponse.payload && plainResponse.properties) {
+      pembayaranKunjunganPayload.value = plainResponse.payload;
+      const apiProperties = plainResponse.properties;
+      pembayaranKunjunganProperties.value.page = apiProperties.page;
+      pembayaranKunjunganProperties.value.page_size = apiProperties.pageSize;
+      pembayaranKunjunganProperties.value.total = parseInt(apiProperties.totalData, 10) || 0;
     } else {
       pembayaranKunjunganPayload.value = [];
+      pembayaranKunjunganProperties.value.total = 0;
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
     pembayaranKunjunganPayload.value = [];
+    pembayaranKunjunganProperties.value.total = 0;
   } finally {
     UseUtilsStore.setLoading(false);
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchPembayaranKunjungan();
-  }, 500);
+const handleExport = async () => {
+  if (pembayaranKunjunganProperties.value.total === 0) {
+    console.warn("Tidak ada data untuk diekspor.");
+    return;
+  }
+
+  UseUtilsStore.setLoading(true);
+
+  try {
+    const response = await reportPembayaranKunjunganStore.getApi(
+      1, 
+      pembayaranKunjunganProperties.value.total, 
+      dateToEpoch(startDateFilter.value),
+      dateToEpoch(endDateFilter.value),
+      shiftType.value,
+      selectedPatientUuid.value || ''
+    );
+
+    const plainResponse = JSON.parse(JSON.stringify(response));
+
+    if (plainResponse && plainResponse.payload) {
+      const allData = plainResponse.payload; 
+
+      downloadExportExcelPembayaranKunjungan(
+        allData,
+        startDateFilter.value,
+        endDateFilter.value,
+        shiftType.value,
+        epochToDate
+      );
+    } else {
+      console.error("Gagal mengambil data lengkap untuk ekspor.");
+    }
+  } catch (error) {
+    console.error("Terjadi error saat menyiapkan data untuk ekspor:", error);
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+//optionlabel
+const dynamicOptionLabelKey = computed(() => {
+  const query = searchQuery.value;
+  const queryUC = query.toUpperCase();
+  const addressKeywords = ["JL", "DS", "DSN", "RT", "RW", "NO", "GG", "BLOK"];
+  const isAddressQuery = addressKeywords.some(keyword => queryUC.includes(keyword));
+
+  // Pola untuk No. RM
+  const isRmPattern = /^\d{2}-/.test(query);
+
+
+  if (isRmPattern) {
+    return 'noRm'; 
+  }
+  if (isAddressQuery) {
+    return 'patientAddress';
+  }
+  return 'patientName';
 });
+
+// Handle Patient Selection
+const handlePatientSelection = (uuid: string) => {
+  if (!uuid) return;
+  selectedPatientUuid.value = uuid;
+  pembayaranKunjunganProperties.value.page = 1; // Reset halaman
+  fetchPembayaranKunjungan();
+};
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -91,14 +201,67 @@ const searchData = () => {
   dateToEpoch(startDateFilter.value),
     dateToEpoch(endDateFilter.value),
     shiftType.value;
+    pembayaranKunjunganProperties.value.page = 1;
   fetchPembayaranKunjungan();
 };
 
 // Filter Reset Data
 const resetData = () => {
-  startDateFilter.value = new Date();
-  endDateFilter.value = new Date();
-  shiftType.value = "0";
+  const todayReset = new Date();
+  const sevenDaysAgoReset = new Date();
+  sevenDaysAgoReset.setDate(todayReset.getDate() - 7);
+  
+  startDateFilter.value = sevenDaysAgoReset;
+  endDateFilter.value = todayReset;
+  shiftType.value = "ALL";
+  selectedPatientUuid.value = null;
+  searchResults.value = [];
+  pembayaranKunjunganProperties.value.page = 1;
+  
+  fetchPembayaranKunjungan();
+};
+
+// Handle Row Expansion
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+const findTransactionsForDropdown = async (filter: string) => {
+  if (searchTimer) clearTimeout(searchTimer);
+  
+  searchQuery.value = filter || "";
+
+  if (!filter) {
+    searchResults.value = [];
+    return;
+  }
+
+  searchTimer = setTimeout(async () => {
+    loadingSearch.value = true;
+    try {
+      const response = await reportPembayaranKunjunganStore.getApi(
+        1, 
+        10, 
+        dateToEpoch(startDateFilter.value), 
+        dateToEpoch(endDateFilter.value),   
+        shiftType.value,                    
+        filter                              
+      );
+      
+      if (response && response.payload) {
+        searchResults.value = response.payload; 
+      } else {
+        searchResults.value = [];
+      }
+    } catch (error) {
+      console.error("Failed to fetch dropdown data", error);
+      searchResults.value = [];
+    } finally {
+      loadingSearch.value = false;
+    }
+  }, 500); // Debounce 500ms
+};
+
+//Refresh Button
+const handleRefresh = () => {
+  // Cukup panggil ulang fungsi fetch utama
   fetchPembayaranKunjungan();
 };
 
@@ -119,7 +282,7 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="handleRefresh"/>
                 <CustomBreadCrumb
                   :home="{
                     label: 'Laporan',
@@ -143,11 +306,18 @@ onMounted(() => {
           </template>
           <template #content>
             <div class="flex mt-[10px]">
-              <CustomTextfield
+              <CustomSelect
+                v-model="selectedPatientUuid"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Nama / address / No. RM"
+                place-holder="Cari Nama / Alamat / No. RM"
                 class="mr-5 grow"
+                :options="searchResults"
+                :optionLabel="dynamicOptionLabelKey"
+                optionValue="uuid"
+                :loading="loadingSearch"
+                @filter="findTransactionsForDropdown"
+                @update:model-value="handlePatientSelection"
               />
               <CustomSelect
                 v-model="shiftType"
@@ -161,12 +331,15 @@ onMounted(() => {
                 v-model="startDateFilter"
                 label="Tanggal"
                 class="w-[150px]"
+                :maxDate="endDateFilter" 
               />
               <PhMinus class="mt-auto mb-3 mx-[10px] text-black" />
               <CustomDatePicker
                 v-model="endDateFilter"
                 :showLabel="false"
                 class="mt-auto w-[150px]"
+                :minDate="startDateFilter"
+                :maxDate="today"
               />
               <CustomButton
                 @click="searchData"
@@ -175,7 +348,7 @@ onMounted(() => {
                 class="ml-5 mr-[10px] mt-auto"
               />
               <CustomButton
-                v-model="resetData"
+                @click="resetData"
                 label="Reset"
                 outlined
                 borderColor="border-adameds-300"
@@ -219,37 +392,37 @@ onMounted(() => {
               <div class="text-SM">{{ slotProps.index + 1 }}</div>
             </template>
           </Column>
-          <Column header="Nomor" headerClass="bg-adameds-50">
+          <Column  header="Nomor" headerClass="bg-adameds-50 pl-10">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.noRm }}</div>
+              <div class="text-SM pl-4">{{ slotProps.data.noRm }}</div>
               <div class="text-SM">{{ slotProps.data.billCode }}</div>
               <div class="text-SM">{{ slotProps.data.invoiceCode }}</div>
             </template>
           </Column>
-          <Column header="Nama Pasien" headerClass="bg-adameds-50">
+          <Column header="Nama Pasien" headerClass="bg-adameds-50 pl-8">
             <template #body="slotProps">
               <div class="text-SM">
                 {{ slotProps.data.patientName }}
               </div>
             </template>
           </Column>
-          <Column header="Waktu Bayar" headerClass="bg-adameds-50">
+          <Column header="Waktu Bayar" headerClass="bg-adameds-50 pl-6">
             <template #body="slotProps">
               <div class="text-SM">
                 <div>
-                  {{ epochToDate(slotProps.data.paymenDate, "dateTime") }}
+                  {{ epochToDate(slotProps.data.paymentDate, "date") }} {{ epochToDate(slotProps.data.paymentDate, "time") }}
                 </div>
               </div>
             </template>
           </Column>
           <Column header="Cara Bayar" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.paymentType }}</div>
+              <div class="text-SM">{{ paymentTypeMapping[slotProps.data.paymentType] || slotProps.data.paymentType }}</div>
             </template>
           </Column>
           <Column header="Total Bayar" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.amount }}</div>
+              <div class="text-SM">{{  formatPriceLokal (slotProps.data.amount) }}</div>
             </template>
           </Column>
           <Column header="Kasir" headerClass="bg-adameds-50">
@@ -257,7 +430,7 @@ onMounted(() => {
               <div class="text-SM">{{ slotProps.data.cashierName }}</div>
             </template>
           </Column>
-          <Column header="Keterangan" headerClass="bg-adameds-50">
+          <Column header="Keterangan" headerClass="bg-adameds-50 " style="max-width: 250px" class="break-words">
             <template #body="slotProps">
               <div class="text-SM">{{ slotProps.data.note }}</div>
             </template>
@@ -265,25 +438,29 @@ onMounted(() => {
         </DataTable>
       </template>
       <template #footer>
-        <div class="flex justify-between">
-          <CustomButton
-            @click="() => {}"
-            icon="PhPrinter"
-            label="Cetak"
-            class="mr-[10px]"
-            backgroundColor="bg-adameds-300"
-          />
-          <Paginator
-            :rows="10"
-            :totalRecords="120"
-            :rowsPerPageOptions="[10, 20, 30]"
-            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="{currentPage}"
-          >
-            <template #start="slotProps">Total Data: 0</template>
-          </Paginator>
-        </div>
-      </template>
+  <div class="flex justify-between items-center">
+    <CustomButton
+      @click="handleExport"
+      icon="PhPrinter"
+      label="Cetak"
+      class="mr-[10px]"
+      backgroundColor="bg-adameds-300"
+    />
+      <Paginator
+        :first="(pembayaranKunjunganProperties.page - 1) * pembayaranKunjunganProperties.page_size"
+        :rows="pembayaranKunjunganProperties.page_size"
+        :totalRecords="pembayaranKunjunganProperties.total"
+        :rowsPerPageOptions="[10, 20, 30]"
+        @page="handlePage"
+        template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+        currentPageReportTemplate="{currentPage}"
+      >
+        <template #start>
+          <span class="font-md mr-4">Total Data: {{ pembayaranKunjunganProperties.total }}</span>
+        </template>
+      </Paginator>
+  </div>
+</template>
     </Card>
   </div>
 </template>

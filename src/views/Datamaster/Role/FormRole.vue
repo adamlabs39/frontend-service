@@ -94,7 +94,6 @@ const initialPermissionsState = ref(
   }))
 );
 
-
 const setRolePermissions = (rolePermissions: Module[]) => {
   resetPermissionsState();
   initialPermissionsState.value.forEach((module) => {
@@ -153,12 +152,9 @@ const setRolePermissions = (rolePermissions: Module[]) => {
 };
 
 const onCheckModule = (module: Module) => {
+  isSelectedPermission.value = true;
   // Explicitly type 'module'
-  console.log("module", module);
-
-  console.log(module.checked);
   const isChecked = module.checked;
-  console.log(isChecked);
 
   module.checked = isChecked;
 
@@ -193,6 +189,7 @@ const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const [code] = defineField("code");
 const [name] = defineField("name");
 const [status] = defineField("status");
+const isSelectedPermission = ref(true);
 
 // Submit handler
 const onSubmit = handleSubmit(async (values) => {
@@ -222,30 +219,29 @@ const onSubmit = handleSubmit(async (values) => {
         })),
     }));
 
-  const allData = {
-    ...values,
-    permissions,
-  };
+  if (permissions.length) {
+    const allData = {
+      ...values,
+      permissions,
+    };
 
-  console.log("Adding new data with values:", allData);
-  try {
-    if (method.value === "edit") {
-      if (!props.payload || !props.payload.uuid) {
-        throw new Error("UUID is missing for edit operation");
+    try {
+      if (method.value === "edit") {
+        if (!props.payload || !props.payload.uuid) {
+          throw new Error("UUID is missing for edit operation");
+        }
+        const uuid = props.payload.uuid;
+        const response = await roleStore.putApi(uuid, allData);
+        emit("data-updated");
+      } else if (method.value === "add") {
+        const response = await roleStore.postApi(allData);
+        emit("data-updated");
       }
-      const uuid = props.payload.uuid;
-      const response = await roleStore.putApi(uuid, allData);
-      console.log("Data updated successfully:", response);
-      emit("data-updated");
-    } else if (method.value === "add") {
-      console.log("Adding new data with values:", allData);
-      const response = await roleStore.postApi(allData);
-      emit("data-updated");
+      closeDialog();
+    } catch (error) {
+      console.error("Failed to process the data:", error);
     }
-    closeDialog();
-  } catch (error) {
-    console.error("Failed to process the data:", error);
-  }
+  } else isSelectedPermission.value = false;
 });
 
 const method = ref(props.method);
@@ -301,7 +297,11 @@ watch(
         setValues({
           ...props.payload,
         });
-        if (props.payload.permissions !== null || !permissionsStore.permissionsItem || !permissionsStore.permissionsItem.length ) {
+        if (
+          props.payload.permissions !== null ||
+          !permissionsStore.permissionsItem ||
+          !permissionsStore.permissionsItem.length
+        ) {
           setRolePermissions(props.payload.permissions);
         }
       }
@@ -312,7 +312,6 @@ watch(
     }
   },
   { immediate: true }
-
 );
 </script>
 
@@ -351,6 +350,9 @@ watch(
             <div class="-mx-4 text-normal">Modul</div>
           </template>
           <template #content>
+            <small v-if="!isSelectedPermission" class="text-red-500">
+              * Modul harus dipilih
+            </small>
             <div class="flex flex-wrap gap-2.5 pt-5">
               <div
                 v-for="menuItem in initialPermissionsState"
@@ -400,7 +402,7 @@ watch(
         <CustomInfoRow label="Modul">
           <template #value>
             <div
-              v-if="payload.permissions!==null && payload.permissions.length"
+              v-if="payload.permissions !== null && payload.permissions.length"
               class="flex flex-wrap w-full h-full gap-1"
             >
               <CustomChip

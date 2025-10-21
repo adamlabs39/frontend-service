@@ -25,7 +25,7 @@ const searchQuery = ref<string>("");
 
 // Fetch kategori Gigi Data from API
 const fetchKategoriGigiData = async () => {
-  UseUtilsStore.setLoading(true)
+  UseUtilsStore.setLoading(true);
   try {
     const response = await kategoriGigiStore.getApi(
       kategoriGigiProperties.value.page,
@@ -43,7 +43,7 @@ const fetchKategoriGigiData = async () => {
     console.error("Failed to fetch data", error);
     kategoriGigiPayload.value = [];
   } finally {
-    UseUtilsStore.setLoading(false)
+    UseUtilsStore.setLoading(false);
   }
 };
 
@@ -52,7 +52,7 @@ watch(searchQuery, (newValue) => {
   if (searchTimeout) clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     fetchKategoriGigiData();
-  }, 500); 
+  }, 500);
 });
 
 onMounted(() => {
@@ -102,14 +102,14 @@ const deleteDialog = (method: string, title: string, data: any = null) => {
 
 const confirmDelete = async (item: any) => {
   if (item) {
-    UseUtilsStore.setLoading(true)
+    UseUtilsStore.setLoading(true);
     try {
       await kategoriGigiStore.deleteApi(item.uuid);
       fetchKategoriGigiData();
     } catch (error) {
       console.error("Failed to delete data", error);
     } finally {
-      UseUtilsStore.setLoading(false)
+      UseUtilsStore.setLoading(false);
       isDeleteDialogVisible.value = false;
     }
   }
@@ -130,15 +130,15 @@ const downloadExportExcel = async () => {
     const data = [];
 
     // Header Row (Kosong untuk baris kedua tanpa border)
-    data.push({}); 
-    data.push({}); 
+    data.push({});
+    data.push({});
     data.push({
       No: "No",
       System: "Referensi Sistem SATUSEHAT",
       Code: "Code SATUSEHAT",
       Display: "Display SATUSEHAT",
-      Name:"Kategri Gigi",
-      Status: "Status",
+      Name: "Kategri Gigi",
+      // Status: "Status",
     });
 
     // Data Rows
@@ -147,7 +147,7 @@ const downloadExportExcel = async () => {
         No: i + 1,
         Display: rows[i].display,
         Nama: rows[i].name,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+        // Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -166,7 +166,7 @@ const downloadExportExcel = async () => {
     };
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -174,7 +174,7 @@ const downloadExportExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
 
@@ -213,7 +213,11 @@ const downloadExportExcel = async () => {
     }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Datamaster Kategori Gigi");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Datamaster Kategori Gigi"
+    );
     XLSX.writeFile(workbook, `Datamaster Kategori Gigi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -226,25 +230,30 @@ const downloadFormatExcel = async () => {
     const data = [];
 
     // Header Row
-  data.push({
+    data.push({
       No: "No",
-      Referensi:"Referensi Sistem SATUSEHAT*",
+      Referensi: "Referensi Sistem SATUSEHAT*",
       Code: "Code SATUSEHAT*",
-      Display:"Display SATUSEHAT*",
+      Display: "Display SATUSEHAT*",
       Name: "Nama Kategori*",
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    
-      data.push({ No: "1",Referensi:"[reference sistem satu sehat]", Code: "KG-001",Display:"Display SATUSEHAT*", Name: "Permukaan gigi" });
 
+    data.push({
+      No: "1",
+      Referensi: "[reference sistem satu sehat]",
+      Code: "KG-001",
+      Display: "Display SATUSEHAT*",
+      Name: "Permukaan gigi",
+    });
 
     // Create Workbook and Worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
 
     // Column Widths
-    const columnWidths = data.reduce((widths:any, row:any) => {
+    const columnWidths = data.reduce((widths: any, row: any) => {
       Object.keys(row).forEach((key, colIdx) => {
         const cellValue = row[key] ? row[key].toString() : "";
         widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
@@ -252,14 +261,17 @@ const downloadFormatExcel = async () => {
       return widths;
     }, []);
 
-    worksheet["!cols"] = columnWidths.map((wch:any) => ({ wch }));
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range("A1:C5");
 
-  
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Kategori Gigi");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Kategori Gigi"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Kategori Gigi.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -267,15 +279,15 @@ const downloadFormatExcel = async () => {
 };
 
 const handleFileUpload = async (file: File) => {
-  const dataUpload = new FormData()
-  dataUpload.append('file',file);
+  const dataUpload = new FormData();
+  dataUpload.append("file", file);
 
   try {
     const response = await kategoriGigiStore.importApi(dataUpload); // Panggil fungsi importApi dengan formData
-    fetchKategoriGigiData()
-    console.log('File uploaded successfully:', response); // Log respon jika upload berhasil
+    fetchKategoriGigiData();
+    console.log("File uploaded successfully:", response); // Log respon jika upload berhasil
   } catch (error) {
-    console.error('Error uploading file:', error); // Log error jika upload gagal
+    console.error("Error uploading file:", error); // Log error jika upload gagal
   }
 };
 </script>
@@ -298,7 +310,7 @@ const handleFileUpload = async (file: File) => {
     <template #content>
       <NoData v-if="!hasData" />
       <DataTable
-      v-else
+        v-else
         :value="kategoriGigiPayload"
         v-model:selection="selectedData"
         tableStyle="min-width: 50rem"
@@ -312,7 +324,7 @@ const handleFileUpload = async (file: File) => {
         :dt="{
           rowSelectedColor: '#000000',
           rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor:'transparent',
+          bodyCellSelectedBorderColor: 'transparent',
           bodyCellBorderColor: 'rgba(0, 0, 0, 0)',
           rowStripedBackground: '#F8F8F8',
         }"
@@ -324,7 +336,8 @@ const handleFileUpload = async (file: File) => {
           <template #body="slotProps">
             <div class="flex items-center justify-center">
               {{
-                (kategoriGigiProperties.page - 1) * kategoriGigiProperties.page_size +
+                (kategoriGigiProperties.page - 1) *
+                  kategoriGigiProperties.page_size +
                 slotProps.index +
                 1
               }}
@@ -332,7 +345,7 @@ const handleFileUpload = async (file: File) => {
           </template>
         </Column>
         <Column
-          field="code"
+          field="display"
           header="Display SATUSEHAT"
           headerClass="bg-adameds-50"
         ></Column>
@@ -342,7 +355,7 @@ const handleFileUpload = async (file: File) => {
           class="w-1/2"
           headerClass="bg-adameds-50"
         ></Column>
-        <Column
+        <!-- <Column
           field="status"
           headerClass="bg-adameds-50 font-semibold text-SM"
         >
@@ -365,7 +378,7 @@ const handleFileUpload = async (file: File) => {
               />
             </div>
           </template>
-        </Column>
+        </Column> -->
         <Column headerClass="bg-adameds-50">
           <template #header="slotProps">
             <div
@@ -380,7 +393,7 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-[#3D84E5] rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="openDialog('edit', 'Edit Data',slotProps.data)"
+                @click="openDialog('edit', 'Edit Data', slotProps.data)"
               >
                 <img src="@/assets/icons/edit.svg" alt="" />
               </CustomButton>
@@ -388,7 +401,13 @@ const handleFileUpload = async (file: File) => {
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="deleteDialog('delete', `${slotProps.data.code}-${slotProps.data.name}`, slotProps.data)"
+                @click="
+                  deleteDialog(
+                    'delete',
+                    `${slotProps.data.code}-${slotProps.data.name}`,
+                    slotProps.data
+                  )
+                "
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -400,9 +419,8 @@ const handleFileUpload = async (file: File) => {
         v-model:isDialogVisible="isTambahDataDialogVisible"
         :title="dialogConfig.title"
         :method="dialogConfig.method"
-         :payload="dialogConfig.data"
-         @data-updated="fetchKategoriGigiData"
-
+        :payload="dialogConfig.data"
+        @data-updated="fetchKategoriGigiData"
       />
       <DialogDelete
         v-model:isDialogVisible="isDeleteDialogVisible"

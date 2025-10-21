@@ -13,6 +13,8 @@ import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { epochToDate } from "@/utils/Helpers";
+import { PhCaretLeft, PhCaretRight, PhCalendarDots, PhClock, PhPaperPlaneTilt } from "@phosphor-icons/vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -32,21 +34,24 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
-// Variabel lokal untuk mengatur apakah sedang dalam mode editing atau tidak
 const isEditing = ref(props.method === "form");
 const emit = defineEmits(["edit", "submit", "editAsesmen"]);
 
-const messages = ref<any>([]);
+const messages = ref<any[]>([]);
+const petugasInput = ref<string>("-");
+const createdAt = ref<number | null>(null);
 
-// Schema for validation
 const schema = yup.object({
   instruksi: yup.string().required("Instruksi Medis tidak boleh kosong"),
   dokter: yup.mixed<any>().required("Dokter harus dipilih"),
 });
 
-// Use form with validation schema
 const { errors, handleSubmit, resetForm, defineField } = useForm({
   validationSchema: schema,
 });
@@ -65,12 +70,7 @@ const onSubmitInstruksiMedis = handleSubmit(async (values: any) => {
     if (response && response.payload) {
       rekamMedisStore.setAsesmentRekamMedisData(response.payload);
       resetForm();
-      const responseInstruksi = await rekamMedisStore.getInstruksi(
-        props.sessionUuid
-      );
-      if (responseInstruksi && responseInstruksi.payload) {
-        messages.value = responseInstruksi.payload;
-      }
+      await setFormData();
     }
   } catch (error) {
     console.error("Failed to post data", error);
@@ -81,7 +81,6 @@ const onSubmitInstruksiMedis = handleSubmit(async (values: any) => {
 
 const listDpjp = ref<any[]>([]);
 const fetchPraktisi = async () => {
-  // FIXME Masih menggunakan api biasa dan filter by FE
   const responseDpjp = await praktisiStore.getApi({
     limit: 9999,
     non_doctor: false,
@@ -94,48 +93,121 @@ const fetchPraktisi = async () => {
 };
 
 const setFormData = async () => {
-  if (rekamMedisStore.openedRekamMedis.data.instruksiMedis) {
+  if (!props.sessionUuid) {
+    messages.value = [];
+    petugasInput.value = "-";
+    createdAt.value = null;
+    resetForm();
+    return;
+  }
+
+  try {
     const responseInstruksi = await rekamMedisStore.getInstruksi(
       props.sessionUuid
     );
     if (responseInstruksi && responseInstruksi.payload) {
-      messages.value = responseInstruksi.payload;
+      messages.value = responseInstruksi.payload.data || [];
+      petugasInput.value = responseInstruksi.payload.petugas || "-";
+      createdAt.value = responseInstruksi.payload.created_at || null;
+    } else {
+      messages.value = [];
+      petugasInput.value = "-";
+      createdAt.value = null;
     }
-  } else resetForm();
+  } catch (error) {
+     console.error("Gagal mengambil instruksi medis:", error);
+     messages.value = [];
+     petugasInput.value = "-";
+     createdAt.value = null;
+  }
 };
+
 
 onBeforeMount(() => {
   setFormData();
   fetchPraktisi();
 });
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
 });
 
 const compareDialog = ref(false);
-const showDialogCompare = () => {
+const historyData = ref<Array<any> | null>(null);
+const historyPageIndex = ref(0);
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
+
+const fetchHistoryData = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noRm: props.patientData?.patient?.noRm,
+      key: "instruksi_medis",
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
+    });
+
+    if (response && response.payload) {
+      historyData.value = response.payload;
+      historyPageIndex.value = 0;
+    } else {
+      historyData.value = null;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data compare:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const showDialogCompare = async () => {
+  await fetchHistoryData();
   compareDialog.value = true;
 };
 
-const accordion = ref<HTMLCanvasElement | null>(null);
-const open = () => {
-  if (accordion.value) {
-    (accordion.value as any).open();
-  }
-};
-const close = () => {
-  if (accordion.value) {
-    (accordion.value as any).close();
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (compareDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+    }
+});
+
+
+const currentHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value];
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 1 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value--;
   }
 };
 
-defineExpose({
-  open,
-  close,
-});
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value++;
+  }
+};
+
+const accordion = ref<HTMLCanvasElement | null>(null);
+const open = () => { if (accordion.value) (accordion.value as any).open(); };
+const close = () => { if (accordion.value) (accordion.value as any).close(); };
+
+defineExpose({ open, close });
 </script>
 
 <template>
@@ -167,7 +239,7 @@ defineExpose({
           <div class="flex flex-col gap-2.5">
             <div class="flex w-full gap-5">
               <div class="font-semibold text-adameds-300 text-SM">
-                {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokterName }})
+                {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokter_name }})
               </div>
               <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                 <div class="flex items-center gap-[2px]">
@@ -217,20 +289,20 @@ defineExpose({
               class="w-full"
               @click="onSubmitInstruksiMedis"
             >
-              <div class="flex items-center gap-2">
+              <div class="flex items-center justify-center gap-2">
                 <PhPaperPlaneTilt :size="20" weight="fill" />
                 <div>Kirim Instruksi</div>
               </div>
             </CustomButton>
           </div>
         </div>
-
-        <div v-else class="flex items-end justify-end gap-3">
-          <CustomButton label="Edit" @click="emit('editAsesmen')" />
+        
+        <div v-if="!isEditing" class="flex flex-col gap-[19px] py-2">
+          <CustomInfoRow label="Petugas Input" :value="petugasInput" />
+          <CustomInfoRow label="Jam Input" :value="String(epochToDate(createdAt ?? 0, 'time'))" />
         </div>
       </div>
 
-      <!-- Dialog compare -->
       <CustomDialog
         class=""
         v-model:visible="compareDialog"
@@ -239,32 +311,37 @@ defineExpose({
       >
         <template #header>Instruksi Medis</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
-            <div class="flex flex-col overflow-auto">
-              <div class="mb-[18px] flex justify-between">
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] h-full overflow-auto">
+            <div class="flex flex-col overflow-auto pr-4">
+              <div class="mb-[18px] flex justify-between items-center">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
                 </div>
-                <div class="flex">
-                  <CustomButton
-                    @click="() => {}"
-                    class="!rounded-md mr-[10px]"
-                    size="small"
-                    icon="PhCaretLeft"
+                <div class="flex items-center">
+                  <CustomSelect
+                    v-model="selectedFilter"
+                    :options="filterOptions"
+                    optionLabel="name"
+                    optionValue="value"
+                    :show-label="false"
+                    class="w-40 mr-4"
                   />
-                  <CustomButton
-                    @click="() => {}"
-                    class="!rounded-md"
-                    size="small"
-                    icon="PhCaretRight"
-                  />
+                  <CustomButton @click="previousHistory" :disabled="!canGoToPrevious" class="!rounded-md mr-[10px]" size="small">
+                    <PhCaretLeft :size="16" />
+                  </CustomButton>
+                  <CustomButton @click="nextHistory" :disabled="!canGoToNext" class="!rounded-md" size="small">
+                    <PhCaretRight :size="16" />
+                  </CustomButton>
                 </div>
               </div>
-              <div class="overflow-auto grow">
-                <HistoriInstruksiMedis />
+               <div>
+                <HistoriInstruksiMedis v-if="currentHistoryItem" :history="currentHistoryItem" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
               </div>
             </div>
+
             <div class="border border-adameds-300 mx-[15px]"></div>
+
             <div class="flex flex-col overflow-hidden">
               <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
                 <div
@@ -273,43 +350,34 @@ defineExpose({
                   :class="{ 'justify-end': message.isMe }"
                   class="flex items-start gap-2.5"
                 >
-                  <img
-                    :src="GeneralIcon"
-                    alt="Avatar"
-                    :class="message.isMe ? 'order-2' : ''"
-                  />
-                  <div class="flex flex-col gap-2.5">
+                  <img :src="GeneralIcon" alt="Avatar" :class="message.isMe ? 'order-2' : ''"/>
+                  <div class="flex flex-col gap-2.5 w-full">
                     <div class="flex w-full gap-5">
                       <div class="font-semibold text-adameds-300 text-SM">
-                        {{ message.role }}
+                        {{ message.isMe ? 'Anda' : message.name }} ({{ message.dokter_name }})
                       </div>
-                      <div
-                        class="flex gap-2.5 font-medium text-SM text-grey-400"
-                      >
+                      <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                         <div class="flex items-center gap-[2px]">
                           <PhCalendarDots :size="12" weight="fill" />
-                          {{ message.date }}
+                          {{ epochToDate(message.time, "date") }}
                         </div>
                         <div class="flex items-center gap-[2px]">
                           <PhClock :size="12" weight="fill" />
-                          {{ message.time }}
+                          {{ epochToDate(message.time, "time") }}
                         </div>
                       </div>
                     </div>
-                    <div
-                      :class="
-                        message.isMe
-                          ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
-                          : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]'
-                      "
+                    <div :class="message.isMe ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]' : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]'"
                       class="min-h-[45px] bg-adameds-50 flex items-center px-4 text-SM font-normal"
                     >
-                      {{ message.text }}
+                      {{ message.message }}
                     </div>
                   </div>
                 </div>
+              </div>
+              <div class="pt-2.5">
                 <hr class="border-grey-200 my-2.5" />
-                <div v-if="isEditing" class="flex flex-col gap-[10px]">
+                <div v-if="isEditing" class="grid grid-cols-2 gap-[30px]">
                   <CustomSelect
                     label="Dokter Pemberi Instruksi"
                     v-model="dokter"
@@ -333,7 +401,7 @@ defineExpose({
                       class="w-full"
                       @click="onSubmitInstruksiMedis"
                     >
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center justify-center gap-2">
                         <PhPaperPlaneTilt :size="20" weight="fill" />
                         <div>Kirim Instruksi</div>
                       </div>
@@ -345,23 +413,27 @@ defineExpose({
           </div>
         </template>
         <template #footer>
-          <div class="flex items-end justify-end gap-3">
-            <CustomButton
-              v-if="isEditing"
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-            />
+           <div class="flex items-end justify-end gap-3">
+            <CustomButton v-if="isEditing" label="Reset" textColor="text-grey-300" backgroundColor="bg-transparent" borderColor="border-2 border-grey-200" />
             <CustomButton v-if="isEditing" label="Simpan" @click="() => {}" />
-            <CustomButton
-              v-if="!isEditing"
-              label="Edit"
-              @click="emit('editAsesmen')"
-            />
+            <CustomButton v-if="!isEditing" label="Edit" @click="emit('editAsesmen')" />
           </div>
         </template>
       </CustomDialog>
     </template>
+    <template #footer>
+        <div class="flex items-end justify-end gap-3">
+          <CustomButton
+            v-if="isEditing"
+            @click="resetForm"
+            label="Reset"
+            textColor="text-[#9DA4B1]"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-[#9DA4B1]"
+          />
+          <CustomButton v-if="isEditing" label="Simpan" @click="onSubmitInstruksiMedis" />
+          <CustomButton v-else label="Edit" @click="emit('editAsesmen')" />
+        </div>
+      </template>
   </CustomAccordion>
 </template>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch,onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { toTypedSchema } from "@vee-validate/yup";
@@ -29,7 +29,7 @@ const props = defineProps({
 });
 
 const lokasiStore = useLokasiStore();
-const lokasiPayload=ref<any[]>([]);
+const lokasiPayload = ref<any[]>([]);
 const optionsTipe = ref(["Site", "Building", "Level", "Ward", "Room", "Bed"]);
 
 const optionsKelas = ref([
@@ -56,36 +56,43 @@ const fetchLokasi = async () => {
 };
 onMounted(() => {
   fetchLokasi();
-
 });
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Lokasi harus diisi"),
-    name: yup.string().required("Nama lokasi harus diisi"),
-    description: yup.string().required("Deskripsi harus diisi"),
-    phone: yup.string().required("No. Telepon harus diisi").matches(phoneRegExp, "Format tidak sesuai"),
-    email: yup
-      .string()
-      .required("Email harus diisi")
-      .email("Format email tidak sesuai"),
-    url: yup.string().required("URL Website harus diisi").matches(/^https:\/\//, "URL harus dimulai dengan https://"),
-    orgId:yup.string().notRequired(),
-    locationType: yup.string().required("Tipe harus diisi"),
-    classCode:yup.string().notRequired(),
-    className: yup.string().notRequired(),
-    partOfName: yup.string().notRequired(),
-    partOf: yup.string().notRequired(),
-    codeAntrianPoli: yup.string().when("isPoli", {
-      is: (value: boolean) => value === true,
-      then: (schema) => schema.required("Kode Antrian harus diisi"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    statusOperasional: yup.bool().default(false),
-    isPoli: yup.bool().default(false),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().required("Kode Lokasi harus diisi"),
+      name: yup.string().required("Nama lokasi harus diisi"),
+      description: yup.string().required("Deskripsi harus diisi"),
+      phone: yup
+        .string()
+        .required("No. Telepon harus diisi")
+        .matches(phoneRegExp, "Format tidak sesuai"),
+      email: yup
+        .string()
+        .required("Email harus diisi")
+        .email("Format email tidak sesuai"),
+      url: yup
+        .string()
+        .required("URL Website harus diisi")
+        .matches(/^https:\/\//, "URL harus dimulai dengan https://"),
+      orgId: yup.string().notRequired(),
+      locationType: yup.string().required("Tipe harus diisi"),
+      classCode: yup.string().notRequired(),
+      className: yup.string().notRequired(),
+      partOfName: yup.string().notRequired(),
+      partOf: yup.string().notRequired(),
+      codeAntrianPoli: yup.string().when("isPoli", {
+        is: (value: boolean) => value === true,
+        then: (schema) => schema.required("Kode Antrian harus diisi"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+      statusOperasional: yup.bool().default(false),
+      isPoli: yup.bool().default(false),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
@@ -105,14 +112,16 @@ const [className] = defineField("className");
 const [partOfName] = defineField("partOfName");
 const [partOf] = defineField("partOf");
 const [statusOperasional] = defineField("statusOperasional");
-const [codeAntrianPoli]=defineField("codeAntrianPoli")
+const [codeAntrianPoli] = defineField("codeAntrianPoli");
 const [isPoli] = defineField("isPoli");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 const onSubmit = handleSubmit(async (values: any) => {
   try {
-    values.statusOperasional = statusOperasional.value ? "occupied" : "non-occupied";
+    values.statusOperasional = statusOperasional.value
+      ? "occupied"
+      : "non-occupied";
 
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
@@ -161,7 +170,7 @@ const closeDialog = () => {
 watch(isPoli, (newValue) => {
   if (!newValue) {
     setValues({
-      codeAntrianPoli: "", 
+      codeAntrianPoli: "",
     });
   }
 });
@@ -183,11 +192,13 @@ watch(
   () => props.isDialogVisible,
   (newValue) => {
     if (newValue) {
+      fetchLokasi();
       resetDialogMode();
       if (props.method !== "add" && props.payload) {
         setValues({
           ...props.payload,
-          statusOperasional: props.payload.statusOperasional === 'occupied' ? true : false,
+          statusOperasional:
+            props.payload.statusOperasional === "occupied" ? true : false,
         });
       }
     } else {
@@ -206,7 +217,7 @@ watch(
   >
     <template #header>{{ title }} Lokasi</template>
     <template #body>
-       <!-- Form Input -->
+      <!-- Form Input -->
       <div v-if="method !== 'detail'" class="grid grid-cols-12 gap-5 mt-5">
         <CustomTextfield
           label="Kode Lokasi"
@@ -239,7 +250,7 @@ watch(
           label="Kode Antrian Poli"
           placeholder="Kode Antrian Poli"
           class="col-span-8"
-         :disabled="!isPoli"
+          :disabled="!isPoli"
           :invalid="isPoli && !!errors.codeAntrianPoli"
           :invalidMessage="errors.codeAntrianPoli"
           :required="errors.codeAntrianPoli ? true : false"
@@ -311,24 +322,24 @@ watch(
           :options="lokasiPayload"
           optionValue="uuid"
           optionLabel="name"
-          />
+        />
         <hr class="col-span-12 border-grey-200" />
-          <CustomSwitch
-            v-model="statusOperasional"
-            :show-label="true"
-            label="Status Operasional"
-            sideLabel="Non-Occupied"
-            sideLabelTrue="Occupied"
-            class="col-span-6"
-          />
-          <CustomSwitch
-            v-model="status"
-            :show-label="true"
-            label="Status"
-            sideLabel="Non-Aktif"
-            sideLabelTrue="Aktif"
-            class="col-span-6"
-          />
+        <CustomSwitch
+          v-model="statusOperasional"
+          :show-label="true"
+          label="Status Operasional"
+          sideLabel="Non-Occupied"
+          sideLabelTrue="Occupied"
+          class="col-span-6"
+        />
+        <CustomSwitch
+          v-model="status"
+          :show-label="true"
+          label="Status"
+          sideLabel="Non-Aktif"
+          sideLabelTrue="Aktif"
+          class="col-span-6"
+        />
       </div>
       <!-- Detail Data -->
       <div v-if="method === 'detail'" class="flex flex-col gap-5 mt-5">
@@ -340,10 +351,19 @@ watch(
         <CustomInfoRow label="Tipe" :value="payload.locationType" />
         <CustomInfoRow label="Kelas" :value="payload.className ?? '-'" />
         <CustomInfoRow label="Part of Id" :value="partOf ?? '-'" />
-        <CustomInfoRow label="Part of Name" :value="payload.partOfName ?? '-'" />
-        <CustomInfoRow label="Organization ID" :value="payload.OrganisasiId ?? '-'" />
-        <CustomInfoRow label="ID SATUSEHAT" :value="payload.satuSehatId ?? '-'" />
-        <hr class="border-grey-200">
+        <CustomInfoRow
+          label="Part of Name"
+          :value="payload.partOfName ?? '-'"
+        />
+        <CustomInfoRow
+          label="IHS No. Organization"
+          :value="payload.organizationIhsNumber ?? '-'"
+        />
+        <CustomInfoRow
+          label="ID SATUSEHAT"
+          :value="payload.satuSehatId ?? '-'"
+        />
+        <hr class="border-grey-200" />
         <CustomInfoRow label="Status">
           <template #value>
             <CustomChip
@@ -362,7 +382,9 @@ watch(
               :label="statusOperasional ? 'AKTIF' : 'NON-AKTIF'"
               :textColor="statusOperasional ? 'text-white' : 'text-[#80868d]'"
               :bgColor="statusOperasional ? 'bg-adameds-300' : 'bg-white'"
-              :borderColor="statusOperasional ? 'border-none' : 'border-[#80868d]'"
+              :borderColor="
+                statusOperasional ? 'border-none' : 'border-[#80868d]'
+              "
               :icon-color="statusOperasional ? 'white' : '#80868d'"
               customClass="text-xs font-semibold h-5 flex w-fit"
             />
@@ -374,7 +396,9 @@ watch(
               :label="payload.satuSehatId ? 'AKTIF' : 'NON-AKTIF'"
               :textColor="payload.satuSehatId ? 'text-white' : 'text-[#80868d]'"
               :bgColor="payload.satuSehatId ? 'bg-adameds-300' : 'bg-white'"
-              :borderColor="payload.satuSehatId ? 'border-none' : 'border-[#80868d]'"
+              :borderColor="
+                payload.satuSehatId ? 'border-none' : 'border-[#80868d]'
+              "
               :icon-color="payload.satuSehatId ? 'white' : '#80868d'"
               customClass="text-xs font-semibold h-5 flex w-fit"
             />

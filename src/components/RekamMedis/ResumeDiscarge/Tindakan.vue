@@ -1,33 +1,17 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, ref, type PropType } from "vue";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
-const tindakan = ref<any[]>([]);
 
-onMounted(() => {
-  tindakan.value = [
-    {
-      namaTindakan: "SIMRS Admission",
-      tipeTindakan: "Administrasi",
-    },
-    {
-      namaTindakan: "Pemeriksaan Dokter SPesialis",
-      tipeTindakan: "Pemeriksaan",
-    },
-    {
-      namaTindakan: "Asuhan Keperawatan",
-      tipeTindakan: "Pemeriksaan",
-    },
-    {
-      namaTindakan: "Tindakan Mata",
-      tipeTindakan: "Tindakan",
-    },
-    {
-      namaTindakan: "Tindakan Mata 2",
-      tipeTindakan: "Tindakan",
-    },
-  ];
+const props = defineProps({
+  tindakanData: {
+    type: Array as PropType<any>,
+    default: () => [],
+  },
 });
-const selectedPemeriksaan = ref();
+
+const tindakan = computed(() => props.tindakanData);
+
+const selectedPemeriksaan = ref<any[]>([]);
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -39,15 +23,23 @@ const close = () => {
     (accordion.value as any).close();
   }
 };
+const printSelectedData = () => {
+  return selectedPemeriksaan.value;
+};
 
 defineExpose({
   open,
   close,
+  printSelectedData,
 });
 </script>
 
 <template>
-  <CustomAccordion initial-state="0" header-class="bg-adameds-50" ref="accordion">
+  <CustomAccordion
+    initial-state="0"
+    header-class="bg-adameds-50"
+    ref="accordion"
+  >
     <template #header> Tindakan </template>
     <template #content>
       <DataTable
@@ -57,7 +49,7 @@ defineExpose({
         stripedRows
         class="pt-5 text-xs"
       >
-        <Column headerClass="bg-adameds-50">
+        <Column headerClass="bg-adameds-50" style="width: 50px">
           <template #header>
             <div class="w-full font-semibold text-center">No.</div>
           </template>
@@ -73,17 +65,10 @@ defineExpose({
           headerClass="bg-adameds-50"
         ></Column>
         <Column
-          field="tipeTindakan"
-          header="Tipe Tindakan"
-          headerClass="bg-adameds-50"
-        >
-        </Column>
-        <Column
           body-class="text-center"
           selectionMode="multiple"
           headerClass="bg-adameds-50 w-[15rem]"
           class="custom-checkbox"
-          
         >
           <template #header>
             <div class="font-semibold">Tampilkan Di Cetak Print</div>
@@ -95,11 +80,11 @@ defineExpose({
 </template>
 <style scoped>
 /* Menggunakan ::v-deep untuk menargetkan elemen dalam shadow DOM */
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box)  {
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box) {
   @apply border-adameds-300 bg-adameds-300;
 }
 
-:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon){
+:deep(.custom-checkbox .p-checkbox-checked .p-checkbox-box .p-checkbox-icon) {
   @apply text-white;
 }
 </style>

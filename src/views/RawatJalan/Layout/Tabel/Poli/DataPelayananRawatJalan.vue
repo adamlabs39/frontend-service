@@ -1,9 +1,13 @@
 <script lang="ts" setup>
 import CustomChip from "@/components/Base/CustomChip.vue";
 import NoData from "@/components/section/NoData.vue";
-import { epochToDate } from "@/utils/Helpers";
+import { epochToDate, formatDate } from "@/utils/Helpers";
 import MedicalRecord from "@/views/MedicalRecord/MedicalRecord.vue";
+import { useToast } from "primevue/usetoast";
 import { onMounted, ref, watch } from "vue";
+import { useAdmisiRJStore } from "@/stores/admisi/rawatJalan";
+import { utilsStore } from "@/stores/utils";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 
 const props = defineProps({
   showCancelVisit: {
@@ -17,7 +21,6 @@ const props = defineProps({
     type: Array,
     required: true,
   },
- 
 });
 
 const emit = defineEmits([
@@ -29,13 +32,117 @@ const emit = defineEmits([
 ]);
 
 const medicalRecord = ref<any>();
+const selectedPatientForRM = ref<PatientDataForRM>({});
+const admisiRJStore = useAdmisiRJStore();
+const storeUtils = utilsStore();
+const rekamMedisStore = useRekamMedisStore();
+const toast = useToast();
+
+interface PatientDataForRM {
+  uuid?: string;
+  rekamMedisUuid?: string;
+  noRm?: string;
+  noReg?: string;
+  noPelayanan?: string;
+  paymentMethod?: string | number;
+  lokasi?: {
+    uuid: string;
+    name: string;
+    code: string;
+  };
+  patient?: {
+    uuid: string;
+    noRm: string;
+    name: string;
+  };
+}
 
 const handleSelectionChange = () => {
   emit("handleSelectedPatient", selectedPatient.value);
 };
 
-const openDialogRM = () => {
-  medicalRecord.value?.showDialogRM();
+// const openDialogRM = () => {
+//   medicalRecord.value?.showDialogRM();
+// };
+const openDialogRM = async (event: any) => {
+  try {
+    storeUtils.setLoading(true);
+
+    const responseDetailPelayanan = await admisiRJStore.getDetailRJ(
+      event.data.uuid
+    );
+
+    if (!responseDetailPelayanan || !responseDetailPelayanan.payload) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Gagal mendapatkan detail data pelayanan.",
+        life: 3000,
+      });
+      return;
+    }
+
+    selectedPatientForRM.value = responseDetailPelayanan.payload;
+    selectedPatientForRM.value.rekamMedisUuid = event.data.rekamMedisUuid;
+
+    let responseRekamMedis: any;
+    const rekamMedisUuid = selectedPatientForRM.value.rekamMedisUuid;
+
+    if (rekamMedisUuid) {
+      responseRekamMedis = await rekamMedisStore.getRekamMedis({
+        rekamMedisUuid: rekamMedisUuid,
+      });
+    } else {
+      const dataPasien = selectedPatientForRM.value;
+      const lokasiUuid = dataPasien?.lokasi?.uuid;
+      if (!lokasiUuid) {
+        toast.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Data lokasi poliklinik tidak ditemukan pada pasien ini.",
+          life: 3000,
+        });
+        return;
+      }
+
+      responseRekamMedis = await rekamMedisStore.createRekamMedis({
+        noRm: dataPasien.patient?.noRm,
+        noReg: dataPasien.noReg,
+        date: formatDate(new Date(), true),
+        pelayanan: "rj",
+        lokasiUuid: lokasiUuid,
+        noPelayanan: dataPasien.noPelayanan,
+        paymentMethod: dataPasien.paymentMethod,
+      });
+    }
+
+    if (responseRekamMedis && responseRekamMedis.payload) {
+      selectedPatientForRM.value.rekamMedisUuid =
+        responseRekamMedis.payload.meta.rekamMedisUuid;
+      
+      rekamMedisStore.setOpenedRekamMedisData(responseRekamMedis.payload);
+      
+      medicalRecord.value?.showDialogRM();
+    } else {
+       toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Gagal memproses data rekam medis pasien.",
+        life: 3000,
+      });
+    }
+
+  } catch (error) {
+    console.error("Gagal membuka rekam medis:", error);
+    toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Terjadi kesalahan saat memuat rekam medis.",
+        life: 3000,
+      });
+  } finally {
+    storeUtils.setLoading(false);
+  }
 };
 
 const handleRowUnselect = () => {
@@ -50,6 +157,7 @@ const handleUnselectAll = (dataPatient: any) => {
   emit("handleUnselectAll", dataPatient.data);
 };
 const selectedPatient = ref([]);
+
 
 watch(
   () => props.isResetPatient,
@@ -69,7 +177,6 @@ const resetSelection = () => {
 </script>
 
 <template>
-{{ dataPatient }}
   <DataTable
     v-if="dataPatient && dataPatient.length"
     v-model:selection="selectedPatient"
@@ -77,8 +184,8 @@ const resetSelection = () => {
     tableStyle="min-width: 50rem"
     scrollable
     scrollHeight="flex"
-    class=""
-    @row-click="openDialogRM"
+    class="flex-1"
+    @row-click="openDialogRM($event)"
     @row-select-all="handleSelectedAll"
     @row-unselect-all="handleUnselectAll"
     @row-select="handleSelectionChange"
@@ -95,9 +202,10 @@ const resetSelection = () => {
           <div
             class="max-w-[75px] mx-auto bg-adameds-50 text-adameds-300 rounded-[5px] text-SM font-semibold"
           >
-            {{ slotProps.data.polyclinic.code }}
+            {{ slotProps.data.noAntrianPoli }}
           </div>
           <div class="text-SM">{{ slotProps.data.noReg }}</div>
+          <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>
         </div>
       </template>
     </Column>
@@ -109,7 +217,7 @@ const resetSelection = () => {
     >
       <template #body="slotProps">
         <div class="text-SM">
-          <span class="font-semibold">{{ slotProps.data.patient.name }}</span>
+          <span class="font-semibold">{{ slotProps.data?.patient?.name }}</span>
           <span class="text-grey-300">
             ({{ slotProps.data.birthDetail.ageYear }}Th
             {{ slotProps.data.birthDetail.ageMonth }}Bln
@@ -117,7 +225,7 @@ const resetSelection = () => {
           </span>
         </div>
         <div class="text-XS">
-          {{ slotProps.data.patient.address.fullAddress }}
+          {{ slotProps.data?.patient?.address?.fullAddress }}
         </div>
         <div class="flex flex-wrap/">
           <PhUserCirclePlus
@@ -129,17 +237,17 @@ const resetSelection = () => {
           <CustomChip
             :showCheckedIcon="false"
             :label="
-              slotProps.data.patient.gender == 'Female'
+              slotProps.data?.patient?.gender == 'Female'
                 ? 'Perempuan'
                 : 'Laki-Laki'
             "
             :bgColor="
-              slotProps.data.patient.gender == 'Female'
+              slotProps.data?.patient?.gender == 'Female'
                 ? 'bg-female-75'
                 : 'bg-male-75'
             "
             :textColor="
-              slotProps.data.patient.gender == 'Female'
+              slotProps.data?.patient?.gender == 'Female'
                 ? 'text-female-300'
                 : 'text-male-300'
             "
@@ -147,7 +255,7 @@ const resetSelection = () => {
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.patient.phone"
+            :label="slotProps.data?.patient?.phone"
             bgColor="bg-adameds-50"
             textColor="text-adameds-300"
             customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -255,33 +363,25 @@ const resetSelection = () => {
           <CustomChip
             :showCheckedIcon="false"
             :label="
-              slotProps.data.statusRj == '0'
+              String(slotProps.data.statusRj) == '0'
                 ? 'DIBATALKAN'
-                : slotProps.data.statusRj == '1'
-                ? 'BOOKING'
-                : slotProps.data.statusRj == '2'
+                : ['1', '2', '3'].includes(String(slotProps.data.statusRj))
                 ? 'ANTRI'
-                : slotProps.data.statusRj == '3'
-                ? 'ANTRIAN'
-                : slotProps.data.statusRj == '4'
+                : String(slotProps.data.statusRj) == '4'
                 ? 'DIPERIKSA'
                 : 'DISCHARGE'
             "
-            customClass="h-5 pr-[5px] mr-[5px] border-none"
+            customClass="h-5 pr-[9px] mr-[5px] border-none"
             :bgColor="
-              slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3'
-                ? 'bg-grey-75'
-                : slotProps.data.statusRj == '4'
-                ? 'bg-blueJeans-75'
-                : 'bg-danger-75'
+              String(slotProps.data.statusRj) == '0'
+                ? 'bg-danger-300' 
+                : ['1', '2', '3'].includes(String(slotProps.data.statusRj))
+                ? 'bg-warning-300' 
+                : String(slotProps.data.statusRj) == '4'
+                ? 'bg-blueJeans-300'
+                : 'bg-danger-300'
             "
-            :textColor="
-              slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3'
-                ? 'text-grey-400'
-                : slotProps.data.statusRj == '4'
-                ? 'text-blueJeans-300'
-                : 'text-danger-300'
-            "
+            :textColor="'text-white'"
           />
         </div>
         <div v-if="slotProps.data.statusPembayaran">
@@ -313,7 +413,8 @@ const resetSelection = () => {
   </DataTable>
   <!-- Else -->
   <NoData v-else />
-  <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="{}" />
+  <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="selectedPatientForRM" />
+   
 </template>
 
 <style>
