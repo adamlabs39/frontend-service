@@ -353,36 +353,37 @@ onMounted(() => {
             </div>
 
             <!-- Filter Lokasi -->
-            <div class="flex mt-[15px]">
+            <div class="flex mt-[15px] items-center">
               <div class="w-[10%] font-semibold text-SM text-grey-300">
                 Filter Lokasi
               </div>
-              <div class="flex">
+              <div class="flex items-center">
                 <span class="text-grey-300">|</span>
-                <CustomChip
-                  v-for="(item, index) in StockLocationPayload"
-                  :key="item + index"
-                  :label="item.name"
-                  :value="item.uuid"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-50"
-                  iconColor="text-adameds-300"
-                  textColor="text-adameds-300"
-                  customClass="h-6 w-100"
-                  class="ml-[10px]"
-                  :isSelected="selectedLocation.includes(item.uuid)"
-                  @selected="selectLocation"
-                  selectedColor="bg-adameds-300 border-adameds-300"
-                />
+                <div class="grid grid-cols-9 items-center gap-[10px] ml-[10px]">
+                  <CustomChip
+                    v-for="(item, index) in StockLocationPayload"
+                    :key="item + index"
+                    :label="item.name"
+                    :value="item.uuid"
+                    borderColor="border-adameds-300"
+                    bgColor="bg-adameds-50"
+                    iconColor="text-adameds-300"
+                    textColor="text-adameds-300"
+                    customClass="h-6 w-100 min-h-[30px]"
+                    :isSelected="selectedLocation.includes(item.uuid)"
+                    @selected="selectLocation"
+                    selectedColor="bg-adameds-300 border-adameds-300"
+                  />
+                </div>
               </div>
             </div>
 
             <!-- Filter Pembayaran -->
-            <div class="flex mt-[15px]">
+            <div class="flex mt-[15px] items-center">
               <div class="w-[10%] font-semibold text-SM text-grey-300">
                 Filter Pembayaran
               </div>
-              <div class="flex">
+              <div class="flex items-center">
                 <span class="text-grey-300">|</span>
                 <CustomChip
                   label="TUNAI"
