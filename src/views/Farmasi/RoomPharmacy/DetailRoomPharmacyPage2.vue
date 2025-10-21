@@ -15,7 +15,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["close","nextPage2"]);
+const emit = defineEmits(["close", "nextPage2"]);
 
 const cetakDialog = ref(false);
 
@@ -33,7 +33,7 @@ const ReadyToBeHandedOver = async () => {
     console.error("Failed to process the data:", error);
   } finally {
     UseUtilsStore.setLoading(false);
-    emit('nextPage2', props.payloadDetail2.uuid)
+    emit("nextPage2", props.payloadDetail2.uuid);
   }
 };
 </script>
@@ -45,7 +45,9 @@ const ReadyToBeHandedOver = async () => {
       <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md h-[60px]">
         <div class="grid grid-cols-2 gap-2">
           <div class="flex">
-            <p class="font-bold text-white font-poppins">{{ payloadDetail2.noOrderAlkes }}</p>
+            <p class="font-bold text-white font-poppins">
+              {{ payloadDetail2.noOrderAlkes }}
+            </p>
             <CustomChip
               :label="payloadDetail2.paymentMethod"
               :showCheckedIcon="false"
@@ -58,8 +60,10 @@ const ReadyToBeHandedOver = async () => {
           </div>
           <div class="flex justify-end">
             <div class="bg-white w-[0.5px] h-[30px] mr-[20px]"></div>
-            <p class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]">
-              Tgl. Order : {{ epochToDate(payloadDetail2.createdAt, 'date') }}
+            <p
+              class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]"
+            >
+              Tgl. Order : {{ epochToDate(payloadDetail2.createdAt, "date") }}
             </p>
             <CustomButton
               background-color="bg-white"
@@ -201,35 +205,52 @@ const ReadyToBeHandedOver = async () => {
                 <div class="mt-[20px] p-4 rounded-t-lg bg-adameds-50 shadow-md">
                   <div class="grid grid-cols-2 gap-2">
                     <div class="flex">
-                      <CustomButton class="text-sm h-7">{{ index + 1 }}</CustomButton>
-                      <p class="my-auto ml-2 text-sm font-bold">{{ items.itemMedis.name }}</p>
+                      <CustomButton class="h-7 text-sm">{{
+                        index + 1
+                      }}</CustomButton>
+                      <p class="my-auto ml-2 text-sm font-bold">
+                        {{ items?.itemMedis?.name || "-" }}
+                      </p>
                       <PhArrowRight
                         :size="20"
                         class="my-auto ml-2 text-success-300"
                         weight="bold"
                       />
-                      <p class="my-auto ml-2 text-sm font-bold">{{ items.qty }} Pcs</p>
+                      <p class="my-auto ml-2 text-sm font-bold">
+                        {{ items.qty }} Pcs
+                      </p>
                     </div>
                   </div>
                 </div>
-                <div class="h-[140px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
-                  <DataTable :value="items.listAlkes" :pt="{ headerRow: 'text-SM' }">
+                <div
+                  class="h-[140px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
+                >
+                  <DataTable
+                    :value="items.listAlkes"
+                    :pt="{ headerRow: 'text-SM' }"
+                  >
                     <!-- Stok Alkes -->
                     <Column header="Stok Alkes">
                       <template #body="slotProps">
-                        <div class="text-sm">{{ slotProps.data.stokAlkes }}</div>
+                        <div class="text-sm">
+                          {{ slotProps.data.stokAlkes }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Harga Satuan -->
                     <Column header="Harga Satuan">
                       <template #body="slotProps">
-                        <div class="text-sm">{{ formatPrice(slotProps.data.hargaSatuan) }}</div>
+                        <div class="text-sm">
+                          {{ formatPrice(slotProps.data.hargaSatuan) }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Sub. Total -->
                     <Column field="total" header="Sub. Total">
                       <template #body="slotProps">
-                        <div class="text-sm">{{ formatPrice(slotProps.data.total) }}</div>
+                        <div class="text-sm">
+                          {{ formatPrice(slotProps.data.total) }}
+                        </div>
                       </template>
                     </Column>
                   </DataTable>
@@ -285,7 +306,7 @@ const ReadyToBeHandedOver = async () => {
         <div class="grid grid-cols-2">
           <div class="mt-[20px]">
             <CustomButton @click="cetakDialog = true">
-              <div class="flex items-center gap-2">
+              <div class="flex gap-2 items-center">
                 <PhPrinter :size="18" color="#ffffff" weight="fill" />
                 <div class="text-sm">Cetak</div>
               </div>
@@ -293,7 +314,10 @@ const ReadyToBeHandedOver = async () => {
           </div>
           <div class="flex justify-end">
             <div class="mt-[20px]">
-              <CustomButton label="Alkes Siap Diserahkan" @click="ReadyToBeHandedOver" />
+              <CustomButton
+                label="Alkes Siap Diserahkan"
+                @click="ReadyToBeHandedOver"
+              />
             </div>
           </div>
         </div>
@@ -306,19 +330,19 @@ const ReadyToBeHandedOver = async () => {
     <template #body>
       <div class="flex gap-3 mt-[20px]">
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">E-Tiket</div>
           </div>
         </CustomButton>
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">E-Resep</div>
           </div>
         </CustomButton>
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">Salinan E-Resep</div>
           </div>
