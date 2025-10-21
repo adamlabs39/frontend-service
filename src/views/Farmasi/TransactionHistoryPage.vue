@@ -47,6 +47,12 @@ const fetchTransactionHistory = async () => {
   UseUtilsStore.setLoading(true);
   const selectedPaymentNew = [...selectedPayment.value];
   const selectedLocationNew = [...selectedLocation.value];
+  // Bangun parameter: satu pilihan -> kirim nilai; >1/0 -> kosong (tanpa filter)
+  const paymentParam =
+    selectedPaymentNew.length !== 1 ? "" : selectedPaymentNew[0];
+  const locationParam =
+    selectedLocationNew.length !== 1 ? "" : selectedLocationNew[0];
+
   try {
     const response = await TransactionHistoryStore.getApi({
       item_type: selectMedicine.value,
@@ -54,8 +60,8 @@ const fetchTransactionHistory = async () => {
       start_date: dateToEpoch(startDateFilter.value),
       end_date: dateToEpoch(endDateFilter.value),
       search: searchQuery.value,
-      lokasi_stok_uuid: selectedLocationNew.join(""),
-      payment_method: selectedPaymentNew.join(""),
+      lokasi_stok_uuid: locationParam,
+      payment_method: paymentParam,
       page: TransactionHistoryProperties.value.page,
       limit: TransactionHistoryProperties.value.page_size,
     });
@@ -133,6 +139,8 @@ const resetData = () => {
   searchQuery.value = "";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
+  selectedLocation.value = [];
+  selectedPayment.value = [];
   fetchTransactionHistory();
 };
 
