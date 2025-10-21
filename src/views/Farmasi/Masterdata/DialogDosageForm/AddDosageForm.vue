@@ -28,14 +28,21 @@ const props = defineProps({
 const schema = toTypedSchema(
   yup
     .object({
-      code: yup.string().required("Kode Satuan harus diisi"),
-      name: yup.string().required("Nama Satuan harus diisi"),
+      code: yup.string().trim().required("Kode Satuan harus diisi"),
+      name: yup.string().trim().required("Nama Satuan harus diisi"),
       status: yup.bool().default(true),
     })
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  setFieldError,
+} = useForm({
   validationSchema: schema,
 });
 const bentukSediaanStore = useDosageFormStore();
@@ -45,6 +52,15 @@ const [name] = defineField("name");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
+
+// Helper: terjemahkan error API ke bahasa Indonesia yang mudah dipahami
+const translateValidationError = (err: unknown) => {
+  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
+  if (rawMsg.includes("validation error")) {
+    return "Kode Aturan Pakai sudah terdaftar di faskes ini. Gunakan kode lain.";
+  }
+  return "Gagal menyimpan data. Silakan coba lagi.";
+};
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
@@ -62,6 +78,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     }
     closeDialog();
   } catch (error) {
+    setFieldError("code", translateValidationError(error));
     console.error("Failed to process the data:", error);
   }
 });
@@ -152,7 +169,7 @@ watch(
     <template #footer>
       <div class="w-full">
         <!-- <hr class="-mx-5 border-grey-200" /> -->
-        <div class="mt-5 flex justify-end gap-2.5">
+        <div class="flex gap-2.5 justify-end mt-5">
           <CustomButton
             label="Reset"
             textColor="text-grey-300"

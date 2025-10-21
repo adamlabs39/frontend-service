@@ -39,15 +39,16 @@ const hasData = computed(
 
 // Fetch MedicalItem
 const fetchMedicalItem = async () => {
+  UseUtilsStore.setLoading(true);
   try {
     const response = await MedicalItemStore.getApi(
       MedicalItemProperties.value.page,
       MedicalItemProperties.value.page_size,
       searchQuery.value,
       jenisItem.value,
-      {jenis_stok_uuides: selectedFilterJenisStok.value}
+      { jenis_stok_uuides: selectedFilterJenisStok.value }
     );
-    
+
     if (response && response.payload) {
       MedicalItemProperties.value.total = response.properties.total;
       MedicalItemPayload.value = response.payload;
@@ -69,21 +70,19 @@ const handlePage = (event: any) => {
 
 const selectedFilterJenisStok = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
-  if (selectedFilterJenisStok.value.includes(label)) {    
+  if (selectedFilterJenisStok.value.includes(label)) {
     selectedFilterJenisStok.value = selectedFilterJenisStok.value.filter(
       (item) => item != label
     );
   } else {
     selectedFilterJenisStok.value.push(label);
   }
-  fetchMedicalItem()  
+  fetchMedicalItem();
 };
 
 // Filter Search Data
 const searchData = () => {
-  searchQuery.value,
-  jenisItem.value,
-  fetchMedicalItem();
+  searchQuery.value, jenisItem.value, fetchMedicalItem();
 };
 
 // Filter Reset Data
@@ -177,18 +176,29 @@ const importExcel = async (file: File) => {
 // Export Excel
 const ExportExcel = async () => {
   try {
-    const response = await  MedicalItemStore.exportApi();
-    const rows = response.payload.itemMedis;
+    // Ambil state paginasi aktif
+    const { page, page_size } = MedicalItemProperties.value;
+
+    // Ambil data sesuai page & page_size & pencarian aktif
+    const response = await MedicalItemStore.getApi(
+      page,
+      page_size,
+      searchQuery.value
+    );
+    const rows = response?.payload ?? [];
     if (!rows || rows.length === 0) {
       console.error("No data available for export");
       return;
     }
 
+    // Hitung offset untuk penomoran sesuai page aktif
+    const offset = (page - 1) * page_size;
+
     // Prepare Data for Export
     const title = ["DATAMASTER ITEM MEDIS"];
-    const data = [];
+    const data: any[] = [];
 
-    // Header Row (Kosong untuk baris kedua tanpa border)
+    // Header Row (kosong untuk baris kedua tanpa border)
     data.push({});
     data.push({});
     data.push({
@@ -209,24 +219,40 @@ const ExportExcel = async () => {
       Status: "Status",
     });
 
-    // Data Rows
+    // Helper untuk konversi objek/array ke label tabel
+    const toJenisStokLabels = (jenisStok: any) =>
+      Array.isArray(jenisStok)
+        ? jenisStok
+            .map((it: any) => it?.detailStok?.name)
+            .filter(Boolean)
+            .join(", ")
+        : "";
+
+    const toKomposisiLabels = (ingridients: any) =>
+      Array.isArray(ingridients)
+        ? ingridients
+            .map((it: any) => it?.name)
+            .filter(Boolean)
+            .join(", ")
+        : "";
+
     for (let i = 0; i < rows.length; i++) {
       data.push({
-        No: i + 1,
-        Kode: rows[i].code,
-        Nama: rows[i].name,
-        JenisItem: rows[i].jenisItem,
-        SatuanPenggunaan: rows[i].satuanPenggunaan,
-        JenisStok: rows[i].jenisStok,
-        Manufaktur: rows[i].manufacture,
-        BentukSediaan: rows[i].bentukSediaan,
-        DosisKemasan: rows[i].dosis,
-        SatuanDosis: rows[i].satuanDosis,
-        IsiKemasan: rows[i].IsiKemasan,
-        SatuanKemasan: rows[i].satuanKemasan,
-        KategoriItem: rows[i].kategoriObat,
-        Komposisi: rows[i].ingridients,
-        Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
+        No: offset + i + 1,
+        Kode: rows[i]?.code,
+        Nama: rows[i]?.name,
+        JenisItem: rows[i]?.jenisItem,
+        SatuanPenggunaan: rows[i]?.satuanPenggunaan?.name || "",
+        JenisStok: toJenisStokLabels(rows[i]?.jenisStok),
+        Manufaktur: rows[i]?.manufacture?.name || "",
+        BentukSediaan: rows[i]?.bentukSediaan?.name || "",
+        DosisKemasan: rows[i]?.dosis ?? "",
+        SatuanDosis: rows[i]?.satuanDosis?.name || "",
+        IsiKemasan: rows[i]?.isiKemasan ?? "", // perbaiki huruf kecil
+        SatuanKemasan: rows[i]?.satuanKemasan?.name || "",
+        KategoriItem: rows[i]?.kategoriObat?.name || "",
+        Komposisi: toKomposisiLabels(rows[i]?.ingridients),
+        Status: rows[i]?.status ? "AKTIF" : "NON-AKTIF",
       });
     }
 
@@ -236,7 +262,7 @@ const ExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 14 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -245,18 +271,32 @@ const ExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 }, // No
+      { wch: 14 }, // Kode
+      { wch: 28 }, // Nama
+      { wch: 12 }, // JenisItem
+      { wch: 18 }, // SatuanPenggunaan
+      { wch: 18 }, // JenisStok
+      { wch: 18 }, // Manufaktur
+      { wch: 18 }, // BentukSediaan
+      { wch: 14 }, // DosisKemasan
+      { wch: 16 }, // SatuanDosis
+      { wch: 14 }, // IsiKemasan
+      { wch: 16 }, // SatuanKemasan
+      { wch: 18 }, // KategoriItem
+      { wch: 24 }, // Komposisi
+      { wch: 10 }, // Status
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
     for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        // Apply border only to row 3 and beyond (table rows)
+        // Border untuk baris tabel
         if (row >= 2) {
           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
           worksheet[cellAddress].s.border = {
@@ -267,13 +307,13 @@ const ExportExcel = async () => {
           };
         }
 
-        // Align header cells (row 3)
+        // Align header (baris 3)
         worksheet[cellAddress].s.alignment = {
           horizontal: "center",
           vertical: "center",
         };
 
-        // Fill header with background color (row 3)
+        // Fill header (baris 3)
         if (row === 2) {
           worksheet[cellAddress].s.fill = {
             fgColor: { rgb: "9fe2db" },
@@ -316,9 +356,9 @@ const downloadExcel = async () => {
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    data.push({ 
-      No: "1", 
-      Kode: "MD001", 
+    data.push({
+      No: "1",
+      Kode: "MD001",
       Nama: "Betadine",
       JenisItem: "Alkes",
       SatuanPenggunaan: "btl",
@@ -331,7 +371,7 @@ const downloadExcel = async () => {
       IsiKemasan: "10",
       SatuanKemasan: "btl",
       KategoriItem: "kategori1",
-      Komposisi: "KODE-001"
+      Komposisi: "KODE-001",
     });
 
     // Create Workbook and Worksheet
@@ -349,11 +389,48 @@ const downloadExcel = async () => {
 
     worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
+    // Apply table styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:F2");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        // Border untuk semua sel
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (row === range.s.r) {
+          // Header style
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = { bold: true };
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "9fe2db" } };
+        } else {
+          // Center alignment untuk kolom numeric dan kolom "No"
+          if (col === 0 || col === 4 || col === 5) {
+            worksheet[cellAddress].s.alignment = {
+              horizontal: "center",
+              vertical: "center",
+            };
+          }
+        }
+      }
+    }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Item Medis");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Item Medis"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Item Medis.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -367,23 +444,39 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+  <div class="flex overflow-hidden flex-col h-full">
+    <Card
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchMedicalItem"/>
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchMedicalItem"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Item Medis</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Item Medis
+                  </p>
                 </div>
               </div>
               <CustomButton
@@ -398,7 +491,7 @@ onMounted(() => {
             <div class="flex mt-[10px]">
               <CustomTextfield
                 v-model="searchQuery"
-                label="Pencarian"
+                label="Cari Item Medis"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari Nama Item Medis (Obat / Alkes / dll)"
                 class="w-[70%] mr-5"
@@ -429,27 +522,29 @@ onMounted(() => {
             </div>
             <!-- Filter Jenis Stok -->
             <div class="flex mb-[10px] mt-5">
-              <div class="w-[15%] font-semibold text-SM text-grey-300">Filter Jenis Stok</div>
-                <div class="flex">
-                  <span class="font-semibold text-grey-300">|</span>
-                  <CustomChip
-                    v-for="(items, index) in StockTypePayload"
-                    :key="items + index"
-                    :label="items.name"
-                    :value="items.uuid"
-                    borderColor="border-adameds-300"
-                    bgColor="bg-adameds-50"
-                    iconColor="text-adameds-300"
-                    textColor="text-adameds-300"
-                    customClass="h-7"
-                    class="ml-[10px]"
-                    :isSelected="selectedFilterJenisStok.includes(items.uuid)"
-                    @selected="onPoliSelect"
-                    selectedColor="bg-adameds-300 border-adameds-300"
-                  />
-                </div>
+              <div class="w-[15%] font-semibold text-SM text-grey-300">
+                Filter Jenis Stok
+              </div>
+              <div class="flex">
+                <span class="font-semibold text-grey-300">|</span>
+                <CustomChip
+                  v-for="(items, index) in StockTypePayload"
+                  :key="items + index"
+                  :label="items.name"
+                  :value="items.uuid"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-50"
+                  iconColor="text-adameds-300"
+                  textColor="text-adameds-300"
+                  customClass="h-7"
+                  class="ml-[10px]"
+                  :isSelected="selectedFilterJenisStok.includes(items.uuid)"
+                  @selected="onPoliSelect"
+                  selectedColor="bg-adameds-300 border-adameds-300"
+                />
+              </div>
             </div>
-            <hr class="mt-5 border-[1px] border-grey-200">
+            <hr class="mt-5 border-[1px] border-grey-200" />
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -481,11 +576,11 @@ onMounted(() => {
           scrollable
           scrollHeight="flex"
           :dt="{
-          rowSelectedColor: '#000000',
-          rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor: 'transparent',
-          bodyCellBorderColor: 'transparent',
-          rowStripedBackground: '#F8F8F8',
+            rowSelectedColor: '#000000',
+            rowSelectedBackground: 'transparent',
+            bodyCellSelectedBorderColor: 'transparent',
+            bodyCellBorderColor: 'transparent',
+            rowStripedBackground: '#F8F8F8',
           }"
         >
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
@@ -494,48 +589,89 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ slotProps.index + 1 }}
+                {{
+                  (MedicalItemProperties.page - 1) *
+                    MedicalItemProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
           <!-- Kode Item -->
-          <Column field="code" header="Kode Item" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="code"
+            header="Kode Item"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <!-- Nama Item Medis (Obat, Alkes, dll) -->
-          <Column field="name" header="Nama Item Medis (Obat, Alkes, dll)" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="name"
+            header="Nama Item Medis (Obat, Alkes, dll)"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <!-- Jenis Item -->
-          <Column field="jenisItem" header="Jenis Item" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="jenisItem"
+            header="Jenis Item"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <!-- Jenis Stok -->
-          <Column header="Jenis Stok" headerClass="bg-adameds-50 font-semibold text-SM">
+          <Column
+            header="Jenis Stok"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          >
             <template #body="slotProps">
               <div class="flex">
-                <div v-for="items in slotProps.data.jenisStok" :key="items">
-                  <CustomChip
-                    :label="items.detailStok.name"
-                    :showCheckedIcon="false"
-                    borderColor="border-adameds-300"
-                    bgColor="bg-adameds-300" 
-                    textColor="text-white"
-                    customClass="h-6"
-                    class="mr-[5px]"
-                  />
-                </div>
+                <template v-if="Array.isArray(slotProps.data?.jenisStok)">
+                  <div
+                    v-for="(items, index) in slotProps.data.jenisStok"
+                    :key="index"
+                  >
+                    <CustomChip
+                      :label="items?.detailStok?.name || '-'"
+                      :showCheckedIcon="false"
+                      borderColor="border-adameds-300"
+                      bgColor="bg-adameds-300"
+                      textColor="text-white"
+                      customClass="h-6"
+                      class="mr-[5px]"
+                    />
+                  </div>
+                </template>
+                <template v-else>
+                  <span>-</span>
+                </template>
               </div>
             </template>
           </Column>
           <!-- Manufaktur -->
-          <Column field="manufacture.name" header="Manufaktur" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            header="Manufaktur"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          >
+            <template #body="slotProps">
+              <div>{{ slotProps.data?.manufacture?.name || "-" }}</div>
+            </template>
+          </Column>
           <!-- Status -->
           <Column field="status" headerClass="bg-adameds-50">
             <template #header="slotProps">
               <div class="w-full font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -547,7 +683,7 @@ onMounted(() => {
               <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center gap-2.5 justify-center">
+              <div class="flex gap-2.5 justify-center items-center">
                 <CustomButton
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
@@ -560,7 +696,13 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code} - ${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -568,7 +710,7 @@ onMounted(() => {
             </template>
           </Column>
         </DataTable>
-        <AddMedicalItem 
+        <AddMedicalItem
           v-model:isDialogVisible="MedicalItemDialog"
           :title="dialogConfig.title"
           :method="dialogConfig.method"
@@ -576,7 +718,7 @@ onMounted(() => {
           :dataJenisStok="StockTypePayload"
           @data-updated="fetchMedicalItem"
         />
-        <DeleteMedicalItem 
+        <DeleteMedicalItem
           v-model:isDialogVisible="DeleteMedicalItemDialog"
           :title="dialogConfig.title"
           :itemToDelete="dialogConfig.data"
@@ -585,7 +727,7 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex gap-2.5 items-center">
             <FileUpload
               mode="basic"
               accept=".xls,.xlsx"

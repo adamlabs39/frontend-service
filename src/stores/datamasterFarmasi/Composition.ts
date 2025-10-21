@@ -6,8 +6,16 @@ export const useCompositionStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getApi(page: number = 1, limit: number = 10, payload = {}) {
-      return apiFarmasiGet(`/farmasi/datamaster/ingredient?page=${page}&limit=${limit}`, payload);
+    async getApi(
+      page: number = 1,
+      limit: number = 10,
+      name: string = "",
+      payload = {}
+    ) {
+      return apiFarmasiGet(
+        `/farmasi/datamaster/ingredient?page=${page}&limit=${limit}&name=${name}`,
+        payload
+      );
     },
     async postApi(payload = {}) {
       return apiFarmasiPost("/farmasi/datamaster/ingredient", payload);
@@ -16,14 +24,16 @@ export const useCompositionStore = defineStore({
       return apiFarmasiPut(`/farmasi/datamaster/ingredient/${uuid}`, payload);
     },
     async deleteApi(uuid: string, payload = {}) {
-      return apiFarmasiDelete(`/farmasi/datamaster/ingredient/${uuid}`, payload);
+      return apiFarmasiDelete(
+        `/farmasi/datamaster/ingredient/${uuid}`,
+        payload
+      );
     },
-    async exportApi(payload = {}) {      
+    async exportApi(payload = {}) {
       return apiFarmasiGet(`/farmasi/datamaster/ingredient/export`, payload);
     },
     async importApi(payload: any) {
       return apiFarmasiPost("/farmasi/datamaster/ingredient/import", payload);
     },
-    
   },
 });

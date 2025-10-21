@@ -31,8 +31,8 @@ const props = defineProps({
 const schema = toTypedSchema(
   yup
     .object({
-      code: yup.string().required("Kode Satuan harus diisi"),
-      name: yup.string().required("Nama Satuan harus diisi"),
+      code: yup.string().trim().required("Kode Satuan harus diisi"),
+      name: yup.string().trim().required("Nama Satuan harus diisi"),
       periodeUnit: yup.string().required("Periode Unit harus diisi"),
       periode: yup.number().required("Periode harus diisi"),
       frekuensi: yup.number().required("Frekuensi harus diisi"),
@@ -324,7 +324,7 @@ watch(
     </template>
     <template #footer>
       <div class="w-full">
-        <div class="mt-5 flex justify-end gap-2.5">
+        <div class="flex gap-2.5 justify-end mt-5">
           <CustomButton
             v-if="method !== 'detail'"
             label="Reset"

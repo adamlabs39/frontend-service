@@ -139,18 +139,29 @@ const importExcel = async (file: File) => {
 // Export Excel
 const ExportExcel = async () => {
   try {
-    const response = await RulesOfUseStore.exportApi();
-    const rows = response.payload;
+    // Ambil state paginasi aktif
+    const { page, page_size } = RulesOfUseProperties.value;
+
+    // Ambil data sesuai page & page_size & pencarian aktif
+    const response = await RulesOfUseStore.getApi(
+      page,
+      page_size,
+      searchQuery.value
+    );
+    const rows = response?.payload ?? [];
     if (!rows || rows.length === 0) {
       console.error("No data available for export");
       return;
     }
 
+    // Hitung offset untuk penomoran sesuai page aktif
+    const offset = (page - 1) * page_size;
+
     // Prepare Data for Export
     const title = ["DATAMASTER ATURAN PAKAI"];
-    const data = [];
+    const data: any[] = [];
 
-    // Header Row (Kosong untuk baris kedua tanpa border)
+    // Header Row (kosong untuk baris kedua tanpa border)
     data.push({});
     data.push({});
     data.push({
@@ -163,10 +174,10 @@ const ExportExcel = async () => {
       Status: "Status",
     });
 
-    // Data Rows
+    // Data Rows (sesuai page & page_size)
     for (let i = 0; i < rows.length; i++) {
       data.push({
-        No: i + 1,
+        No: offset + i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
         PeriodeUnit: rows[i].periodeUnit,
@@ -195,14 +206,12 @@ const ExportExcel = async () => {
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
     for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        // Apply border only to row 3 and beyond (table rows)
+        // Border untuk baris tabel
         if (row >= 2) {
           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
           worksheet[cellAddress].s.border = {
@@ -213,13 +222,13 @@ const ExportExcel = async () => {
           };
         }
 
-        // Align header cells (row 3)
+        // Align header (baris 3)
         worksheet[cellAddress].s.alignment = {
           horizontal: "center",
           vertical: "center",
         };
 
-        // Fill header with background color (row 3)
+        // Fill header (baris 3)
         if (row === 2) {
           worksheet[cellAddress].s.fill = {
             fgColor: { rgb: "9fe2db" },
