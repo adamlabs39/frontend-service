@@ -13,6 +13,7 @@ import {
   baseInstanceRawatInap,
   baseInstanceInventory,
   baseInstanceAntrian,
+  baseInstanceStok,
 } from "./Api";
 import { app } from "@/main";
 import { useAuthStore } from "@/stores/auth";
@@ -402,7 +403,6 @@ const apiLaboratoriumDelete = async (url: string, data: object) => {
   }
 };
 
-
 //Admisi
 const apiAdmisiGet = async (url: string, data: object) => {
   url = cekHost(import.meta.env.VITE_BASE_ADMISI, url);
@@ -482,14 +482,13 @@ export const apiAdmisiDownload = async (url: string) => {
     const response = await axios.get(fullUrl, {
       responseType: "blob",
       headers: {
-        'Authorization': token,
-        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      }
-
+        Authorization: token,
+        Accept:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
     });
 
     return response;
-    
   } catch (error) {
     console.error("Error di apiAdmisiDownload:", error);
     throw error;
@@ -809,6 +808,49 @@ const apiAntrianPut = async (url: string, data: object) => {
     errorApiHandler(error);
   }
 };
+
+//Stok
+const apiStokGet = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_STOK, url);
+  try {
+    let response = await baseInstanceStok.get(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiStokPost = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_STOK, url);
+  try {
+    let response = await baseInstanceStok.post(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiStokPut = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_STOK, url);
+  try {
+    let response = await baseInstanceStok.put(url, data);
+    return response.data;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
+const apiStokDelete = async (url: string, data: object) => {
+  url = cekHost(import.meta.env.VITE_BASE_STOK, url);
+  try {
+    let response = await baseInstanceStok.delete(url, { data: data });
+    app.config.globalProperties.$toast.add({
+      severity: "success",
+      summary: response.data.message,
+      life: 3000,
+    });
+    return response;
+  } catch (error) {
+    errorApiHandler(error);
+  }
+};
 export {
   apiBasePost,
   apiBaseGet,
@@ -865,4 +907,8 @@ export {
   apiAntrianPost,
   apiAntrianPut,
   apiAntrianGetNoMessage,
+  apiStokGet,
+  apiStokPost,
+  apiStokPut,
+  apiStokDelete,
 };
