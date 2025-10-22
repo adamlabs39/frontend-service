@@ -55,7 +55,7 @@ onMounted(() => {
         <template #header>
           <div class="flex items-center justify-between w-full align-middle">
             <div class="flex items-center">
-              <CustomButton icon="PhArrowClockwise" class="mr-5" />
+              <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDetail" />
               <CustomBreadCrumb :home="{
                 label: 'Riwayat Tarif',
                 home: true,
@@ -134,15 +134,15 @@ onMounted(() => {
                   <div>
                     <div class="font-semibold underline text-SM">HNA</div>
                     <div class="font-normal text-normal">
-                      Rp. {{ detailData?.HNA || '-' }}
+                      Rp. {{ detailData?.hja|| '-' }}
                     </div>
                   </div>
                 </div>
                 <div class="grid grid-cols-2">
                   <div>
-                    <div class="font-semibold underline text-SM">HPP</div>
+                    <div class="font-semibold underline text-SM">HJA</div>
                     <div class="font-normal text-normal">
-                      Rp. {{ detailData?.HPP || '-' }}
+                      Rp. {{ detailData?.hpp || '-' }}
                     </div>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ onMounted(() => {
           <div class="-mx-4">Konversi Satuan</div>
         </template>
         <template #content>
-          <DataTable :value="detailData.konversiSatuan" tableStyle="min-width: 50rem" scrollable class="-mx-[18px]"
+          <DataTable :value="detailData.conversions" tableStyle="min-width: 50rem" scrollable class="-mx-[18px]"
             scrollHeight="240px" :pt="{ headerRow: 'text-SM' }">
             <Column field="jenisSatuan" headerClass="bg-adameds-50">
               <template #header>
@@ -174,7 +174,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.jenisSatuan || '-' }}
+                    {{ slotProps.data.satuanPembelian || '-' }}
                   </div>
                 </div>
               </template>
@@ -186,7 +186,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.satuan || '-' }}
+                    {{ slotProps.data.satuanPenggunaan || '-' }}
                   </div>
                 </div>
               </template>
@@ -198,7 +198,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.konversiIsi || '-' }} Pcs
+                    {{ slotProps.data.konversi || '-' }} Pcs
                   </div>
                 </div>
               </template>
@@ -217,8 +217,8 @@ onMounted(() => {
           <div class="-mx-4">Riwayat Penerimaan Pembelian</div>
         </template>
         <template #content>
-          <DataTable :value="detailData.riwayatPenerimaan" tableStyle="min-width: 50rem" scrollable class="-mx-[18px]"
-            scrollHeight="240px" :pt="{ headerRow: 'text-SM' }">
+          <DataTable :value="detailData.purchaseHistory" tableStyle="min-width: 60rem" scrollable class="-mx-[18px]"
+            scrollHeight="380px" :pt="{ headerRow: 'text-SM' }">
             <Column field="tanggal" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">Tanggal</div>
@@ -226,7 +226,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ epochToDate(slotProps.data.tanggal || '-') }}
+                    {{ epochToDate(slotProps.data.tanggal || '-', "date") }}
                   </div>
                 </div>
               </template>
@@ -238,12 +238,12 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.expDate || '-' }}
+                    {{ slotProps.data.noPo || '-' }}
                   </div>
                 </div>
               </template>
             </Column>
-            <Column field="expDate" headerClass="bg-adameds-50">
+            <Column field="expDate" headerClass="bg-adameds-50"">
               <template #header>
                 <div class="font-semibold">Exp Date</div>
               </template>
@@ -271,17 +271,17 @@ onMounted(() => {
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">Rp. {{ slotProps.data.HNA || '-' }}</div>
+                  <div class="text-SM">Rp. {{ slotProps.data.hja || '-' }}</div>
                 </div>
               </template>
             </Column>
             <Column field="HPP" headerClass="bg-adameds-50">
               <template #header>
-                <div class="font-semibold">HPP</div>
+                <div class="font-semibold">HJA</div>
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">Rp. {{ slotProps.data.HPP || '-' }}</div>
+                  <div class="text-SM">Rp. {{ slotProps.data.hpp || '-' }}</div>
                 </div>
               </template>
             </Column>

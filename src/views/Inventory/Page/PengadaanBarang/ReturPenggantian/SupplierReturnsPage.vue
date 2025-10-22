@@ -15,6 +15,13 @@ import DialogInvoice from "./DialogInvoice.vue"
 import AddSupplierReturns from "./AddSupplierReturnsPage.vue";
 import DetailSupplierReturns from "./DetailSupplierReturnsPage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("retur");
 
@@ -58,7 +65,7 @@ const fetchSupplierReturns = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await SupplierReturnsStore.getApi(
-      '0196a8ca-1fda-71ca-a133-7383413ef200',
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       SupplierReturnsProperties.value.page,
@@ -78,6 +85,11 @@ const fetchSupplierReturns = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, () => {
+  SupplierReturnsProperties.value.page = 1; // Reset ke halaman pertama
+  fetchSupplierReturns();
+});
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {

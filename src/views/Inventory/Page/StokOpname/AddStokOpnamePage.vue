@@ -22,6 +22,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
 });
 
 // State Management Kategori Item
@@ -83,7 +87,7 @@ const fetchRekonsil = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await StokOpnameStore.getApiRekonsil(
-      "0196a8ca-1fda-71ca-a133-7383413ef200",
+      props.lokasiStokUuid,
       jenisStokUuids.value.join(","),
       jenisItem.value.join(","),
       kategoriItem.value,

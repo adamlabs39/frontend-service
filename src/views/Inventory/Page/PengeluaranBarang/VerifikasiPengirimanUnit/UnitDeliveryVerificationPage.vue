@@ -13,6 +13,13 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailUnitDeliveryVerification from "./DetailUnitDeliveryVerificationPage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("request");
 
@@ -54,7 +61,7 @@ const fetchUnitDeliveryVerification = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await UnitDeliveryVerificationStore.getApi(
-      '0192b31f-365d-731c-8b16-3a4565c9475e',
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       UnitDeliveryVerificationProperties.value.page,
@@ -74,6 +81,11 @@ const fetchUnitDeliveryVerification = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, () => {
+  UnitDeliveryVerificationProperties.value.page = 1; // Reset ke halaman pertama
+  fetchUnitDeliveryVerification();
+});
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {

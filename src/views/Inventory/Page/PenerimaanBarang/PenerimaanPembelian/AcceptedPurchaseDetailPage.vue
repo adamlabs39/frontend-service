@@ -9,7 +9,7 @@ import Column from "primevue/column";
 import { onMounted, ref, computed } from "vue";
 import { usePurchaseAcceptanceStore } from "@/stores/inventory/purchaseAcceptance";
 import { utilsStore } from "@/stores/utils";
-import { formatPrice, epochToDate } from "@/utils/Helpers";
+import { formatPrice, epochToDate, formatStringDate } from "@/utils/Helpers";
 
 const props = defineProps({
     selectedDataUuid: { type: String, required: true },
@@ -170,8 +170,7 @@ onMounted(fetchDetail);
                                     <Column field="qtyTerima" header="Terima" headerClass="bg-adameds-50"></Column>
                                     <Column field="satuanBeli" header="Satuan/Isi" headerClass="bg-adameds-50"></Column>
                                     <Column header="Exp. Date" headerClass="bg-adameds-50">
-                                        <template #body="slotProps">{{ slotProps.data.expDate ?
-                                            epochToDate(slotProps.data.expDate, "date") : '-' }}</template>
+                                        <template #body="slotProps">{{ formatStringDate(slotProps.data.expDate, "date") }} </template>
                                     </Column>
                                     <Column header="Harga Satuan" headerClass="bg-adameds-50 text-end">
                                         <template #body="slotProps">{{ formatPrice(slotProps.data.hargaSatuan)

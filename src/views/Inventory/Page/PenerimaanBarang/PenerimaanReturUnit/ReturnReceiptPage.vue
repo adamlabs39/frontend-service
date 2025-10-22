@@ -14,6 +14,13 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailReturnReceipt from "./DetailReturnReceiptPage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Title Label
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -55,7 +62,7 @@ const fetchReturnReceipt = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await ReturnReceiptStore.getApi(
-      '0196a8ca-1fda-71ca-a133-7383413ef200',
+      props.lokasiStokUuid,
       reason.value,
       searchQuery.value,
       ReturnReceiptProperties.value.page,
@@ -75,6 +82,11 @@ const fetchReturnReceipt = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, () => {
+  ReturnReceiptProperties.value.page = 1; // Reset ke halaman pertama
+  fetchReturnReceipt();
+});
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {

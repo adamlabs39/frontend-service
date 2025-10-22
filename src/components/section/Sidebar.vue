@@ -36,12 +36,13 @@ const props = defineProps({
 // State Management Stock Location
 const StockLocationStore = useStockLocationStore();
 const StockLocationPayload = ref<any[]>([]);
+const selectedLokasiStok = ref("");
 
 // Fetch Stock Location
-const fetchStockLocation = async () => {  
+const fetchStockLocation = async () => {
   try {
-    const response = await StockLocationStore.getApi();
-
+    // Panggil API dengan limit tinggi agar semua data lokasi termuat
+    const response = await StockLocationStore.getApi(1, 9999);
     if (response && response.payload) {
       StockLocationPayload.value = response.payload;
     } else {
@@ -52,6 +53,11 @@ const fetchStockLocation = async () => {
     StockLocationPayload.value = [];
   }
 };
+
+// Untuk Mendeteksi perubahan (buat inventory)
+watch(selectedLokasiStok, (newValue) => {
+  emit("update:searchSidebar", newValue);
+});
 
 const router = useRouter();
 const route = useRoute();
@@ -145,6 +151,7 @@ onMounted(() => {
           <hr v-if="props.sidebarTitle === 'Inventory'" />
           <div v-if="props.sidebarTitle === 'Inventory'">
             <CustomSelect
+            v-model="selectedLokasiStok"
               place-holder="Pilih Lokasi Stok"
               :showLabel="false"
               optionLabel="name"

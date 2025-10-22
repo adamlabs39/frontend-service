@@ -13,15 +13,22 @@ import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
-import DetailRateHistoryPage from "./DetailRateHistoryPage.vue";
 import DetailRiwayatTarif from "./DetailRiwayatTarif.vue";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
 
 // State Management Kategori Item
 const kategoriItem = ref<string>("");
 const optionKategori = ref([
   { name: "Medis", value: "medis" },
   { name: "Non-Medis", value: "non-medis" },
+  { name: "", value:""},
 ]);
 
 // State Management Jenis Item
@@ -29,6 +36,7 @@ const jenisItem = ref<string>("");
 const optionJenis = ref([
   { name: "Obat", value: "obat" },
   { name: "Alkes", value: "alkes" },
+  { name: "", value: "" },
 ]);
 
 // State Management Stock Type
@@ -86,10 +94,10 @@ const fetchRateHistory = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await RateHistoryStore.getApi(
-      lokasiStokUuid.value, // [DIUBAH] Menggunakan nilai dinamis
-      jenisStokUuid.value,
-      kategoriItem.value,
-      jenisItem.value,
+      lokasiStokUuid.value|| "",
+      jenisStokUuid.value|| "",
+      kategoriItem.value|| "",
+      jenisItem.value|| "",
       searchQuery.value,
       RateHistoryProperties.value.page,
       RateHistoryProperties.value.page_size
@@ -100,16 +108,24 @@ const fetchRateHistory = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+watch(() => props.lokasiStokUuid, (newVal) => {
+  if (newVal !== lokasiStokUuid.value) { // Hanya update jika berbeda
+    lokasiStokUuid.value = newVal || ""; // Update filter lokal
+    RateHistoryProperties.value.page = 1; // Reset halaman
+    fetchRateHistory(); // Fetch data baru
+  }
+}, { immediate: true });
 
 watch(lokasiStokUuid, fetchRateHistory);
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchRateHistory();
-  }, 500);
-});
+
+// let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchRateHistory();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -130,17 +146,19 @@ const onRowSelect = (event: any) => {
 
 // Filter Reset Data
 const resetData = () => {
+  // 4. RESET selectedLokasi KE NILAI DARI PROP SIDEBAR
+  lokasiStokUuid.value = props.lokasiStokUuid || "";
   jenisStokUuid.value = "";
   kategoriItem.value = "";
   jenisItem.value = "";
   searchQuery.value = "";
-  fetchRateHistory();
+  RateHistoryProperties.value.page = 1; // Reset halaman juga
+  fetchRateHistory(); // Fetch ulang setelah reset
 };
 
 const closeDetailPage = () => {
   isDetailView.value = false; // [FIX] Cukup ubah state ini untuk kembali
   selectedData.value = null;
-  fetchRateHistory();
 }
 
 const closeEditPage = async () => {
@@ -150,7 +168,7 @@ const closeEditPage = async () => {
 };
 
 onMounted(() => {
-  fetchRateHistory();
+  // fetchRateHistory();
   fetchDropdownData();
 });
 </script>
@@ -263,13 +281,13 @@ onMounted(() => {
               <div class="">{{ slotProps.data.hna || '-' }}</div>
             </template>
           </Column>
-          <!-- HPP -->
+          <!-- HJA -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
-              <div class="">HPP</div>
+              <div class="">HJA</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.hpp  || '-' }}</div>
+              <div class="">{{ slotProps.data.hja  || '-' }}</div>
             </template>
           </Column>
         </DataTable>

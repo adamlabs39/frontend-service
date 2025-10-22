@@ -17,6 +17,7 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 
+
 function formatDate(date: any) {
   const parsedDate = new Date(date);
   const year = parsedDate.getFullYear();
@@ -35,6 +36,7 @@ const optionKategori = ref([
 
 // State Management Jenis Item
 const jenisItem = ref<string>("");
+const kategoriObat = ref<string>("");
 const optionJenis = ref([
   { name: "Obat", value: "obat" },
   { name: "Alkes", value: "alkes" },
@@ -51,7 +53,7 @@ const DrugCategoryPayload = ref<any[]>([]);
 // Fetch Drug Category
 const fetchDrugCategory = async () => {
   try {
-    const response = await DrugCategoryStore.getApi(1,1000);
+    const response = await DrugCategoryStore.getApi(1, 1000);
 
     if (response && response.payload) {
       DrugCategoryPayload.value = response.payload;
@@ -90,12 +92,13 @@ const fetchStockType = async () => {
 
 // State Management Stock Location
 const StockLocationStore = useStockLocationStore();
+const selectedLokasi = ref<string>("");
 const StockLocationPayload = ref<any[]>([]);
 
 // Fetch Stock Location
-const fetchStockLocation = async () => {  
+const fetchStockLocation = async () => {
   try {
-    const response = await StockLocationStore.getApi();
+    const response = await StockLocationStore.getApi(1, 9999);
 
     if (response && response.payload) {
       StockLocationPayload.value = response.payload;
@@ -143,11 +146,11 @@ const fetchStock = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await StockAndMutationStore.getApiStok(
-      "0196ccc5-2ccf-7040-bddd-5e84647682a2",
-      jenisStokUuid.value,
-      kategoriItem.value,
-      jenisItem.value,
-      searchStok.value,
+      selectedLokasi.value || "",
+      jenisStokUuid.value || "",
+      kategoriItem.value || "",
+      jenisItem.value || "",
+      searchStok.value || "",
       StockProperties.value.page,
       StockProperties.value.page_size
     );
@@ -183,10 +186,12 @@ const handleStok = (event: any) => {
 
 // Filter Reset Stok
 const resetStok = () => {
+  selectedLokasi.value = "";
   jenisStokUuid.value = "";
   kategoriItem.value = "";
   jenisItem.value = "";
   searchStok.value = "";
+  kategoriObat.value = "";
   fetchStock();
 };
 
@@ -211,11 +216,11 @@ const fetchMutasi = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await StockAndMutationStore.getApiMutasi(
-      "0196ccc5-2ccf-7040-bddd-5e84647682a2",
-      jenisStokUuid.value,
-      kategoriItem.value,
-      jenisItem.value,
-      searchStok.value,
+      selectedLokasi.value || "",
+      jenisStokUuid.value || "",
+      kategoriItem.value || "",
+      jenisItem.value || "",
+      searchMutasi.value || "",
       dateToEpoch(startDateFilter.value),
       dateToEpoch(endDateFilter.value),
       MutasiProperties.value.page,
@@ -236,6 +241,7 @@ const fetchMutasi = async () => {
   }
 };
 
+
 let searchTimeoutMutasi: ReturnType<typeof setTimeout> | null = null;
 watch(searchMutasi, (newValue) => {
   if (searchTimeoutMutasi) clearTimeout(searchTimeoutMutasi);
@@ -253,10 +259,11 @@ const handleMutasi = (event: any) => {
 
 // Filter Reset Stok
 const resetMutasi = () => {
+  selectedLokasi.value = "";
   jenisStokUuid.value = "";
   kategoriItem.value = "";
   jenisItem.value = "";
-  searchStok.value = "";
+  searchMutasi.value = "";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
   fetchMutasi();
@@ -275,217 +282,103 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5"  @click="fetchStock"/>
-                <CustomBreadCrumb
-                  :home="{
-                    label: 'Kartu Stok & Mutasi',
-                    home: true,
-                  }"
-                />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchStock" />
+                <CustomBreadCrumb :home="{
+                  label: 'Kartu Stok & Mutasi',
+                  home: true,
+                }" />
               </div>
               <div class="flex mr-[10px]">
-                <CustomButton
-                  label="KARTU STOK"
-                  :text-color="value === '1' ? 'text-white' : 'text-adameds-300'"
+                <CustomButton label="KARTU STOK" :text-color="value === '1' ? 'text-white' : 'text-adameds-300'"
                   :border-color="value === '1' ? 'border-none' : 'border-adameds-300'"
-                  :class="value === '1' ? 'bg-adameds-300' : 'bg-white'"
-                  @click="value = '1'"
-                  class="w-[300px] mr-[10px]"
-                  :outlined="value !== '1'"
-                />
-                <CustomButton
-                  label="MUTASI"
-                  :text-color="value === '2' ? 'text-white' : 'text-adameds-300'"
+                  :class="value === '1' ? 'bg-adameds-300' : 'bg-white'" @click="value = '1'"
+                  class="w-[300px] mr-[10px]" :outlined="value !== '1'" />
+                <CustomButton label="MUTASI" :text-color="value === '2' ? 'text-white' : 'text-adameds-300'"
                   :border-color="value === '2' ? 'border-none' : 'border-adameds-300'"
-                  :class="value === '2' ? 'bg-adameds-300' : 'bg-white'"
-                  @click="value = '2'"
-                  class="w-[300px]"
-                  :outlined="value !== '2'"
-                />
+                  :class="value === '2' ? 'bg-adameds-300' : 'bg-white'" @click="value = '2'" class="w-[300px]"
+                  :outlined="value !== '2'" />
               </div>
             </div>
           </template>
           <template #content>
             <div v-show="value === '1'">
-              <div class="grid grid-cols-4 gap-4 mt-[10px]">
-                <CustomSelect
-                  label="Kategori"
-                  placeHolder="Pilih Kategori"
-                  v-model="kategoriItem"
-                  :options="optionKategori"
-                  optionLabel="name"
-                  optionValue="value"
-                />
-                <CustomSelect
-                  label="Jenis Stok"
-                  placeHolder="Pilih Jenis Stok"
-                  v-model="jenisStokUuid"
-                  :options="StockTypePayload"
-                  optionLabel="name"
-                  optionValue="uuid"
-                />
-                <CustomSelect
-                  label="Jenis Item"
-                  placeHolder="Pilih Jenis Item"
-                  v-model="jenisItem"
-                  :options="optionJenis"
-                  optionLabel="name"
-                  optionValue="value"
-                />
-                <CustomSelect
-                  label="Lokasi Stok"
-                  placeHolder="Pilih Lokasi"
-                  :options="StockLocationPayload"
-                  optionLabel="name"
-                  optionValue="uuid"
-                />
+              <div class="grid grid-cols-3 gap-4 mt-[10px]">
+                <CustomTextfield label="Pencarian (Nama Item / Kode Item)" v-model="searchStok"
+                  prependIcon="PhMagnifyingGlass" placeholder="Cari Nama Item / Kode Item" />
+                <CustomSelect label="Kategori" placeHolder="Pilih Kategori" v-model="kategoriItem"
+                  :options="optionKategori" optionLabel="name" optionValue="value" />
+                <CustomSelect label="Jenis Stok" placeHolder="Pilih Jenis Stok" v-model="jenisStokUuid"
+                  :options="StockTypePayload" optionLabel="name" optionValue="uuid" />
               </div>
-              <div class="grid grid-cols-[62%,20%,10%,5%] gap-3 mt-[10px]">
-                <CustomTextfield
-                  label="Pencarian (Nama Item / Kode Item)"
-                  v-model="searchStok"
-                  prependIcon="PhMagnifyingGlass"
-                  placeholder="Cari Nama Item / Kode Item"
-                />
-                <CustomSelect
-                  label="Kategori Obat"
-                  placeHolder="Pilih Kategori Obat"
-                  v-model="kategoriItem"
-                  :options="DrugCategoryPayload"
-                  optionLabel="name"
-                  optionValue="name"
-                  :disabled="kategoriItem != 'medis'"
-                />
-                <CustomButton
-                  icon="PhMagnifyingGlass"
-                  label="Tampilkan"
-                  class="mt-auto"
-                  @click="fetchStock"
-                />
-                <CustomButton
-                  label="Reset"
-                  outlined
-                  borderColor="border-adameds-300"
-                  textColor="text-adameds-300"
-                  class="mt-auto"
-                  @click="resetStok"
-                />
+
+              <div class="grid gap-3 mt-[10px] items-end" :class="kategoriItem === 'medis'
+                ? 'grid-cols-[1fr,1fr,1fr,auto,auto]'
+                : 'grid-cols-[1fr,1fr,auto,auto]'">
+                <CustomSelect label="Jenis Item" placeHolder="Pilih Jenis Item" v-model="jenisItem"
+                  :options="optionJenis" optionLabel="name" optionValue="value" />
+
+                <CustomSelect v-if="kategoriItem === 'medis'" label="Kategori Obat" placeHolder="Pilih Kategori Obat"
+                  v-model="kategoriObat" :options="DrugCategoryPayload" optionLabel="name" optionValue="name" />
+
+                <CustomSelect label="Lokasi Stok" placeHolder="Pilih Lokasi" v-model="selectedLokasi"
+                  :options="StockLocationPayload" optionLabel="name" optionValue="uuid" />
+                <CustomButton icon="PhMagnifyingGlass" label="Tampilkan" @click="fetchStock" />
+                <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300"
+                  @click="resetStok" />
               </div>
             </div>
+
             <div v-show="value === '2'">
-              <div class="grid grid-cols-4 gap-4 mt-[10px]">
-                <CustomSelect
-                  label="Kategori"
-                  placeHolder="Pilih Kategori"
-                  v-model="kategoriItem"
-                  :options="optionKategori"
-                  optionLabel="name"
-                  optionValue="value"
-                />
-                <CustomSelect
-                  label="Jenis Stok"
-                  placeHolder="Pilih Jenis Stok"
-                  v-model="jenisStokUuid"
-                  :options="StockTypePayload"
-                  optionLabel="name"
-                  optionValue="uuid"
-                />
-                <CustomSelect
-                  label="Jenis Item"
-                  placeHolder="Pilih Jenis Item"
-                  v-model="jenisItem"
-                  :options="optionJenis"
-                  optionLabel="name"
-                  optionValue="value"
-                />
-                <CustomSelect
-                  label="Lokasi Stok"
-                  placeHolder="Pilih Lokasi"
-                  :options="optionJenis"
-                  optionLabel="name"
-                  optionValue="value"
-                />
+              <div class="grid grid-cols-3 gap-4 mt-[10px]">
+                <CustomTextfield label="Pencarian (Nama Item / Kode Item)" v-model="searchMutasi"
+                  prependIcon="PhMagnifyingGlass" placeholder="Cari Nama Item / Kode Item" />
+                <CustomSelect label="Kategori" placeHolder="Pilih Kategori" v-model="kategoriItem"
+                  :options="optionKategori" optionLabel="name" optionValue="value" />
+                <CustomSelect label="Jenis Stok" placeHolder="Pilih Jenis Stok" v-model="jenisStokUuid"
+                  :options="StockTypePayload" optionLabel="name" optionValue="uuid" />
               </div>
-              <div class="flex justify-between mt-[10px]">
-                <CustomTextfield
-                  label="Pencarian (Nama Item / Kode Item)"
-                  v-model="searchMutasi"
-                  prependIcon="PhMagnifyingGlass"
-                  placeholder="Cari Nama Item / Kode Item"
-                  class="w-[450px]"
-                />
-                <CustomSelect
-                  label="Kategori Obat"
-                  placeHolder="Pilih Kategori Obat"
-                  v-model="kategoriItem"
-                  :options="DrugCategoryPayload"
-                  optionLabel="name"
-                  optionValue="name"
-                  :disabled="kategoriItem != 'medis'"
-                />
-                <CustomDatePicker
-                  v-model="startDateFilter"
-                  label="Tanggal"
-                  class="w-[150px]"
-                />
-                <PhMinus class="mt-auto mb-3 text-black" />
-                <CustomDatePicker
-                  v-model="endDateFilter"
-                  :showLabel="false"
-                  class="mt-auto w-[150px]"
-                />
-                <CustomButton
-                  icon="PhMagnifyingGlass"
-                  label="Tampilkan"
-                  class="mt-auto w-[130px]"
-                  @click="fetchMutasi"
-                />
-                <CustomButton
-                  label="Reset"
-                  outlined
-                  borderColor="border-adameds-300"
-                  textColor="text-adameds-300"
-                  class="mt-auto"
-                  @click="resetMutasi"
-                />
+
+              <div class="flex items-end gap-3 mt-[10px]">
+                <CustomSelect label="Jenis Item" placeHolder="Pilih Jenis Item" v-model="jenisItem"
+                  :options="optionJenis" optionLabel="name" optionValue="value" class="w-[250px]" />
+                <CustomSelect label="Lokasi Stok" placeHolder="Pilih Lokasi" v-model="selectedLokasi"
+                  :options="StockLocationPayload" optionLabel="name" optionValue="uuid" class="w-[250px]" />
+
+                <div class="flex-grow">
+                  <label class="block mb-2 text-sm font-semibold text-grey-400">Tanggal</label>
+                  <div class="flex items-center gap-2">
+                    <CustomDatePicker v-model="startDateFilter" :showLabel="false" class="w-full" />
+                    <PhMinus class="text-black" />
+                    <CustomDatePicker v-model="endDateFilter" :showLabel="false" class="w-full" />
+                  </div>
+                </div>
+
+                <CustomButton icon="PhMagnifyingGlass" label="Tampilkan" class="flex-shrink-0" @click="fetchMutasi" />
+                <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300"
+                  class="flex-shrink-0" @click="resetMutasi" />
               </div>
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
           <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
         </CustomAccordion>
       </template>
       <template #content>
         <!-- Datatable Kartu Stok -->
         <NoData v-if="!hasDataStok" v-show="value === '1'" />
-        <DataTable
-          v-else
-          v-show="value === '1'"
-          :value="StockPayload"
-          tableStyle="min-width: 50rem"
-          stripedRows
-          class="text-xs"
-          scrollable
-          scrollHeight="flex"
-        >
+        <DataTable v-else v-show="value === '1'" :value="StockPayload" tableStyle="min-width: 50rem" stripedRows
+          class="text-xs" scrollable scrollHeight="flex">
           <!-- No -->
           <Column headerClass="bg-adameds-50" class="w-[50px]">
             <template #header>
@@ -507,37 +400,18 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="mb-[5px]">{{ slotProps.data.nama }}</div>
               <div class="flex flex-wrap">
-                <CustomChip
-                  :label="slotProps.data.kategori.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                />
-                <CustomChip
-                  :label="slotProps.data.jenisItem.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  :label="slotProps.data.jenisStok.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  :label="slotProps.data.kategoriObat.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
+                <CustomChip :label="slotProps.data.kategori.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" />
+                <CustomChip :label="slotProps.data.jenisItem.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" class="ml-[5px]" />
+                <CustomChip :label="slotProps.data.jenisStok.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" class="ml-[5px]" />
+                <CustomChip :label="slotProps.data.kategoriObat.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" class="ml-[5px]" />
               </div>
             </template>
           </Column>
@@ -551,16 +425,8 @@ onMounted(() => {
 
         <!-- Datatable Mutasi -->
         <NoData v-if="!hasDataMutasi" v-show="value === '2'" />
-        <DataTable
-          v-else
-          v-show="value === '2'"
-          :value="MutasiPayload"
-          tableStyle="min-width: 50rem"
-          stripedRows
-          class="text-xs"
-          scrollable
-          scrollHeight="flex"
-        >
+        <DataTable v-else v-show="value === '2'" :value="MutasiPayload" tableStyle="min-width: 50rem" stripedRows
+          class="text-xs" scrollable scrollHeight="flex">
           <!-- Transaksi -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
@@ -568,14 +434,8 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="mb-[5px]">{{ slotProps.data.transaksi.code }}</div>
-              <CustomChip
-                :label="slotProps.data.transaksi.sumberMutasi"
-                :showCheckedIcon="false"
-                borderColor="border-adameds-300"
-                bgColor="bg-adameds-300"
-                textColor="text-white"
-                class="mb-[5px]"
-              />
+              <CustomChip :label="slotProps.data.transaksi.sumberMutasi" :showCheckedIcon="false"
+                borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mb-[5px]" />
               <p>{{ epochToDate(slotProps.data.transaksi.tanggal, "date") }}</p>
             </template>
           </Column>
@@ -588,29 +448,14 @@ onMounted(() => {
               <div class="mb-[5px] font-bold">{{ slotProps.data.item.name }}</div>
               <div class="mb-[5px]">{{ slotProps.data.item.code }}</div>
               <div class="flex flex-wrap">
-                <CustomChip
-                  :label="slotProps.data.item.kategori"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                />
-                <CustomChip
-                  :label="slotProps.data.item.jenisStok.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  :label="slotProps.data.item.jenisItem.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
+                <CustomChip :label="slotProps.data.item.kategori" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" />
+                <CustomChip :label="slotProps.data.item.jenisStok.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" class="ml-[5px]" />
+                <CustomChip :label="slotProps.data.item.jenisItem.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" class="ml-[5px]" />
               </div>
             </template>
           </Column>
@@ -652,18 +497,8 @@ onMounted(() => {
                 </div>
 
                 <!-- Conditionally render PhArrowCircleDown or PhArrowCircleUp based on mutasiStok value -->
-                <PhArrowCircleDown
-                  v-if="slotProps.data.stokMutasi < 0"
-                  :size="18"
-                  color="#E9594C"
-                  weight="fill"
-                />
-                <PhArrowCircleUp
-                  v-else
-                  :size="18"
-                  color="#3AC279"
-                  weight="fill"
-                />
+                <PhArrowCircleDown v-if="slotProps.data.stokMutasi < 0" :size="18" color="#E9594C" weight="fill" />
+                <PhArrowCircleUp v-else :size="18" color="#3AC279" weight="fill" />
               </div>
             </template>
           </Column>
@@ -673,20 +508,10 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomPaginator
-            v-show="value === '1'"
-            :rows="StockProperties.page_size"
-            :totalRecords="StockProperties.total"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @page="handleStok"
-          />
-          <CustomPaginator
-            v-show="value === '2'"
-            :rows="MutasiProperties.page_size"
-            :totalRecords="MutasiProperties.total"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @page="handleMutasi"
-          />
+          <CustomPaginator v-show="value === '1'" :rows="StockProperties.page_size"
+            :totalRecords="StockProperties.total" :rowsPerPageOptions="[10, 20, 30]" @page="handleStok" />
+          <CustomPaginator v-show="value === '2'" :rows="MutasiProperties.page_size"
+            :totalRecords="MutasiProperties.total" :rowsPerPageOptions="[10, 20, 30]" @page="handleMutasi" />
         </div>
       </template>
     </Card>

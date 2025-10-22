@@ -148,8 +148,8 @@ const handleTerima = handleSubmit(async (values) => {
             // catatan_penerimaan: values.catatan, 
             items: selectedItems.value.map((item: any) => ({
                 uuid: item.value.uuid,
-                qtyDiterima: item.value.qtyTerima,
-                expDate: dateToEpoch(item.value.expDate as Date),
+                qtyTerima: item.value.qtyTerima,
+                expDate: dateToEpoch(item.value.expDate as Date) * 1000,
             })),
         };
         console.log("Payload untuk API Terima Pembelian:", payload);

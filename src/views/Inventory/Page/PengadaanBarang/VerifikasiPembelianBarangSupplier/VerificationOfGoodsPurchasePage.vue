@@ -13,6 +13,14 @@ import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import NoData from "@/components/section/NoData.vue";
 import DetailVerificationOfGoodsPurchasePage from "./DetailVerificationOfGoodsPurchasePage.vue";
 
+// Props sidebar stok lokasi
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("pending");
 
@@ -54,6 +62,7 @@ const fetchVerification = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await VerificationStore.getApi(
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       VerificationProperties.value.page,
@@ -73,6 +82,11 @@ const fetchVerification = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, () => {
+  VerificationProperties.value.page = 1; // Reset ke halaman pertama
+  fetchVerification();
+});
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {

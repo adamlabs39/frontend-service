@@ -14,6 +14,14 @@ import DetailPurchaseAcceptancePage from "./DetailPurchaseAcceptancePage.vue";
 import AcceptedPurchaseDetailPage from "./AcceptedPurchaseDetailPage.vue";
 import NoData from "@/components/section/NoData.vue";
 
+// Props sidebar stok lokasi
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("verifikasi");
 
@@ -55,6 +63,7 @@ const fetchPurchasingOfSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await PurchaseAcceptanceStore.getApi(
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       PurchaseAcceptanceProperties.value.page,
@@ -74,6 +83,12 @@ const fetchPurchasingOfSupplier = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, () => {
+  PurchaseAcceptanceProperties.value.page = 1;
+  fetchPurchasingOfSupplier();
+});
+
 
 // let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 // watch(searchQuery, (newValue) => {

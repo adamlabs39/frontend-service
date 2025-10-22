@@ -43,7 +43,7 @@ const fetchDetail = async () => {
   }
 };
 
-const verification = async () => {  
+const verification = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await VerificationStore.putApi(props.selectedData.uuid);
@@ -75,46 +75,33 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 pb-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden overflow-y-auto">
+    <Card pt:body:class="h-full pt-0 pb-0 overflow-auto" pt:content:class="h-full overflow-hidden"
+      class="h-full overflow-hidden overflow-y-auto">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initialState="0">
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
-                <CustomBreadCrumb
-                  :home="{
-                    label: 'Pengadaan Barang',
-                    home: true,
-                  }"
-                />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300"/>
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDetail" />
+                <CustomBreadCrumb :home="{
+                  label: 'Pengadaan Barang',
+                  home: true,
+                }" />
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
                 <div class="">
                   <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">
                     Verifikasi Pembelian Barang Supplier
                   </p>
                 </div>
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300"/>
+                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-grey-300" />
                 <div class="ml-[10px] mt-[5px]">
-                  <CustomChip
-                    :label="props.selectedData.noPo"
-                    :showCheckedIcon="false"
-                    borderColor="border-adameds-300"
-                    bgColor="bg-adameds-300" 
-                    textColor="text-white"
-                  />
+                  <CustomChip :label="props.selectedData.noPo" :showCheckedIcon="false" borderColor="border-adameds-300"
+                    bgColor="bg-adameds-300" textColor="text-white" />
                 </div>
               </div>
               <div class="flex">
-                <CustomButton
-                  @click="emit('back')"
-                  icon="PhCaretLeft"
-                  label="Kembali"
-                  class="mr-[10px]"
-                  outlined
-                  borderColor="border-adameds-300"
-                  textColor="text-adameds-300"
-                />
+                <CustomButton @click="emit('back')" icon="PhCaretLeft" label="Kembali" class="mr-[10px]" outlined
+                  borderColor="border-adameds-300" textColor="text-adameds-300" />
               </div>
             </div>
           </template>
@@ -174,12 +161,7 @@ onMounted(() => {
             </div>
             <hr class="mt-5 border-1 border-grey-200" />
             <div class="mt-[20px] h-[260px]">
-              <DataTable
-                :value="DetailPayload.items"
-                scrollable
-                scrollHeight="flex"
-                :pt="{ headerRow: 'text-SM' }"
-              >
+              <DataTable :value="DetailPayload.items" scrollable scrollHeight="flex" :pt="{ headerRow: 'text-SM' }">
                 <!-- No -->
                 <Column headerClass="bg-adameds-50">
                   <template #header>
@@ -219,9 +201,9 @@ onMounted(() => {
                 </Column>
 
                 <!-- Total -->
-                <Column header="Total"headerClass="bg-adameds-50">
+                <Column header="Total" headerClass="bg-adameds-50">
                   <template #body="slotProps">
-                    <div class="text-sm">{{ formatPrice(slotProps.data.totalHarga)}}</div>
+                    <div class="text-sm">{{ formatPrice(slotProps.data.totalHarga) }}</div>
                   </template>
                 </Column>
               </DataTable>
@@ -268,30 +250,16 @@ onMounted(() => {
                 </div>
               </div>
               <div v-if="DetailPayload.status != 'verifikasi'" class="flex mt-[5px]">
-                <CustomButton
-                  @click="verification"
-                  label="Verifikasi"
-                  class="w-[150px] ml-[20px]"
-                  backgroundColor="bg-adameds-300"
-                  borderColor="border-adameds-300"
-                  textColor="text-white"
-                />
+                <CustomButton @click="verification" label="Verifikasi" class="w-[150px] ml-[20px]"
+                  backgroundColor="bg-adameds-300" borderColor="border-adameds-300" textColor="text-white" />
               </div>
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
           <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
         </CustomAccordion>
       </template>

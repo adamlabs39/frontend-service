@@ -14,6 +14,13 @@ import NoData from "@/components/section/NoData.vue";
 import AddPurchaseOfSupplier from "./AddPurchaseOfSupplierPage.vue";
 import DetailPurchaseOfSupplierPage from "./DetailPurchaseOfSupplierPage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("pending");
 
@@ -55,6 +62,7 @@ const fetchPurchasingOfSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await PurchasingOfSupplierStore.getApi(
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       PurchasingOfSupplierProperties.value.page,
@@ -74,6 +82,12 @@ const fetchPurchasingOfSupplier = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, (newValue) => {
+  // Reset ke halaman 1 dan panggil ulang API
+  PurchasingOfSupplierProperties.value.page = 1;
+  fetchPurchasingOfSupplier();
+});
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {

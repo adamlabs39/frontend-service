@@ -221,7 +221,9 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="if (props.fakturPayload) {
+    handleFakturSelected(props.fakturPayload);
+  }"/>
                 <CustomBreadCrumb :home="{ label: 'Pengadaan Barang', home: true }"
                   :model="[{ label: 'Retur & Penggantian Barang Supplier' }, { label: 'Tambah Retur' }]" />
               </div>

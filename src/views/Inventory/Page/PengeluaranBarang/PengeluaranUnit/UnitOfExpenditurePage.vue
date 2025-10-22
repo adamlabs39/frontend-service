@@ -14,6 +14,13 @@ import NoData from "@/components/section/NoData.vue";
 import AddUnitOfExpenditure from "./AddUnitOfExpenditurePage.vue";
 import DetailUnitOfExpenditure from "./DetailUnitOfExpenditurePage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Title Label
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -47,7 +54,7 @@ const fetchPurchasingOfSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await UnitOfExpenditureStore.getApi(
-      '0192b31f-365d-731c-8b16-3a4565c9475e',
+      props.lokasiStokUuid,
       searchQuery.value,
       PurchasingOfSupplierProperties.value.page,
       PurchasingOfSupplierProperties.value.page_size,
@@ -67,13 +74,21 @@ const fetchPurchasingOfSupplier = async () => {
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchPurchasingOfSupplier();
-  }, 500);
+watch(() => props.lokasiStokUuid, () => {
+  PurchasingOfSupplierProperties.value.page = 1; // Reset ke halaman pertama
+  fetchPurchasingOfSupplier();
 });
+
+const handleReset = () => {
+  searchQuery.value = ""; // Kosongkan pencarian
+  PurchasingOfSupplierProperties.value.page = 1; // Reset halaman
+  fetchPurchasingOfSupplier(); // Panggil data
+};
+
+const handleSearch = () => {
+  PurchasingOfSupplierProperties.value.page = 1; // Reset halaman saat mencari
+  fetchPurchasingOfSupplier();
+}
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -130,12 +145,25 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+           <div class="flex items-end gap-2.5 mt-[10px]">
               <CustomTextfield
                 v-model="searchQuery"
                 label="Pencarian"
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari No. Pengeluaran"
+                class="grow" />
+              
+              <CustomButton
+                label="Cari"
+                icon="PhMagnifyingGlass"
+                @click="handleSearch"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                @click="handleReset"
               />
             </div>
           </template>
