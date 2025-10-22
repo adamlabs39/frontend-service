@@ -3,14 +3,19 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import TambahPermintaanBarang from "./Layout/PermintaanBarang/TambahPermintaanBarang.vue";
 import DetailPermintaanBarang from "./Layout/PermintaanBarang/DetailPermintaanBarang.vue";
+import { usePermintaanBarangStore } from "@/stores/stok/PermintaanBarang";
+import { utilsStore } from "@/stores/utils";
+import { formatStringDate } from "@/utils/Helpers";
+import NoData from "@/components/section/NoData.vue";
 
 const buttonSelect = ref("permintaan-barang");
 const searchQuery = ref("");
+const useUtilsStore = utilsStore();
 
 const tableData = ref([
   {
@@ -235,11 +240,30 @@ const tableData = ref([
   },
 ]);
 
+const permintaanBarangStore = usePermintaanBarangStore();
+const permintaanBarangPayload = ref([]);
 const PermintaanBarangProperties = ref({
   page: 1,
   page_size: 10,
   total: 100,
 });
+
+const fetchPermintaanBarang = async () => {
+  useUtilsStore.setLoading(true);
+  try {
+    const response = await permintaanBarangStore.getAll(
+      PermintaanBarangProperties.value.page,
+      PermintaanBarangProperties.value.page_size,
+      "",
+      ""
+    );
+    permintaanBarangPayload.value = response.payload || [];
+    console.log("permintaanBarangPayload:", permintaanBarangPayload.value);
+  } catch (error) {
+    console.log(error);
+  }
+  useUtilsStore.setLoading(false);
+};
 
 const showTambah = ref(false);
 const showDetail = ref(false);
@@ -257,14 +281,18 @@ const handleRowClick = (event: any) => {
   showDetail.value = true;
   console.log("Navigating to detail with data:", selectedRow.value);
 };
+
+onMounted(() => {
+  fetchPermintaanBarang();
+});
 </script>
 
 <template>
   <div>
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
       v-if="!showTambah && !showDetail"
     >
       <template #header>
@@ -383,41 +411,65 @@ const handleRowClick = (event: any) => {
       </template>
       <template #content>
         <DataTable
+          v-if="permintaanBarangPayload.length"
           tableStyle="min-width: 50rem"
           stripedRows
           class="text-xs"
           scrollable
           scrollHeight="flex"
-          :value="tableData"
+          :value="permintaanBarangPayload"
           @row-click="handleRowClick"
         >
           <Column
-            field="tanggal"
+            field="tanggalPermintaan"
             header="Tanggal"
             headerClass="bg-adameds-50 font-semibold text-SM"
-          ></Column>
+          >
+            <template #body="slotProps">
+              {{ formatStringDate(slotProps.data.tanggalPermintaan, "date") }}
+            </template>
+          </Column>
 
           <Column
-            field="permintaan"
+            field="noPermintaan"
             header="No. Permintaan"
             headerClass="bg-adameds-50 font-semibold text-SM"
           >
             <template #body="slotProps">
               <div class="space-y-1">
-                <div class="font-semibold">{{ slotProps.data.permintaan }}</div>
-                <div class="flex gap-2">
+                <div class="font-semibold">
+                  {{ slotProps.data.noPermintaan }}
+                </div>
+                <div class="flex gap-1">
                   <CustomChip
-                    v-for="t in slotProps.data.tags"
-                    :key="t"
-                    :label="t"
+                    v-if="slotProps.data.kategoriItem"
+                    :label="slotProps.data.kategoriItem"
                     :outlined="true"
                     :showCheckedIcon="false"
                     :customClass="'h-5 px-2'"
-                    :borderColor="
-                      t === 'CITO' ? 'border-danger-300' : 'border-adameds-300'
-                    "
-                    :textColor="t === 'CITO' ? 'text-white' : 'text-white'"
-                    :bgColor="t === 'CITO' ? 'bg-danger-300' : 'bg-adameds-300'"
+                    borderColor="border-adameds-300"
+                    textColor="text-white"
+                    bgColor="bg-adameds-300"
+                  />
+                  <CustomChip
+                    v-if="slotProps.data.jenisItem"
+                    :label="slotProps.data.jenisItem"
+                    :outlined="true"
+                    :showCheckedIcon="false"
+                    :customClass="'h-5 px-2'"
+                    borderColor="border-adameds-300"
+                    textColor="text-white"
+                    bgColor="bg-adameds-300"
+                  />
+                  <CustomChip
+                    v-if="slotProps.data.cito"
+                    :label="'CITO'"
+                    :outlined="true"
+                    :showCheckedIcon="false"
+                    :customClass="'h-5 px-2'"
+                    borderColor="border-danger-300"
+                    textColor="text-white"
+                    bgColor="bg-danger-300"
                   />
                 </div>
               </div>
@@ -425,19 +477,21 @@ const handleRowClick = (event: any) => {
           </Column>
 
           <Column
-            field="tujuan"
-            header="Tujuan Perimintaan"
+            field="lokasiTujuan"
+            header="Tujuan Permintaan"
             headerClass="bg-adameds-50 font-bold text-SM"
             class="font-bold"
           >
+            <template #body="slotProps">
+              {{ slotProps.data.lokasiTujuan || "tidak ada" }}
+            </template>
           </Column>
 
           <Column
-            field="petugas"
+            field="petugasPermintaan"
             header="Petugas"
             headerClass="bg-adameds-50 font-semibold text-SM"
-          >
-          </Column>
+          />
 
           <Column
             field="status"
@@ -450,13 +504,26 @@ const handleRowClick = (event: any) => {
                 :outlined="true"
                 :showCheckedIcon="false"
                 :customClass="'h-6 px-3'"
-                borderColor="border-grey-300"
+                :borderColor="
+                  buttonSelect === 'dibatalkan'
+                    ? 'border-danger-300'
+                    : buttonSelect === 'sudah-diverifikasi'
+                    ? 'border-adameds-300'
+                    : 'border-grey-300'
+                "
                 textColor="text-white"
-                bgColor="bg-grey-300"
+                :bgColor="
+                  buttonSelect === 'dibatalkan'
+                    ? 'bg-danger-300'
+                    : buttonSelect === 'sudah-diverifikasi'
+                    ? 'bg-adameds-300'
+                    : 'bg-grey-300'
+                "
               />
             </template>
           </Column>
         </DataTable>
+        <NoData v-else />
       </template>
       <template #footer>
         <div class="flex justify-end border-t border-grey-200">
