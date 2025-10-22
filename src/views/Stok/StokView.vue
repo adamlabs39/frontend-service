@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -17,6 +17,8 @@ import type { SidebarBody } from "@/utils/Interface";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import PermintaanBarang from "./PermintaanBarang.vue";
 import { shallowRef } from "vue";
+import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import { utilsStore } from "@/stores/utils";
 
 const props = defineProps({
   isDialogVisible: {
@@ -34,13 +36,22 @@ const props = defineProps({
   },
 });
 
-const dummyLokasiStok = [
-  { value: "gudang-utama", label: "Gudang Utama" },
-  { value: "gudang-farmasi", label: "Gudang Farmasi" },
-  { value: "depo-rawat-jalan", label: "Depo Rawat Jalan" },
-  { value: "depo-igd", label: "Depo IGD" },
-  { value: "depo-rawat-inap", label: "Depo Rawat Inap" },
-];
+const UseUtilsStore = utilsStore();
+
+const stockLocationStore = useStockLocationStore();
+const stockLocationPayload = ref([]);
+
+const fetchStockLocation = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await stockLocationStore.getApi(1, 9999999);
+    stockLocationPayload.value = response.payload || [];
+    console.log("stockLocationPayload:", stockLocationPayload.value);
+  } catch (error) {
+    console.log(error);
+  }
+  UseUtilsStore.setLoading(false);
+};
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
@@ -99,6 +110,17 @@ const handleSelect = (key: string) => {
   else if (key === "pengeluaran-unit") currentComponent.value = PengeluaranUnit;
   else if (key === "retur-unit") currentComponent.value = ReturUnit;
 };
+
+// onMounted(() => {
+//   fetchStockLocation();
+// });
+
+watch(
+  () => props.isDialogVisible,
+  (visible) => {
+    if (visible) fetchStockLocation();
+  }
+);
 </script>
 
 <template>
@@ -112,7 +134,10 @@ const handleSelect = (key: string) => {
         <div>Lokasi Stok</div>
         <CustomSelect
           v-model="lokasiStok"
-          :options="dummyLokasiStok"
+          :options="stockLocationPayload"
+          optionLabel="name"
+          optionValue="uuid"
+          dataKey="uuid"
           :showLabel="false"
           placeHolder="Pilih lokasi stok"
           :class="['rounded-md border bg-adameds-300 border-adameds-white']"
