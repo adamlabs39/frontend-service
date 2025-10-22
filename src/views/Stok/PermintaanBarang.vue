@@ -14,22 +14,26 @@ import { formatStringDate } from "@/utils/Helpers";
 import NoData from "@/components/section/NoData.vue";
 
 const buttonSelect = ref("request"); //request, canceled, verified
-const searchQuery = ref("");
-const useUtilsStore = utilsStore();
+const searchQuery = ref(""); //for search
+const useUtilsStore = utilsStore(); //for loading
 
+//variable for debounce search
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
+//variable for dialog
 const showTambah = ref(false);
 const showDetail = ref(false);
 
+//variable for fetch data permintaan barang
 const permintaanBarangStore = usePermintaanBarangStore();
 const permintaanBarangPayload = ref([]);
 const PermintaanBarangProperties = ref({
   page: 1,
   page_size: 10,
-  total: 100,
+  total: 0,
 });
 
+//function for fetch data permintaan barang
 const fetchPermintaanBarang = async () => {
   useUtilsStore.setLoading(true);
   try {
@@ -40,6 +44,7 @@ const fetchPermintaanBarang = async () => {
       searchQuery.value
     );
     permintaanBarangPayload.value = response.payload || [];
+    PermintaanBarangProperties.value.total = response.properties.totalData || 0;
     console.log("permintaanBarangPayload:", permintaanBarangPayload.value);
   } catch (error) {
     console.log(error);
