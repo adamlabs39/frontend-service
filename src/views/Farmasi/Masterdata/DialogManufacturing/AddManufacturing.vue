@@ -148,27 +148,6 @@ const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
-const translateErrorMessage = (err: unknown): string => {
-  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
-  const resp = (err as any)?.response?.data;
-  const apiErrors = resp?.errors ?? [];
-
-  // Deteksi pesan unik dari payload errors maupun dari ringkasan message
-  const isCodeUniqueViolated = apiErrors.some((e: any) => {
-    const msg = (e?.message || "").toLowerCase();
-    const type = (e?.type || "").toLowerCase();
-    return (
-      (msg.includes("code") && msg.includes("unique")) ||
-      type === "unique violation"
-    );
-  });
-
-  if (isCodeUniqueViolated || rawMsg.includes("validation error")) {
-    return "Kode Manufaktur sudah terdaftar di faskes ini. Gunakan kode lain.";
-  }
-  return "";
-};
-
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (method.value === "edit") {
@@ -184,9 +163,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     }
     closeDialog();
   } catch (error: any) {
-    // Tampilkan pesan ramah pengguna di field Kode pada kasus duplikasi
-    const message = translateErrorMessage(error);
-    setFieldError("code", message);
     console.error("Failed to process the data:", error);
   }
 });
