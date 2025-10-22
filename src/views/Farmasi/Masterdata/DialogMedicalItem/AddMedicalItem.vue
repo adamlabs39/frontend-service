@@ -249,14 +249,6 @@ const fetchComposition = async () => {
 const UseUtilsStore = utilsStore();
 const MedicalItemStore = useMedicalItemStore();
 
-const translateValidationError = (err: unknown) => {
-  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
-  if (rawMsg.includes("validation error")) {
-    return "Kode Aturan Pakai sudah terdaftar di faskes ini. Gunakan kode lain.";
-  }
-  return "";
-};
-
 const onSubmit = handleSubmit(async (values: any) => {
   let jenisStokDelete = values.jenisStocks.map((uuid: string) => ({
     jenis_stok_uuid: uuid,
@@ -334,8 +326,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     }
     closeDialog();
   } catch (error) {
-    const message = translateValidationError(error);
-    setFieldError("code", message);
     console.error("Failed to process the data:", error);
   }
 });
