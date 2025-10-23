@@ -10,7 +10,12 @@ import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 // Terima data dari list
-const props = defineProps<{ data: any }>();
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
 const isDeleteDialogVisible = ref(false);
 

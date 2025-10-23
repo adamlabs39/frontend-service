@@ -12,7 +12,12 @@ import DeleteDialog from "./DeleteDialogPermintaanBarang.vue";
 import { formatStringDate } from "@/utils/Helpers";
 
 // Terima data dari list
-const props = defineProps<{ data: any }>();
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
 const isDeleteDialogVisible = ref(false);
 
