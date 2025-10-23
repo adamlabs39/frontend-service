@@ -282,7 +282,6 @@ baseInstanceLaboratorium.interceptors.response.use(
   }
 );
 
-
 //Admisi
 const baseInstanceAdmisi = axios.create({
   headers: {
@@ -603,6 +602,47 @@ baseInstanceAntrian.interceptors.response.use(
   }
 );
 
+//Stok
+const baseInstanceStok = axios.create({
+  headers: {
+    common: {
+      Accept: "text/plain, */*",
+    },
+  },
+  baseURL: import.meta.env.VITE_BASE_STOK,
+});
+
+baseInstanceStok.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      config.headers["Authorization"] = "";
+    } else {
+      config.headers["Authorization"] = `${token}`;
+    }
+    if (config.data) {
+      config.data = toSnakeCase(config.data);
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+baseInstanceStok.interceptors.response.use(
+  (response: AxiosResponse) => {
+    if (response.data) {
+      response.data = toCamelCase(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export {
   baseInstance,
   authInstance,
@@ -618,4 +658,5 @@ export {
   baseInstanceRekamMedis,
   baseInstanceInventory,
   baseInstanceAntrian,
+  baseInstanceStok,
 };
