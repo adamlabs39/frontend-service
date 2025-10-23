@@ -14,7 +14,6 @@ import { toTypedSchema } from "@vee-validate/yup";
 import { usePurchaseAcceptanceStore } from "@/stores/inventory/purchaseAcceptance";
 import { utilsStore } from "@/stores/utils";
 import * as yup from "yup";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
 import { formatPrice, epochToDate, dateToEpoch } from "@/utils/Helpers";
 
 const props = defineProps({
@@ -180,7 +179,7 @@ const petugasPenerima = computed(() => {
 
 // Handle reset button
 const handleReset = () => {
-    fetchDetail(); // Memanggil data lagi dengan query kosong
+    fetchDetail(); 
 };
 
 onMounted(fetchDetail);
@@ -293,12 +292,14 @@ onMounted(fetchDetail);
             </template>
 
             <template #content>
+                <hr class="border-grey-200 mb-4" />
                 <DataTable :value="itemFields" v-model:selection="selectedItems" dataKey="key" class="text-xs"
                     scrollable scrollHeight="flex">
-                    <Column header="No." headerClass="bg-adameds-50 font-semibold" bodyClass="pt-4"><template
-                            #body="slotProps">{{ slotProps.index + 1 }}</template>
+                    <Column header="No." headerClass="bg-adameds-50 font-semibold" bodyClass="pt-4">
+                        <template #body="slotProps">{{ slotProps.index + 1 }}</template>
                     </Column>
-                    <Column header="Nama Item" headerClass="bg-adameds-50 font-semibold" class="w-[200px]"
+
+                    <Column header="Nama Item" headerClass="bg-adameds-50 font-semibold" 
                         bodyClass="pt-4">
                         <template #body="slotProps">
                             <div>
@@ -308,33 +309,43 @@ onMounted(fetchDetail);
                             </div>
                         </template>
                     </Column>
+
                     <Column header="Order" headerClass="bg-adameds-50 font-semibold text-center"
-                        bodyClass="text-center pt-4"><template #body="slotProps">{{ slotProps.data.value.qtyOrder
-                            }}</template></Column>
-                    <Column header="Terima" headerClass="bg-adameds-50 font-semibold text-center">
+                        bodyClass="text-center pt-4">
+                        <template #body="slotProps">{{ slotProps.data.value.qtyOrder }}</template>
+                    </Column>
+
+                    <Column header="Terima" headerClass="bg-adameds-50 font-semibold text-end" class="w-[160px]">
                         <template #body="slotProps">
                             <CustomInputNumber :show-label="false" v-model="slotProps.data.value.qtyTerima"
                                 :show-buttons="true" />
                         </template>
                     </Column>
+
                     <Column header="Satuan/Isi" headerClass="bg-adameds-50 font-semibold text-center"
-                        bodyClass="text-center pt-4"><template #body="slotProps">{{ slotProps.data.value.satuanBeli
-                            }}</template></Column>
-                    <Column header="Exp. Date" headerClass="bg-adameds-50 font-semibold text-center">
+                        bodyClass=" pt-4">
+                        <template #body="slotProps">{{ slotProps.data.value.satuanBeli }}</template>
+                    </Column>
+
+                    <Column header="Exp. Date" headerClass="bg-adameds-50 font-semibold text-center" class="w-[180px]">
                         <template #body="slotProps">
                             <CustomDatePicker label="" v-model="slotProps.data.value.expDate"
                                 :invalid="!!errors[`items[${slotProps.index}].expDate`]"
                                 :invalid-message="errors[`items[${slotProps.index}].expDate`]" />
                         </template>
                     </Column>
-                    <Column header="Harga Satuan" headerClass="bg-adameds-50 font-semibold text-end"
-                        bodyClass="text-end pt-4"><template #body="slotProps">{{
-                            formatPrice(slotProps.data.value.hargaSatuan) }}</template></Column>
-                    <Column header="Total" headerClass="bg-adameds-50 font-semibold text-end" bodyClass="text-end pt-4">
+
+                    <Column header="Harga Satuan" headerClass="bg-adameds-50 font-semibold text-center"
+                        bodyClass=" pt-4">
+                        <template #body="slotProps">{{ formatPrice(slotProps.data.value.hargaSatuan) }}</template>
+                    </Column>
+
+                    <Column header="Total" headerClass="bg-adameds-50 font-semibold text-center" bodyClass=" pt-4">
                         <template #body="slotProps">
                             {{ formatPrice(slotProps.data.value.qtyTerima * slotProps.data.value.hargaSatuan) }}
                         </template>
                     </Column>
+
                     <Column header="Action" selectionMode="multiple" headerClass="bg-adameds-50"></Column>
                 </DataTable>
             </template>

@@ -116,9 +116,6 @@ watch(() => props.lokasiStokUuid, (newVal) => {
   }
 }, { immediate: true });
 
-watch(lokasiStokUuid, fetchRateHistory);
-
-
 // let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 // watch(searchQuery, (newValue) => {
 //   if (searchTimeout) clearTimeout(searchTimeout);
@@ -146,7 +143,6 @@ const onRowSelect = (event: any) => {
 
 // Filter Reset Data
 const resetData = () => {
-  // 4. RESET selectedLokasi KE NILAI DARI PROP SIDEBAR
   lokasiStokUuid.value = props.lokasiStokUuid || "";
   jenisStokUuid.value = "";
   kategoriItem.value = "";
@@ -157,15 +153,15 @@ const resetData = () => {
 };
 
 const closeDetailPage = () => {
-  isDetailView.value = false; // [FIX] Cukup ubah state ini untuk kembali
+  isDetailView.value = false;
   selectedData.value = null;
 }
 
-const closeEditPage = async () => {
-  dataBreadCrumb.value.pop();
-  dataBreadCrumb.value.pop();
-  await fetchRateHistory();
-};
+// const closeEditPage = async () => {
+//   dataBreadCrumb.value.pop();
+//   dataBreadCrumb.value.pop();
+//   await fetchRateHistory();
+// };
 
 onMounted(() => {
   // fetchRateHistory();
@@ -254,7 +250,7 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ epochToDate(slotProps.data.tanggalPembelian || '-', "date")}}
+                {{ epochToDate(slotProps.data.expDate || '-', "date")}}
               </div>
             </template>
           </Column>
@@ -269,7 +265,7 @@ onMounted(() => {
               <div class="">Harga Dasar</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.hargaSatuan || '-' }}</div>
+              <div class="">{{ slotProps.data.hargaDasar || '-' }}</div>
             </template>
           </Column>
           <!-- HNA -->

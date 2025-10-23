@@ -269,7 +269,7 @@ onMounted(() => {
               <div class="font-semibold">Min. Stok</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.minStok }}</div>
+              <div class="">{{ slotProps.data.minStok || '0'}}</div>
               <div class="text-[10px] text-adameds-300">Tablet</div>
             </template>
           </Column>
@@ -279,7 +279,7 @@ onMounted(() => {
               <div class="font-semibold">Max. Stok</div>
             </template>
             <template #body="slotProps">
-              <div class="">{{ slotProps.data.maxStok }}</div>
+              <div class="">{{ slotProps.data.maxStok || '0' }}</div>
               <div class="text-[10px] text-adameds-300">Tablet</div>
             </template>
           </Column>

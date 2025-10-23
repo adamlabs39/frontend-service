@@ -7,6 +7,7 @@ import { useRouter, useRoute, routerKey } from "vue-router";
 import { ref, watch, onMounted } from "vue";
 import dialogPermintaanBarang from "@/views/Stok/PermintaanBarang.vue";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import { useStorageLocationStore } from "@/stores/inventory/storageLocation";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 
 const props = defineProps({
@@ -34,23 +35,23 @@ const props = defineProps({
 });
 
 // State Management Stock Location
-const StockLocationStore = useStockLocationStore();
-const StockLocationPayload = ref<any[]>([]);
+const StorageLocationStore = useStorageLocationStore();
+const StorageLocationPayload = ref<any[]>([]);
 const selectedLokasiStok = ref("");
 
 // Fetch Stock Location
-const fetchStockLocation = async () => {
+const fetchStorageLocations = async () => {
   try {
     // Panggil API dengan limit tinggi agar semua data lokasi termuat
-    const response = await StockLocationStore.getApi(1, 9999);
+    const response = await StorageLocationStore.getApi(1, 9999);
     if (response && response.payload) {
-      StockLocationPayload.value = response.payload;
+      StorageLocationPayload.value = response.payload;
     } else {
-      StockLocationPayload.value = [];
+      StorageLocationPayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    StockLocationPayload.value = [];
+    StorageLocationPayload.value = [];
   }
 };
 
@@ -112,7 +113,7 @@ const getSVG = (svg: string) => {
 
 onMounted(() => {
   if (props.sidebarTitle === 'Inventory'){
-    fetchStockLocation();
+    fetchStorageLocations();
   }
 });
 </script>
@@ -156,7 +157,7 @@ onMounted(() => {
               :showLabel="false"
               optionLabel="name"
               optionValue="uuid"
-              :options="StockLocationPayload"
+              :options="StorageLocationPayload"
               class="mb-[20px] mt-[20px]"
             />
           </div>

@@ -25,10 +25,8 @@ export const useStokAdjustmentStore = defineStore({
     ) {
       return apiInventoryGet(`/inventory/stok-adjustment/${uuid}?lokasi_stok_uuid=${lokasiStok}`, payload);
     },
-    async putApi(payload = {}) { // Hapus parameter uuid dari sini
-      // --- PERBAIKAN: Hapus /${uuid} dari endpoint ---
+    async putApi(payload = {}) {
       return apiInventoryPut(`/inventory/stok-adjustment`, payload);
-      // --- AKHIR PERBAIKAN ---
     },
   },
 });
