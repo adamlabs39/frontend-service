@@ -19,7 +19,7 @@ import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { useRIStore } from "@/stores/rawatInap/laporanranap";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
-import { downloadExportExcelBatalRawatRanap, downloadExportExcelKunjunganRanap } from "@/stores/rawatInap/exportexcelranap";
+import { downloadExportExcelBatalRawatRanap, downloadExportExcelKunjunganRanap, downloadExportExcelRekapTindakanPasien } from "@/stores/rawatInap/exportexcelranap";
 
 // Filter 
 interface Filter {
@@ -134,6 +134,8 @@ const handleExport = () => {
     downloadExportExcelKunjunganRanap(filter);
   } else if (pageType.value === 'pembatalan-dirawat') {
     downloadExportExcelBatalRawatRanap(filter);
+  } else if (pageType.value === 'rekap-tindakan-pasien') {
+    downloadExportExcelRekapTindakanPasien(filter);
   }
 };
 
@@ -165,8 +167,8 @@ const setFilter = () => {
     filter.practitionerUuid = searchDokterDPJPFilter.value;
     filter.jenisKunjungan = "RI";
     filter.kelas = searchKelasFilter.value ?? "";
-  } else if (pageType.value === "perpindahan-pasien") {
-     filter.pelayanan = "RI";
+  } else if (pageType.value === "perpindahan-pasien" || pageType.value === "rekap-tindakan-pasien") {
+     filter.pelayanan = "ri";
   }
   filter.startDate = `${dateToEpoch(
     setTimeForDate(valueStartedDate.value, 0, 0, 0)
@@ -348,7 +350,7 @@ onMounted(() => {
         <DataKunjunganRawatInap v-if="pageType === 'kunjungan-rawat-inap'" :payload="reportData"/>
         <DataPerpindahanPasien v-if="pageType === 'perpindahan-pasien'" />
         <DataPembatalanDirawat v-if="pageType === 'pembatalan-dirawat'" :payload="reportData" />
-        <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" />
+        <DataRekapTindakanPasien v-if="pageType === 'rekap-tindakan-pasien'" :payload="reportData" />
       </div>
       <NoData v-else/>
       <!-- <NoData /> -->

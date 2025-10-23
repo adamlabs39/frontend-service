@@ -2,6 +2,7 @@ import * as XLSX from "xlsx-js-style";
 import { epochToDate } from "@/utils/Helpers";
 import axios from "axios";
 import { useIgdLaporanStore } from "./laporan";
+import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
 
 const getPeriodeTeksFromFilter = (filter?: any) => {
   const formatTanggalIndonesia = (timestamp: any) => {
@@ -263,5 +264,107 @@ export const downloadExportExcelBatalIGD = async (
   } catch (error) {
     console.error("Error exporting Batal Kunjungan IGD", error);
     alert("Gagal mengekspor data Batal Kunjungan IGD. Silakan cek konsol untuk detail.");
+  }
+};
+
+// REKAP TINDAKAN IGD
+export const downloadExportExcelRekapTindakanPasien = async (
+  filter?: any
+) => {
+  try {
+    const rekapTindakanStore = useRekapTindakanStore();
+    const response = await rekapTindakanStore.downloadTindakanPasien(filter || {});
+
+    const reportData = response.payload.data;
+
+    if (!reportData || reportData.length === 0) {
+      alert("Tidak ada data untuk diekspor sesuai filter yang dipilih.");
+      return;
+    }
+
+    let bulanTahunTerpilih = "Bulan Ini";
+    let namaBulan = "Ini";
+
+    if (filter?.timestamp) {
+      const tanggal = new Date(Number(filter.timestamp) * 1000);
+
+      bulanTahunTerpilih = tanggal.toLocaleDateString("id-ID", {
+        month: "long",
+        year: "numeric",
+      });
+
+      namaBulan = tanggal.toLocaleDateString("id-ID", {
+        month: "long",
+      });
+    }
+
+    const title = ["LAPORAN REKAP TINDAKAN PASIEN IGD"];
+    const tanggalExport = [`Periode : ${bulanTahunTerpilih}`];
+    const jumlahHeader = `Jumlah Di Bulan ${namaBulan}`;
+
+    const data: any[] = [];
+    data.push({});
+    data.push({});
+    data.push({});
+    data.push({
+      No: "No",
+      tindakan: "Tindakan",
+      jumlah: jumlahHeader,
+    });
+
+    for (let i = 0; i < reportData.length; i++) {
+      const row = reportData[i];
+      data.push({
+        No: i + 1,
+        tindakan: row.namaTindakan ?? "-",
+        jumlah: row.total ?? "-",
+      });
+    }
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: true });
+
+    XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
+    XLSX.utils.sheet_add_aoa(worksheet, [tanggalExport], { origin: "A2" });
+
+    worksheet["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
+    ];
+
+    worksheet["A1"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 14 },
+    };
+    worksheet["A2"].s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true, sz: 11 },
+    };
+
+    const headerStyle = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { bold: true },
+    };
+    const headers = ["A4", "B4", "C4"];
+    headers.forEach(header => {
+      if (worksheet[header]) {
+        worksheet[header].s = headerStyle;
+      }
+    });
+
+    const columnWidths = data.reduce((widths: any, row: any) => {
+      Object.keys(row).forEach((key, colIdx) => {
+        const cellValue = row[key] ? row[key].toString() : "";
+        widths[colIdx] = Math.max(widths[colIdx] || 10, cellValue.length + 2);
+      });
+      return widths;
+    }, []);
+    worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Rekap Tindakan IGD");
+    XLSX.writeFile(workbook, `Laporan Rekap Tindakan Pasien IGD.xlsx`);
+  } catch (error) {
+    console.error("Error exporting Rekap Tindakan Pasien IGD", error);
+    alert("Gagal mengekspor data Rekap Tindakan Pasien IGD. Silakan cek konsol untuk detail.");
   }
 };

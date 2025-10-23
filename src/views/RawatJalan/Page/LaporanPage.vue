@@ -17,7 +17,7 @@ import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useRJStore } from "@/stores/rawatJalan/laporanrajal";
-import { downloadExportExcelKunjunganRajal, downloadExportExcelBatalRawatJalan } from "@/stores/rawatJalan/exportexcelrajal";
+import { downloadExportExcelKunjunganRajal, downloadExportExcelBatalRawatJalan, downloadExportExcelRekapTindakanPasien } from "@/stores/rawatJalan/exportexcelrajal";
 
 
 const properties = ref({
@@ -138,6 +138,8 @@ const handleExport = () => {
     downloadExportExcelKunjunganRajal(filter);
   } else if (pageType.value === 'pembatalan-poli') {
     downloadExportExcelBatalRawatJalan(filter);
+  } else if (pageType.value === 'rekap-tindakan-pasien') {
+    downloadExportExcelRekapTindakanPasien(filter);
   }
 };
 
@@ -149,10 +151,8 @@ const searchPoliklinikFilter = ref<string>("");
 const searchDokterDPJPFilter = ref<string>("");
 const searchPraktisiFilter = ref<string>("");
 
-// Untuk mengetahui sekarang ada di rute mana
 
 const updatePageType = async (path: string) => {
-  // resetFilter();
   let tempArrPath = path.split("/");
   pageType.value = tempArrPath[3] ?? "";
   dataBreadCrumb.value = [
@@ -244,7 +244,6 @@ const setFilter = () => {
    if (valueBulan.value) {
       filter.timestamp = Math.floor(valueBulan.value.getTime() / 1000);
     }
-  // filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
   filter.lokasiUuid = searchPoliklinikFilter.value ?? ""
 
   return filter;
@@ -254,7 +253,7 @@ const valueSearchRM = ref();
 const valueSearchDPJP = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-// const valueBulan = ref();
+
 
 const valueBulan = ref<Date | null>(null);
 const handleSearchRM = (searchRM: string) => {
@@ -380,10 +379,7 @@ const handleRefreshPage = () => {
         :kunjunganData="reportData"
       />
       <DataPembatalanPoli v-if="pageType === 'pembatalan-poli'"  :pembatalanPoliData="reportData"/>
-       <DataRekapTindakanPasien :rekapTindakanPasienData="reportData"
-        v-if="pageType === 'rekap-tindakan-pasien'"
-      />
-
+      <DataRekapTindakanPasien :rekapTindakanPasienData="reportData" v-if="pageType === 'rekap-tindakan-pasien'"/>
     </template>
     <template #footer>
       <div class="flex justify-between">

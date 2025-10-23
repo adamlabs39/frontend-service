@@ -15,8 +15,10 @@ import FooterPagination from "../Layout/FooterPagination.vue";
 import NoData from "@/components/section/NoData.vue";
 import {
   downloadExportExcelKunjunganIGD,
-  downloadExportExcelBatalIGD
+  downloadExportExcelBatalIGD,
+  downloadExportExcelRekapTindakanPasien
 } from "@/stores/igd/exportexceligd";
+import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
 
 //Bread Crumb
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -24,6 +26,7 @@ const route = useRoute();
 const pageType = ref("");
 
 // Store
+const rekapTindakanStore = useRekapTindakanStore();
 const praktisiStore = usePraktisiStore();
 const IgdLaporanStore = useIgdLaporanStore();
 const admisiLaporanStore = useAdmisiReportStore();
@@ -63,7 +66,7 @@ const updatePageType = async (path: string) => {
 const setFilter = () => {
   let filter = {} as Filter;
   if (pageType.value == "rekap-tindakan-pasien") {
-    filter.jenisKunjungan = "igd";
+    filter.pelayanan = "igd";
   } else {
     filter.jenisKunjungan = "IGD";
   }
@@ -103,6 +106,8 @@ const handleExport = () => {
     downloadExportExcelKunjunganIGD(filter);
   } else if (pageType.value === 'pembatalan-dirawat') {
     downloadExportExcelBatalIGD(filter);
+  } else if (pageType.value === 'rekap-tindakan-pasien') {
+    downloadExportExcelRekapTindakanPasien(filter);
   }
 };
 
@@ -131,6 +136,7 @@ onBeforeRouteLeave((to, from) => {
 });
 
 interface Filter {
+  pelayanan: string;
   timestamp: number | undefined;
   page?: number;
   limit?: number;
@@ -155,7 +161,8 @@ const praktisiProperties = ref({
 const searchDoctor = ref<string>("");
 
 const fetchLaporanData = async (filter: Filter = {
-  timestamp: undefined
+  timestamp: undefined,
+  pelayanan: ""
 }) => {
   UseUtilsStore.setLoading(true);
   let response;
@@ -165,7 +172,7 @@ const fetchLaporanData = async (filter: Filter = {
     } else if (pageType.value == "pembatalan-dirawat") {
       response = await IgdLaporanStore.getBatalIGD(filter);
     } else if (pageType.value == "rekap-tindakan-pasien") {
-      response = await IgdLaporanStore.getLaporanTindakan(filter);
+      response = await rekapTindakanStore.getTindakanPasien(filter);
     }
     if (response && response.payload) {
       properties.value.total = response.payload.pagination.total_data;
