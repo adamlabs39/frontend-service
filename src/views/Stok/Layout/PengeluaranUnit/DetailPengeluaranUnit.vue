@@ -7,6 +7,7 @@ import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
+import { formatStringDate } from "@/utils/Helpers";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 // Terima data dari list
@@ -35,50 +36,13 @@ const handleCancellation = (alasan: string) => {
 
 const emit = defineEmits(["back"]);
 
-// Kontainer konten untuk mendeteksi overflow
-const contentRef = ref<HTMLElement | null>(null);
-const isSticky = ref(false);
-let resizeObserver: ResizeObserver | null = null;
-
-const updateSticky = () => {
-  const el = contentRef.value;
-  if (!el) {
-    isSticky.value = false;
-    return;
-  }
-  // Sticky aktif jika konten overflow (tinggi konten > tinggi tampilan)
-  isSticky.value = el.scrollHeight - el.clientHeight > 2;
-};
-
-const tableRows = ref([
-  {
-    no: 1,
-    namaItem: "",
-    minStok: 0,
-    maxStok: 0,
-    stokPermintaan: 0,
-    satuanIsi: "",
-    hargaDasar: 0,
-    jumlahPermintaan: 0,
+watch(
+  () => props.data,
+  (newVal) => {
+    console.log("props.data changed:", newVal);
   },
-]);
-
-onMounted(() => {
-  nextTick(updateSticky);
-  resizeObserver = new ResizeObserver(() => updateSticky());
-  if (contentRef.value) resizeObserver.observe(contentRef.value);
-});
-
-onBeforeUnmount(() => {
-  resizeObserver?.disconnect?.();
-});
-
-// Re-evaluasi saat jumlah baris berubah
-watch(tableRows, () => nextTick(updateSticky), { deep: true });
-
-onMounted(() => {
-  console.log("DetailPermintaanBarang menerima data:", props.data);
-});
+  { immediate: true, deep: true }
+);
 </script>
 
 <template>
@@ -118,7 +82,7 @@ onMounted(() => {
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
                 <div class="px-2">
-                  <CustomButton :label="props.data.permintaan" />
+                  <CustomButton :label="props.data.noPengeluaran" />
                 </div>
               </div>
               <CustomButton
@@ -136,45 +100,49 @@ onMounted(() => {
                   <div class="text-sm font-bold underline">
                     Jenis Pengeluaran
                   </div>
-                  <div>{{ props.data.tanggal }}</div>
+                  <div>{{ props.data.jenisPengeluaran }}</div>
                 </div>
                 <div class="flex gap-2 w-full">
                   <div class="flex flex-col w-full">
                     <div class="text-sm font-bold underline">
-                      Tgl. permintaan
+                      Tgl. Pengeluaran
                     </div>
-                    <div>{{ props.data.kategoriItem }}</div>
+                    <div>
+                      {{
+                        formatStringDate(props.data.tanggalPengeluaran, "date")
+                      }}
+                    </div>
                   </div>
                   <div class="flex flex-col w-full">
                     <div class="text-sm font-bold underline">Kategori Item</div>
-                    <div>{{ props.data.jenisStok }}</div>
+                    <div>{{ props.data.kategoriItem }}</div>
                   </div>
                   <div class="flex flex-col w-full">
                     <div class="text-sm font-bold underline">Jenis Stok</div>
-                    <div>{{ props.data.jenisItem }}</div>
+                    <div>{{ props.data.jenisStok.name }}</div>
                   </div>
                 </div>
               </div>
               <div class="flex gap-3">
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">Jenis Item</div>
-                  <div>{{ props.data.kategoriItem }}</div>
+                  <div>Belum Ada</div>
                 </div>
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">
                     Tujuan Pengeluaran
                   </div>
-                  <div>{{ props.data.catatan }}</div>
+                  <div>{{ props.data.lokasiStokAkhir.name }}</div>
                 </div>
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">
                     Petugas Pengeluaran
                   </div>
-                  <div>{{ props.data.catatan }}</div>
+                  <div>{{ props.data.petugasPengeluaran }}</div>
                 </div>
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">Catatan</div>
-                  <div>{{ props.data.catatan }}</div>
+                  <div>{{ props.data.catatan ? props.data.catatan : "-" }}</div>
                 </div>
               </div>
             </div>
@@ -204,16 +172,21 @@ onMounted(() => {
               scrollable
               class="h-full text-xs"
             >
-              <Column header="No" field="no" />
-              <Column header="Nama Item" field="namaItem"> </Column>
+              <Column>
+                <template #header>No.</template>
+                <template #body="slotProps">
+                  {{ slotProps.index + 1 }}
+                </template>
+              </Column>
+              <Column header="Nama Item" field="item.name" />
               <Column header="EXP. Date" field="expDate" />
               <Column header="Min. Stok" field="minStok" />
               <Column header="Stok" field="stokKetikaPermintaan" />
-              <Column header="Pengeluaran" field="satuanIsi"> </Column>
-              <Column header="Satuan/Isi" field="hargaDasar" />
+              <Column header="Pengeluaran" field="satuanIsi" />
+              <Column header="Satuan/Isi" field="satuan" />
               <Column header="HNA" field="jumlahPermintaan" />
               <Column header="HPP" field="jumlahPermintaan" />
-              <Column header="Total" field="jumlahPermintaan" />
+              <Column header="Total" field="qty" />
             </DataTable>
           </div>
         </div>
@@ -226,21 +199,14 @@ onMounted(() => {
             <CustomButton icon="PhPrinter" label="Cetak"></CustomButton>
             <div>
               <div class="underline">Total Item</div>
-              <div>{{ tableRows.length }}</div>
+              <div>{{ props.data.items.length }}</div>
             </div>
             <div>
               <div class="underline">Grand Total</div>
               <div>Rp. 350.000</div>
             </div>
           </div>
-          <div class="flex gap-3">
-            <CustomButton
-              label="Batal"
-              backgroundColor="bg-danger-300"
-              textColor="text-white"
-              @click="showCancelDialog"
-            />
-          </div>
+          <div class="flex gap-3"></div>
         </div>
       </template>
     </Card>

@@ -170,7 +170,7 @@ watch(
                   {{ slotProps.index + 1 }}
                 </template>
               </Column>
-              <Column header="Nama Item" field="namaItem"> </Column>
+              <Column header="Nama Item" field="namaItem" />
               <Column header="Min. Stok" field="minStok" />
               <Column header="Max. Stok" field="maxStok" />
               <Column
