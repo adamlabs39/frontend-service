@@ -8,7 +8,7 @@ import { ref, watch, onMounted } from "vue";
 import dialogPermintaanBarang from "@/views/Stok/PermintaanBarang.vue";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import { useStorageLocationStore } from "@/stores/inventory/storageLocation";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomSelect from "../Base/CustomSelect.vue";
 
 const props = defineProps({
   sidebarTitle: {
@@ -40,7 +40,7 @@ const StorageLocationPayload = ref<any[]>([]);
 const selectedLokasiStok = ref("");
 
 // Fetch Stock Location
-const fetchStorageLocations = async () => {
+const fetchStockLocation = async () => {
   try {
     // Panggil API dengan limit tinggi agar semua data lokasi termuat
     const response = await StorageLocationStore.getApi(1, 9999);
@@ -113,7 +113,7 @@ const getSVG = (svg: string) => {
 
 onMounted(() => {
   if (props.sidebarTitle === 'Inventory'){
-    fetchStorageLocations();
+      fetchStockLocation();
   }
 });
 </script>
