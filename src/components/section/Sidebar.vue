@@ -112,8 +112,8 @@ const getSVG = (svg: string) => {
 };
 
 onMounted(() => {
-  if (props.sidebarTitle === 'Inventory'){
-      fetchStockLocation();
+  if (props.sidebarTitle === "Inventory") {
+    fetchStockLocation();
   }
 });
 </script>
