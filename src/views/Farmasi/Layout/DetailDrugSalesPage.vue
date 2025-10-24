@@ -31,24 +31,31 @@ const props = defineProps({
 const emit = defineEmits(["back", "goToDetail", "goToEdit"]);
 
 const schema = toTypedSchema(
-  yup.object({
-    lokasiStokUuid: yup.string().required("Lokasi farmasi harus diisi"),
-    tanggalPembelian: yup.date().default(new Date()).required("Tanggal harus diisi"),
-    dokterPemberiResep: yup.string().required("Dokter yang meresepkan harus diisi"),
-    namaPembeli: yup.string().required("Nama pembeli harus diisi"),
-    noHp: yup.string().required("No handphone harus diisi"),
-    catatan: yup.string().required("Catatan harus diisi"),
-    items: yup.array().of(
-      yup.object({
-        itemMedisUuid: yup.string().required("Nama Item harus dipilih"),
-        jenisStokUuid: yup.string().required("Jenis Stok harus dipilih"),
-        qty: yup.number().required("Pembelian harus diisi"),
-        satuan: yup.string(),
-        hargaSatuan: yup.number(),
-        diskon: yup.number().required("Diskon harus diisi"),
-      })
-    ),
-  }).noUnknown()
+  yup
+    .object({
+      lokasiStokUuid: yup.string().required("Lokasi farmasi harus diisi"),
+      tanggalPembelian: yup
+        .date()
+        .default(new Date())
+        .required("Tanggal harus diisi"),
+      dokterPemberiResep: yup
+        .string()
+        .required("Dokter yang meresepkan harus diisi"),
+      namaPembeli: yup.string().required("Nama pembeli harus diisi"),
+      noHp: yup.string().required("No handphone harus diisi"),
+      catatan: yup.string().required("Catatan harus diisi"),
+      items: yup.array().of(
+        yup.object({
+          itemMedisUuid: yup.string().required("Nama Item harus dipilih"),
+          jenisStokUuid: yup.string().required("Jenis Stok harus dipilih"),
+          qty: yup.number().required("Pembelian harus diisi"),
+          satuan: yup.string(),
+          hargaSatuan: yup.number(),
+          diskon: yup.number().required("Diskon harus diisi"),
+        })
+      ),
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, defineField } = useForm({
@@ -83,7 +90,11 @@ interface penjualanObat {
   diskon: number;
 }
 
-const { remove, push, fields: filedsPenjualan } = useFieldArray<penjualanObat>("items");
+const {
+  remove,
+  push,
+  fields: filedsPenjualan,
+} = useFieldArray<penjualanObat>("items");
 
 const addRow = () => {
   push({
@@ -96,10 +107,10 @@ const addRow = () => {
   });
 };
 
-const onSubmit = handleSubmit(async (values: any) => {  
-  values.noTransaksi = DrugSalesCodePayload.value.code
-  values.tanggalPembelian = dateToEpoch(values.tanggalPembelian)
-  
+const onSubmit = handleSubmit(async (values: any) => {
+  values.noTransaksi = DrugSalesCodePayload.value.code;
+  values.tanggalPembelian = dateToEpoch(values.tanggalPembelian);
+
   try {
     const response = await DrugSalesStore.createApi(values);
   } catch (error) {
@@ -112,46 +123,49 @@ const onSubmit = handleSubmit(async (values: any) => {
 
 const updateNameItem = (index: number) => {
   const newSatuan = WithoutPaginationPayload.value.find(
-    (item) => filedsPenjualan.value[index].value.itemMedisUuid == item.uuid 
-  );  
+    (item) => filedsPenjualan.value[index].value.itemMedisUuid == item.uuid
+  );
   filedsPenjualan.value[index].value.satuan = newSatuan.satuanPenggunaan.name;
 };
 
 const updateJenisStok = (index: number) => {
   const newHarga = AvailableJenisStokPayload.value.find(
-    (item) => filedsPenjualan.value[index].value.jenisStokUuid == item.detailStok.uuid 
-  );  
+    (item) =>
+      filedsPenjualan.value[index].value.jenisStokUuid == item.detailStok.uuid
+  );
   filedsPenjualan.value[index].value.hargaSatuan = newHarga.harga;
 };
 
 const updateQty = (index: number) => {
-  grandTotal.value = 0
-  totalItem.value = 0
-  filedsPenjualan.value.forEach(item => {
-    grandTotal.value += item.value.qty * item.value.hargaSatuan
-  })
-  totalItem.value = filedsPenjualan.value.length  
+  grandTotal.value = 0;
+  totalItem.value = 0;
+  filedsPenjualan.value.forEach((item) => {
+    grandTotal.value += item.value.qty * item.value.hargaSatuan;
+  });
+  totalItem.value = filedsPenjualan.value.length;
 };
 
 const updateDiskon = (index: number) => {
-  grandTotal.value = 0
-  filedsPenjualan.value.forEach(item => {
-    grandTotal.value += item.value.qty * item.value.hargaSatuan - item.value.diskon
-  })
+  grandTotal.value = 0;
+  filedsPenjualan.value.forEach((item) => {
+    grandTotal.value +=
+      item.value.qty * item.value.hargaSatuan - item.value.diskon;
+  });
 };
 
 const handleDelete = (index: number) => {
-  grandTotal.value = 0
+  grandTotal.value = 0;
   remove(index);
-  totalItem.value = filedsPenjualan.value.length
-  filedsPenjualan.value.forEach(item => {
-    grandTotal.value = item.value.qty * item.value.hargaSatuan - item.value.diskon    
-  })
+  totalItem.value = filedsPenjualan.value.length;
+  filedsPenjualan.value.forEach((item) => {
+    grandTotal.value =
+      item.value.qty * item.value.hargaSatuan - item.value.diskon;
+  });
 };
 
 // State Management
 const grandTotal = ref(0);
-const totalItem = ref(0)
+const totalItem = ref(0);
 const StockLocationStore = useStockLocationStore();
 const StockLocationPayload = ref<any[]>([]);
 const UseUtilsStore = utilsStore();
@@ -160,16 +174,42 @@ const UseUtilsStore = utilsStore();
 const fetchStockLocation = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await StockLocationStore.getApi();
+    const response = await StockLocationStore.getApi(1, 100, "", "depo", "");
 
     if (response && response.payload) {
       StockLocationPayload.value = response.payload;
     } else {
       StockLocationPayload.value = [];
     }
+    console.log("StockLocationPayload:", StockLocationPayload.value);
   } catch (error) {
     console.error("Failed to fetch data", error);
     StockLocationPayload.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+// State Management
+const inventoryStokPayload = ref<any[]>([]);
+
+// Fetch Inventory Stok
+const fetchInventoryStok = async () => {
+  if (!lokasiStokUuid.value) return; // guard: jangan panggil tanpa uuid
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await StockLocationStore.getInventoryStok(
+      lokasiStokUuid.value
+    );
+    if (response && response.payload) {
+      inventoryStokPayload.value = response.payload;
+    } else {
+      inventoryStokPayload.value = [];
+    }
+    console.log("inventoryStokPayload:", inventoryStokPayload.value);
+  } catch (error) {
+    console.error("Failed to fetch inventory stok:", error);
+    inventoryStokPayload.value = [];
   } finally {
     UseUtilsStore.setLoading(false);
   }
@@ -236,22 +276,24 @@ const fetchAvailableJenisStok = async (uuid: string) => {
 watch(lokasiStokUuid, (newJenisStok) => {
   if (newJenisStok) {
     fetchAvailableJenisStok(newJenisStok);
+    fetchInventoryStok();
   }
 });
 
 onMounted(() => {
   fetchWithoutPagination();
   fetchStockLocation();
+  fetchInventoryStok();
   fetchCode();
 });
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
+  <div class="flex overflow-hidden flex-col h-full">
     <Card
-      pt:body:class="h-full pt-0 pb-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden overflow-y-auto"
+      pt:body:class="overflow-auto pt-0 pb-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden overflow-y-auto h-full"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder initialState="0">
@@ -363,7 +405,7 @@ onMounted(() => {
             </div>
             <hr class="mt-5 border-1 border-grey-200" />
             <div class="mt-[20px]">
-              <div class="relative overflow-y-auto" style="max-height: 200px">
+              <div class="overflow-y-auto relative" style="max-height: 200px">
                 <DataTable
                   :value="filedsPenjualan"
                   class="text-black"
@@ -385,7 +427,11 @@ onMounted(() => {
                   </Column>
 
                   <!-- Nama Item -->
-                  <Column header="Nama Item" headerClass="bg-adameds-50" style="width: 20%">
+                  <Column
+                    header="Nama Item"
+                    headerClass="bg-adameds-50"
+                    style="width: 20%"
+                  >
                     <template #body="slotProps">
                       <CustomSelect
                         v-model="slotProps.data.value.itemMedisUuid"
@@ -393,9 +439,9 @@ onMounted(() => {
                         :showLabel="false"
                         prependIcon="PhMagnifyingGlass"
                         place-holder="Cari Item"
-                        optionLabel="code"
-                        optionValue="uuid"
-                        :options="WithoutPaginationPayload"
+                        optionLabel="itemName"
+                        optionValue="jenisStokUuid"
+                        :options="inventoryStokPayload"
                         :invalid="(errors as any)[`items[${slotProps.index}].itemMedisUuid`] ? true : false"
                         :invalidMessage="(errors as any)[`items[${slotProps.index}].itemMedisUuid`]"
                       />
@@ -403,7 +449,11 @@ onMounted(() => {
                   </Column>
 
                   <!-- Jenis Stok -->
-                  <Column header="Jenis Stok" headerClass="bg-adameds-50" style="width: 15%">
+                  <Column
+                    header="Jenis Stok"
+                    headerClass="bg-adameds-50"
+                    style="width: 15%"
+                  >
                     <template #body="slotProps">
                       <CustomSelect
                         v-model="slotProps.data.value.jenisStokUuid"
@@ -420,7 +470,11 @@ onMounted(() => {
                   </Column>
 
                   <!-- Pembelian -->
-                  <Column header="Pembelian" headerClass="bg-adameds-50" style="width: 5%">
+                  <Column
+                    header="Pembelian"
+                    headerClass="bg-adameds-50"
+                    style="width: 5%"
+                  >
                     <template #body="slotProps">
                       <CustomInputNumber
                         :showLabel="false"
@@ -433,16 +487,26 @@ onMounted(() => {
                   </Column>
 
                   <!-- Satuan -->
-                  <Column header="Satuan" headerClass="bg-adameds-50" style="width: 5%">
+                  <Column
+                    header="Satuan"
+                    headerClass="bg-adameds-50"
+                    style="width: 5%"
+                  >
                     <template #body="slotProps">
                       <div class="text-center">
-                        <div class="text-sm">{{ slotProps.data.value.satuan }}</div>
+                        <div class="text-sm">
+                          {{ slotProps.data.value.satuan }}
+                        </div>
                       </div>
                     </template>
                   </Column>
 
                   <!-- Harga Satuan -->
-                  <Column header="Harga Satuan" headerClass="bg-adameds-50" style="width: 10%">
+                  <Column
+                    header="Harga Satuan"
+                    headerClass="bg-adameds-50"
+                    style="width: 10%"
+                  >
                     <template #body="slotProps">
                       <div class="text-center">
                         <div class="text-sm">
@@ -456,7 +520,14 @@ onMounted(() => {
                   <Column header="Jumlah" headerClass="bg-adameds-50">
                     <template #body="slotProps">
                       <div class="text-center">
-                        <div class="text-sm">{{ formatPrice(slotProps.data.value.qty * slotProps.data.value.hargaSatuan) }}</div>
+                        <div class="text-sm">
+                          {{
+                            formatPrice(
+                              slotProps.data.value.qty *
+                                slotProps.data.value.hargaSatuan
+                            )
+                          }}
+                        </div>
                       </div>
                     </template>
                   </Column>
@@ -474,7 +545,9 @@ onMounted(() => {
                         :invalidMessage="(errors as any)[`items[${slotProps.index}].diskon`]"
                       >
                         <template #prependText>
-                          <div class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r">
+                          <div
+                            class="font-semibold text-sm text-white rounded-l-lg bg-adameds-300 w-[50px] flex items-center justify-center border-r"
+                          >
                             Rp.
                           </div>
                         </template>
@@ -486,7 +559,15 @@ onMounted(() => {
                   <Column header="Total" headerClass="bg-adameds-50">
                     <template #body="slotProps">
                       <div class="text-center">
-                        <div class="text-sm">{{ formatPrice(slotProps.data.value.qty * slotProps.data.value.hargaSatuan - slotProps.data.value.diskon) }}</div>
+                        <div class="text-sm">
+                          {{
+                            formatPrice(
+                              slotProps.data.value.qty *
+                                slotProps.data.value.hargaSatuan -
+                                slotProps.data.value.diskon
+                            )
+                          }}
+                        </div>
                       </div>
                     </template>
                   </Column>
@@ -494,7 +575,7 @@ onMounted(() => {
                   <!-- Action -->
                   <Column header="Action" headerClass="bg-adameds-50">
                     <template #body="slotProps">
-                      <div class="flex items-center justify-center">
+                      <div class="flex justify-center items-center">
                         <CustomButton
                           :showLabel="false"
                           background-color="bg-danger-300 rounded-lg"
@@ -508,7 +589,9 @@ onMounted(() => {
                   </Column>
                 </DataTable>
               </div>
-              <div class="flex items-center justify-center p-5 border border-dashed rounded-lg border-adameds-300">
+              <div
+                class="flex justify-center items-center p-5 rounded-lg border border-dashed border-adameds-300"
+              >
                 <CustomButton
                   icon="PhPlus"
                   label="Tambah Item"
@@ -544,7 +627,11 @@ onMounted(() => {
                   textColor="text-mediumGrey-400"
                   class="mt-auto"
                 />
-                <CustomButton label="Simpan" class="mt-auto ml-[10px]" @click="onSubmit" />
+                <CustomButton
+                  label="Simpan"
+                  class="mt-auto ml-[10px]"
+                  @click="onSubmit"
+                />
               </div>
             </div>
           </template>
