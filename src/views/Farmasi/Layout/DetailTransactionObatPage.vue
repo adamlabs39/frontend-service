@@ -19,7 +19,7 @@ const props = defineProps({
   filterStatus: {
     type: String,
     required: true,
-  }
+  },
 });
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
@@ -62,9 +62,13 @@ defineExpose({
 </script>
 
 <template>
-  <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="1000px">
+  <CustomDialog
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    width="1100px"
+  >
     <template #header>
-      <div class="flex justify-between">
+      <div class="flex justify-between items-center">
         <div class="flex">
           <p>
             Riwayat Resep - {{ TransactionHistoryObatDetailPayload.noResep }}
@@ -83,7 +87,11 @@ defineExpose({
         <div class="flex ml-[470px]">
           <div class="bg-white w-[1px] h-[30px]"></div>
           <p class="text-sm ml-[15px] mt-[3px]">
-            Tgl. Order : {{ epochToDate(TransactionHistoryObatDetailPayload.orderDate, "date") }}</p>
+            Tgl. Order :
+            {{
+              epochToDate(TransactionHistoryObatDetailPayload.orderDate, "date")
+            }}
+          </p>
         </div>
       </div>
     </template>
@@ -188,7 +196,13 @@ defineExpose({
           </CustomAccordion>
         </div>
         <!-- Status Verifikasi Resep -->
-        <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'resep'">
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'resep'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Status Verifikasi</template>
             <template #content>
@@ -260,8 +274,14 @@ defineExpose({
             </template>
           </CustomAccordion>
         </div>
-         <!-- Status Verifikasi Retur -->
-         <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'retur'">
+        <!-- Status Verifikasi Retur -->
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'retur'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Status Retur</template>
             <template #content>
@@ -333,8 +353,14 @@ defineExpose({
             </template>
           </CustomAccordion>
         </div>
-         <!-- Status Verifikasi Batal -->
-         <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'batal'">
+        <!-- Status Verifikasi Batal -->
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'batal'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Status Verifikasi & Batal</template>
             <template #content>
@@ -407,7 +433,13 @@ defineExpose({
           </CustomAccordion>
         </div>
         <!-- Alasan Retur -->
-        <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'retur'">
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'retur'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Alasan Retur</template>
             <template #content>
@@ -432,7 +464,13 @@ defineExpose({
           </CustomAccordion>
         </div>
         <!-- Alasan Batal -->
-        <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'batal'">
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'batal'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Alasan Batal</template>
             <template #content>
@@ -457,16 +495,30 @@ defineExpose({
           </CustomAccordion>
         </div>
         <!-- Asesmen Medis Resep -->
-        <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'resep'">
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'resep'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Asesmen Medis</template>
             <template #content>
-              <div v-for="(items, index) in TransactionHistoryObatDetailPayload.items" :key="index" class="mt-[20px]">
+              <div
+                v-for="(
+                  items, index
+                ) in TransactionHistoryObatDetailPayload.items"
+                :key="index"
+                class="mt-[20px]"
+              >
                 <card class="bg-adameds-50">
                   <template #content>
                     <div class="flex justify-between">
                       <div class="flex">
-                        <CustomButton class="text-sm h-7">0{{ index + 1 }}</CustomButton>
+                        <CustomButton class="text-sm h-7"
+                          >0{{ index + 1 }}</CustomButton
+                        >
                         <p class="ml-2 text-base font-bold">{{ items.name }}</p>
                         <PhArrowRight
                           :size="20"
@@ -477,7 +529,7 @@ defineExpose({
                       </div>
                       <div>
                         <CustomChip
-                          v-if = "items.isChronic == true"
+                          v-if="items.isChronic == true"
                           :showCheckedIcon="false"
                           label="OBAT KRONIS"
                           borderColor="border-danger-300"
@@ -500,31 +552,41 @@ defineExpose({
                     <!-- Stok Obat -->
                     <Column header="Stok Obat">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.jenisStok }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.jenisStok }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Aturan & Cara Pakai -->
                     <Column header="Aturan & Cara Pakai">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.aturanPakai }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.aturanPakai }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Satuan -->
                     <Column header="Satuan">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ formatPrice(slotProps.data.hargaSatuan) }}</div>
+                        <div class="text-SM">
+                          {{ formatPrice(slotProps.data.hargaSatuan) }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Jasa Resep -->
                     <Column header="Jasa Resep">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.jasaResep }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.jasaResep }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Total -->
                     <Column header="Total">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ formatPrice(slotProps.data.totalHarga) }}</div>
+                        <div class="text-SM">
+                          {{ formatPrice(slotProps.data.totalHarga) }}
+                        </div>
                       </template>
                     </Column>
                   </DataTable>
@@ -548,16 +610,30 @@ defineExpose({
           </CustomAccordion>
         </div>
         <!-- Daftar Resep / Obat Retur -->
-        <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'retur'">
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'retur'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Daftar Resep / Obat</template>
             <template #content>
-              <div v-for="(items, index) in TransactionHistoryObatDetailPayload.retur" :key="index" class="mt-[20px]">
+              <div
+                v-for="(
+                  items, index
+                ) in TransactionHistoryObatDetailPayload.retur"
+                :key="index"
+                class="mt-[20px]"
+              >
                 <card class="bg-adameds-50">
                   <template #content>
                     <div class="flex justify-between">
                       <div class="flex">
-                        <CustomButton class="text-sm h-7">0{{ index + 1 }}</CustomButton>
+                        <CustomButton class="text-sm h-7"
+                          >0{{ index + 1 }}</CustomButton
+                        >
                         <p class="ml-2 text-base font-bold">{{ items.name }}</p>
                         <PhArrowRight
                           :size="20"
@@ -568,7 +644,7 @@ defineExpose({
                       </div>
                       <div>
                         <CustomChip
-                          v-if = "items.isChronic == true"
+                          v-if="items.isChronic == true"
                           :showCheckedIcon="false"
                           label="OBAT KRONIS"
                           borderColor="border-danger-300"
@@ -591,31 +667,41 @@ defineExpose({
                     <!-- Stok Obat -->
                     <Column header="Stok Obat">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.jenisStok }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.jenisStok }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Aturan & Cara Pakai -->
                     <Column header="Aturan & Cara Pakai">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.aturanPakai }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.aturanPakai }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Satuan -->
                     <Column header="Satuan">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ formatPrice(slotProps.data.hargaSatuan) }}</div>
+                        <div class="text-SM">
+                          {{ formatPrice(slotProps.data.hargaSatuan) }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Jasa Resep -->
                     <Column header="Jasa Resep">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.jasaResep }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.jasaResep }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Total -->
                     <Column header="Total">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ formatPrice(slotProps.data.totalHarga) }}</div>
+                        <div class="text-SM">
+                          {{ formatPrice(slotProps.data.totalHarga) }}
+                        </div>
                       </template>
                     </Column>
                   </DataTable>
@@ -639,16 +725,30 @@ defineExpose({
           </CustomAccordion>
         </div>
         <!-- Daftar Resep / Obat Batal -->
-        <div class="grid grid-cols-1" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'batal'">
+        <div
+          class="grid grid-cols-1"
+          v-if="
+            TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+            TransactionHistoryObatDetailPayload.statusType == 'batal'
+          "
+        >
           <CustomAccordion no-border initial-state="0">
             <template #header>Daftar Resep / Obat</template>
             <template #content>
-              <div v-for="(items, index) in TransactionHistoryObatDetailPayload.items" :key="index" class="mt-[20px]">
+              <div
+                v-for="(
+                  items, index
+                ) in TransactionHistoryObatDetailPayload.items"
+                :key="index"
+                class="mt-[20px]"
+              >
                 <card class="bg-adameds-50">
                   <template #content>
                     <div class="flex justify-between">
                       <div class="flex">
-                        <CustomButton class="text-sm h-7">0{{ index + 1 }}</CustomButton>
+                        <CustomButton class="text-sm h-7"
+                          >0{{ index + 1 }}</CustomButton
+                        >
                         <p class="ml-2 text-base font-bold">{{ items.name }}</p>
                         <PhArrowRight
                           :size="20"
@@ -659,7 +759,7 @@ defineExpose({
                       </div>
                       <div>
                         <CustomChip
-                          v-if = "items.isChronic == true"
+                          v-if="items.isChronic == true"
                           :showCheckedIcon="false"
                           label="OBAT KRONIS"
                           borderColor="border-danger-300"
@@ -682,31 +782,41 @@ defineExpose({
                     <!-- Stok Obat -->
                     <Column header="Stok Obat">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.jenisStok }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.jenisStok }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Aturan & Cara Pakai -->
                     <Column header="Aturan & Cara Pakai">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.aturanPakai }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.aturanPakai }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Satuan -->
                     <Column header="Satuan">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ formatPrice(slotProps.data.hargaSatuan) }}</div>
+                        <div class="text-SM">
+                          {{ formatPrice(slotProps.data.hargaSatuan) }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Jasa Resep -->
                     <Column header="Jasa Resep">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ slotProps.data.jasaResep }}</div>
+                        <div class="text-SM">
+                          {{ slotProps.data.jasaResep }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Total -->
                     <Column header="Total">
                       <template #body="slotProps">
-                        <div class="text-SM">{{ formatPrice(slotProps.data.totalHarga) }}</div>
+                        <div class="text-SM">
+                          {{ formatPrice(slotProps.data.totalHarga) }}
+                        </div>
                       </template>
                     </Column>
                   </DataTable>
@@ -732,34 +842,64 @@ defineExpose({
       </div>
 
       <!-- Total Tagihan Resep -->
-      <div class="mt-4" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'resep'">
+      <div
+        class="mt-4"
+        v-if="
+          TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+          TransactionHistoryObatDetailPayload.statusType == 'resep'
+        "
+      >
         <card class="bg-adameds-50">
           <template #content>
             <div class="flex justify-between">
               <p class="text-base font-bold">Total Tagihan Resep</p>
-              <p class="text-base font-bold">{{ formatPrice(TransactionHistoryObatDetailPayload.grandTotal) }}</p>
+              <p class="text-base font-bold">
+                {{
+                  formatPrice(TransactionHistoryObatDetailPayload.grandTotal)
+                }}
+              </p>
             </div>
           </template>
         </card>
       </div>
       <!-- Total Tagihan Retur -->
-      <div class="mt-4" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'retur'">
+      <div
+        class="mt-4"
+        v-if="
+          TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+          TransactionHistoryObatDetailPayload.statusType == 'retur'
+        "
+      >
         <card class="bg-adameds-50">
           <template #content>
             <div class="flex justify-between">
               <p class="text-base font-bold">Total Retur</p>
-              <p class="text-base font-bold">{{ formatPrice(TransactionHistoryObatDetailPayload.grandTotal) }}</p>
+              <p class="text-base font-bold">
+                {{
+                  formatPrice(TransactionHistoryObatDetailPayload.grandTotal)
+                }}
+              </p>
             </div>
           </template>
         </card>
       </div>
       <!-- Total Tagihan Batal -->
-      <div class="mt-4" v-if="TransactionHistoryObatDetailPayload.itemType == 'obat' && TransactionHistoryObatDetailPayload.statusType == 'batal'">
+      <div
+        class="mt-4"
+        v-if="
+          TransactionHistoryObatDetailPayload.itemType == 'obat' &&
+          TransactionHistoryObatDetailPayload.statusType == 'batal'
+        "
+      >
         <card class="bg-adameds-50">
           <template #content>
             <div class="flex justify-between">
               <p class="text-base font-bold">Total Tagihan Resep</p>
-              <p class="text-base font-bold">{{ formatPrice(TransactionHistoryObatDetailPayload.grandTotal) }}</p>
+              <p class="text-base font-bold">
+                {{
+                  formatPrice(TransactionHistoryObatDetailPayload.grandTotal)
+                }}
+              </p>
             </div>
           </template>
         </card>

@@ -5,7 +5,6 @@ import AntrianHeader from "../Layout/AntrianHeader.vue";
 import SectionAntrianAdmisi from "./SectionAntrianAdmisi.vue";
 import SectionAntrianRawatJalan from "./SectionAntrianRawatJalan.vue";
 import SectionAntrianFarmasi from "./SectionAntrianFarmasi.vue";
-import AntrianFooter from "../Layout/AntrianFooter.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 
 const value = ref("0");

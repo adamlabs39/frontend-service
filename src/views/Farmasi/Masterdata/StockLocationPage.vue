@@ -20,10 +20,9 @@ const filterLokasi = ref([
 
 const selectedFilteronStokLocationSelect = ref<string[]>([]);
 const onStokLocationSelect = (values: string) => {
-  if (selectedFilteronStokLocationSelect.value.includes(values)) {    
-    selectedFilteronStokLocationSelect.value = selectedFilteronStokLocationSelect.value.filter(
-      (item) => item != values
-    );
+  if (selectedFilteronStokLocationSelect.value.includes(values)) {
+    selectedFilteronStokLocationSelect.value =
+      selectedFilteronStokLocationSelect.value.filter((item) => item != values);
   } else {
     selectedFilteronStokLocationSelect.value.push(values);
   }
@@ -63,12 +62,12 @@ const fetchStockLocation = async () => {
   let filter = "";
   if (
     selectedFilteronStokLocationSelect.value.length === 2 &&
-    selectedFilteronStokLocationSelect.value.includes('gudang') &&
-    selectedFilteronStokLocationSelect.value.includes('depo')
+    selectedFilteronStokLocationSelect.value.includes("gudang") &&
+    selectedFilteronStokLocationSelect.value.includes("depo")
   ) {
-    filter = ""
+    filter = "";
   } else if (selectedFilteronStokLocationSelect.value.length === 1) {
-    filter = selectedFilteronStokLocationSelect.value[0]
+    filter = selectedFilteronStokLocationSelect.value[0];
   }
   // console.log(filter, 'filter');
   try {
@@ -93,13 +92,20 @@ const fetchStockLocation = async () => {
   }
 };
 
+const resetSearch = () => {
+  searchQuery.value = "";
+  selectedFilteronStokLocationSelect.value = [];
+  StockLocationProperties.value.page = 1;
+  fetchStockLocation();
+};
+
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchStockLocation();
-  }, 500); 
-});
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchStockLocation();
+//   }, 500);
+// });
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -164,18 +170,29 @@ const importExcel = async (file: File) => {
 // Export Excel
 const ExportExcel = async () => {
   try {
-    const response = await StockLocationStore.exportApi();
-    const rows = response.payload;
+    // Ambil state paginasi aktif
+    const { page, page_size } = StockLocationProperties.value;
+
+    // Ambil data sesuai page & page_size & pencarian aktif
+    const response = await StockLocationStore.getApi(
+      page,
+      page_size,
+      searchQuery.value
+    );
+    const rows = response?.payload ?? [];
     if (!rows || rows.length === 0) {
       console.error("No data available for export");
       return;
     }
 
+    // Hitung offset untuk penomoran sesuai page aktif
+    const offset = (page - 1) * page_size;
+
     // Prepare Data for Export
     const title = ["DATAMASTER LOKASI STOK"];
-    const data = [];
+    const data: any[] = [];
 
-    // Header Row (Kosong untuk baris kedua tanpa border)
+    // Header Row (kosong untuk baris kedua tanpa border)
     data.push({});
     data.push({});
     data.push({
@@ -187,14 +204,27 @@ const ExportExcel = async () => {
       Status: "Status",
     });
 
+    // Helper: konversi array default tujuan menjadi label yang ditampilkan di tabel
+    const toDefaultLabel = (values: any) => {
+      const labels: Record<string, string> = {
+        "0": "Rawat Inap",
+        "1": "Rawat Jalan",
+        "2": "IGD",
+        "3": "FISIO",
+      };
+      return Array.isArray(values)
+        ? values.map((v: any) => labels[String(v)] ?? String(v)).join(", ")
+        : "";
+    };
+
     // Data Rows
     for (let i = 0; i < rows.length; i++) {
       data.push({
-        No: i + 1,
+        No: offset + i + 1,
         Kode: rows[i].code,
         Nama: rows[i].name,
         Jenis: rows[i].jenisLokasi,
-        Default: rows[i].defaultTujuanOrderPermintaan,
+        Default: toDefaultLabel(rows[i].defaultTujuanOrderPermintaan),
         Status: rows[i].status ? "AKTIF" : "NON-AKTIF",
       });
     }
@@ -205,7 +235,7 @@ const ExportExcel = async () => {
 
     // Add Title and Merge Cells
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
-    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
 
     // Style Title
     worksheet["A1"].s = {
@@ -214,18 +244,23 @@ const ExportExcel = async () => {
     };
 
     // Column Widths
-    worksheet["!cols"] = [{ wch: 5 }, { wch: 10 }, { wch: 30 }, { wch: 10 }];
+    worksheet["!cols"] = [
+      { wch: 5 },
+      { wch: 12 },
+      { wch: 30 },
+      { wch: 18 },
+      { wch: 32 },
+      { wch: 10 },
+    ];
 
     // Apply Styles to Cells
     const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:D1");
-
-    // Start formatting from row 3 (index 2 in array)
     for (let row = 2; row <= range.e.r; row++) {
       for (let col = range.s.c; col <= range.e.c; col++) {
         const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
         if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
 
-        // Apply border only to row 3 and beyond (table rows)
+        // Border untuk baris tabel
         if (row >= 2) {
           worksheet[cellAddress].s = worksheet[cellAddress].s || {};
           worksheet[cellAddress].s.border = {
@@ -236,13 +271,13 @@ const ExportExcel = async () => {
           };
         }
 
-        // Align header cells (row 3)
+        // Align header (baris 3)
         worksheet[cellAddress].s.alignment = {
           horizontal: "center",
           vertical: "center",
         };
 
-        // Fill header with background color (row 3)
+        // Fill header (baris 3)
         if (row === 2) {
           worksheet[cellAddress].s.fill = {
             fgColor: { rgb: "9fe2db" },
@@ -275,12 +310,12 @@ const downloadExcel = async () => {
     });
 
     // Add Empty Rows (4 empty rows to match the example)
-    data.push({ 
-      No: "1", 
-      Kode: "GL1", 
-      Nama: "Gudang Logistik", 
-      Jenis: "Gudang", 
-      Default: "RJ, RI" 
+    data.push({
+      No: "1",
+      Kode: "GL1",
+      Nama: "Gudang Logistik",
+      Jenis: "Gudang",
+      Default: "RJ, RI",
     });
 
     // Create Workbook and Worksheet
@@ -298,11 +333,48 @@ const downloadExcel = async () => {
 
     worksheet["!cols"] = columnWidths.map((wch: any) => ({ wch }));
 
-    // Apply Styles to Cells
-    const range = XLSX.utils.decode_range("A1:C5");
+    // Apply table styling
+    const range = XLSX.utils.decode_range(worksheet["!ref"] || "A1:F2");
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!worksheet[cellAddress]) worksheet[cellAddress] = { v: "" };
+
+        worksheet[cellAddress].s = worksheet[cellAddress].s || {};
+        // Border untuk semua sel
+        worksheet[cellAddress].s.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (row === range.s.r) {
+          // Header style
+          worksheet[cellAddress].s.alignment = {
+            horizontal: "center",
+            vertical: "center",
+          };
+          worksheet[cellAddress].s.font = { bold: true };
+          worksheet[cellAddress].s.fill = { fgColor: { rgb: "9fe2db" } };
+        } else {
+          // Center alignment untuk kolom numeric dan kolom "No"
+          if (col === 0 || col === 4 || col === 5) {
+            worksheet[cellAddress].s.alignment = {
+              horizontal: "center",
+              vertical: "center",
+            };
+          }
+        }
+      }
+    }
 
     // Append Worksheet to Workbook and Save
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Format Datamaster Lokasi Stok");
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Format Datamaster Lokasi Stok"
+    );
     XLSX.writeFile(workbook, `Format Datamaster Lokasi Stok.xlsx`);
   } catch (error) {
     console.error("Error while exporting Excel", error);
@@ -315,23 +387,39 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
-    <Card pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+  <div class="flex overflow-hidden flex-col h-full">
+    <Card
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchStockLocation"/>
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchStockLocation"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Datamaster',
                     home: true,
                   }"
                 />
-                <PhCaretRight :size="25" weight="bold" class="ml-[10px] mt-[8px] text-adameds-300" />
+                <PhCaretRight
+                  :size="25"
+                  weight="bold"
+                  class="ml-[10px] mt-[8px] text-adameds-300"
+                />
                 <div class="">
-                  <p class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]">Lokasi Stok</p>
+                  <p
+                    class="font-semibold text-heading text-grey-400 ml-[10px] mt-[5px]"
+                  >
+                    Lokasi Stok
+                  </p>
                 </div>
               </div>
               <CustomButton
@@ -343,39 +431,60 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex items-end mt-[10px] gap-5">
               <CustomTextfield
                 v-model="searchQuery"
-                @update:model-value="searchData"
                 label="Cari Lokasi Stok"
                 prependIcon="PhMagnifyingGlass"
-                placeholder="Cari Lokasi Stok"
-                class=""
+                placeholder="Cari Nama Lokasi Stok"
+                class="flex-1"
               />
+              <div class="flex items-end">
+                <CustomButton
+                  @click="fetchStockLocation"
+                  icon="PhMagnifyingGlass"
+                  label="Cari"
+                  class="mr-[10px]"
+                />
+                <CustomButton
+                  @click="resetSearch"
+                  label="Reset"
+                  backgroundColor="bg-white"
+                  borderColor="border-adameds-300"
+                  textColor="text-adameds-300"
+                  class="mr-[10px]"
+                />
+              </div>
             </div>
             <!-- Filter Jenis Lokasi -->
             <div class="flex mb-[10px] mt-5">
-              <div class="w-[15%] font-semibold text-SM text-grey-300">Filter Jenis Lokasi</div>
-                <div class="flex">
-                  <span class="font-semibold text-grey-300">|</span>
-                  <CustomChip
-                    v-for="(lokasiStok, index) in filterLokasi" 
-                    :key="lokasiStok.values + index"
-                    :label="lokasiStok.name"
-                    :value="lokasiStok.values"
-                    borderColor="border-adameds-300"
-                    bgColor="bg-adameds-50"
-                    iconColor="text-adameds-300"
-                    textColor="text-adameds-300"
-                    selectedColor="bg-adameds-300 border-adameds-300"
-                    customClass="h-7"
-                    class="ml-[10px]"
-                    :isSelected="selectedFilteronStokLocationSelect.includes(lokasiStok.values)"
-                    @selected="onStokLocationSelect"
-                  />
-                </div>
+              <div class="w-[15%] font-semibold text-SM text-grey-300">
+                Filter Jenis Lokasi
+              </div>
+              <div class="flex">
+                <span class="font-semibold text-grey-300">|</span>
+                <CustomChip
+                  v-for="(lokasiStok, index) in filterLokasi"
+                  :key="lokasiStok.values + index"
+                  :label="lokasiStok.name"
+                  :value="lokasiStok.values"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-50"
+                  iconColor="text-adameds-300"
+                  textColor="text-adameds-300"
+                  selectedColor="bg-adameds-300 border-adameds-300"
+                  customClass="h-7"
+                  class="ml-[10px]"
+                  :isSelected="
+                    selectedFilteronStokLocationSelect.includes(
+                      lokasiStok.values
+                    )
+                  "
+                  @selected="onStokLocationSelect"
+                />
+              </div>
             </div>
-            <hr class="mt-5 border-[1px] border-grey-200">
+            <hr class="mt-5 border-[1px] border-grey-200" />
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -410,16 +519,32 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="">
-                {{ slotProps.index + 1 }}
+                {{
+                  (StockLocationProperties.page - 1) *
+                    StockLocationProperties.page_size +
+                  slotProps.index +
+                  1
+                }}
               </div>
             </template>
           </Column>
           <!-- Kode Lokasi Stok -->
-          <Column field="code" header="Kode Lokasi Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="code"
+            header="Kode Lokasi Stok"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <!-- Nama Lokasi Stok -->
-          <Column field="name" header="Nama Lokasi Stok" headerClass="bg-adameds-50 font-semibold text-SM"></Column>
+          <Column
+            field="name"
+            header="Nama Lokasi Stok"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          ></Column>
           <!-- Jenis Lokasi Stok -->
-          <Column header="Jenis Lokasi" headerClass="bg-adameds-50 font-semibold text-SM">
+          <Column
+            header="Jenis Lokasi"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          >
             <template #body="slotProps">
               <CustomChip
                 :label="slotProps.data.jenisLokasi"
@@ -431,54 +556,64 @@ onMounted(() => {
             </template>
           </Column>
           <!-- Default Tujuan Order & Permintaan -->
-          <Column header="Default Tujuan Order & Permintaan" headerClass="bg-adameds-50 font-semibold text-SM">
+          <Column
+            header="Default Tujuan Order & Permintaan"
+            headerClass="bg-adameds-50 font-semibold text-SM"
+          >
             <template #body="slotProps">
-              <div class="flex" v-if="slotProps.data.defaultTujuanOrderPermintaan.length > 0">
-                <div v-for="(items, index) in slotProps.data.defaultTujuanOrderPermintaan" :key="index">
-                  <CustomChip 
+              <div
+                class="flex"
+                v-if="
+                  Array.isArray(slotProps.data.defaultTujuanOrderPermintaan) &&
+                  slotProps.data.defaultTujuanOrderPermintaan.length > 0
+                "
+              >
+                <div
+                  v-for="(items, index) in slotProps.data
+                    .defaultTujuanOrderPermintaan || []"
+                  :key="index"
+                >
+                  <CustomChip
                     v-if="items === '0'"
                     label="Rawat Inap"
                     :showCheckedIcon="false"
                     borderColor="border-adameds-300"
-                    bgColor="bg-adameds-300" 
+                    bgColor="bg-adameds-300"
                     textColor="text-white"
                     customClass="h-6"
                     class="mr-[5px]"
                   />
-                  <CustomChip 
+                  <CustomChip
                     v-if="items === '1'"
                     label="Rawat Jalan"
                     :showCheckedIcon="false"
                     borderColor="border-adameds-300"
-                    bgColor="bg-adameds-300" 
+                    bgColor="bg-adameds-300"
                     textColor="text-white"
                     customClass="h-6"
                     class="mr-[5px]"
                   />
-                  <CustomChip 
+                  <CustomChip
                     v-if="items === '2'"
                     label="IGD"
                     :showCheckedIcon="false"
                     borderColor="border-adameds-300"
-                    bgColor="bg-adameds-300" 
+                    bgColor="bg-adameds-300"
                     textColor="text-white"
                     customClass="h-6"
                     class="mr-[5px]"
                   />
-                  <CustomChip 
+                  <CustomChip
                     v-if="items === '3'"
                     label="FISIO"
                     :showCheckedIcon="false"
                     borderColor="border-adameds-300"
-                    bgColor="bg-adameds-300" 
+                    bgColor="bg-adameds-300"
                     textColor="text-white"
                     customClass="h-6"
                     class="mr-[5px]"
                   />
                 </div>
-              </div>
-              <div v-else>
-                <p class="font-bold">-</p>
               </div>
             </template>
           </Column>
@@ -488,12 +623,18 @@ onMounted(() => {
               <div class="w-full font-semibold text-center text-SM">Status</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center justify-center">
+              <div class="flex justify-center items-center">
                 <CustomChip
                   :label="slotProps.data.status ? 'AKTIF' : 'NON-AKTIF'"
-                  :textColor="slotProps.data.status ? 'text-white' : 'text-[#80868d]'"
-                  :bgColor="slotProps.data.status ? 'bg-adameds-300' : 'bg-white'"
-                  :borderColor="slotProps.data.status ? 'border-none' : 'border-[#80868d]'"
+                  :textColor="
+                    slotProps.data.status ? 'text-white' : 'text-[#80868d]'
+                  "
+                  :bgColor="
+                    slotProps.data.status ? 'bg-adameds-300' : 'bg-white'
+                  "
+                  :borderColor="
+                    slotProps.data.status ? 'border-none' : 'border-[#80868d]'
+                  "
                   :icon-color="slotProps.data.status ? 'white' : '#80868d'"
                   customClass="text-xs font-semibold h-5 flex"
                 />
@@ -506,7 +647,7 @@ onMounted(() => {
               <div class="w-full font-semibold text-center text-SM">Action</div>
             </template>
             <template #body="slotProps">
-              <div class="flex items-center gap-2.5 justify-center">
+              <div class="flex gap-2.5 justify-center items-center">
                 <CustomButton
                   label=""
                   background-color="bg-[#3D84E5] rounded-lg"
@@ -519,7 +660,13 @@ onMounted(() => {
                   label=""
                   background-color="bg-danger-300 rounded-lg"
                   class="h-6 w-[26px] p-0"
-                  @click="deleteDialog('delete', `${slotProps.data.code} - ${slotProps.data.name}`, slotProps.data)"
+                  @click="
+                    deleteDialog(
+                      'delete',
+                      `${slotProps.data.code} - ${slotProps.data.name}`,
+                      slotProps.data
+                    )
+                  "
                 >
                   <img src="@/assets/icons/delete.svg" alt="" />
                 </CustomButton>
@@ -527,14 +674,14 @@ onMounted(() => {
             </template>
           </Column>
         </DataTable>
-        <AddStockLocation 
+        <AddStockLocation
           v-model:isDialogVisible="StockLocationDialog"
           :title="dialogConfig.title"
           :method="dialogConfig.method"
           :payload="dialogConfig.data"
           @data-updated="fetchStockLocation"
         />
-        <DeleteStockLocation 
+        <DeleteStockLocation
           v-model:isDialogVisible="DeleteStockLocationDialog"
           :title="dialogConfig.title"
           :itemToDelete="dialogConfig.data"
@@ -543,7 +690,7 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-between">
-          <div class="flex items-center gap-2.5">
+          <div class="flex gap-2.5 items-center">
             <FileUpload
               mode="basic"
               accept=".xls,.xlsx"

@@ -13,6 +13,10 @@ import PembatalanDirawat from "./PembatalanDirawat.vue";
 import RekapTindakanPasien from "./RekapTindakanPasien.vue";
 import FooterPagination from "../Layout/FooterPagination.vue";
 import NoData from "@/components/section/NoData.vue";
+import {
+  downloadExportExcelKunjunganIGD,
+  downloadExportExcelBatalIGD
+} from "@/stores/igd/exportexceligd";
 
 //Bread Crumb
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -27,7 +31,7 @@ const UseUtilsStore = utilsStore();
 const reportType = ref("");
 const reportData = ref<any[]>([]);
 const searchQuery = ref("");
-const selectedBulan = ref<number>(0);
+const selectedTimestamp = ref<number>(0);
 const praktisiPayload = ref<any>([]);
 const selectedFilterValue = ref("");
 const startDateFilter = ref<Date>(new Date());
@@ -75,7 +79,7 @@ const setFilter = () => {
   )}`;
   filter.name = searchQuery.value;
   filter.practitionerUuid = selectedFilterValue.value ?? "";
-  filter.month = selectedBulan.value !== 0 ? selectedBulan.value : undefined; // Pastikan month hanya ada jika terisi
+  filter.timestamp = selectedTimestamp.value !== 0 ? selectedTimestamp.value : undefined; // Pastikan month hanya ada jika terisi
   return filter;
 };
 
@@ -86,11 +90,20 @@ const resetFilter = () => {
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
   resetFormRef.value.resetForm();
-  selectedBulan.value = 0;
+ selectedTimestamp.value = 0;
 };
 const handleReset = () => {
   resetFilter();
   reloadData();
+};
+
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-igd') {
+    downloadExportExcelKunjunganIGD(filter);
+  } else if (pageType.value === 'pembatalan-dirawat') {
+    downloadExportExcelBatalIGD(filter);
+  }
 };
 
 const handleSelectedPraktisi = (value: any) => {
@@ -99,8 +112,12 @@ const handleSelectedPraktisi = (value: any) => {
 const handleSearchQuery = (value: string) => {
   searchQuery.value = value;
 };
-const handleSelectedBulan = (value: any) => {
-  selectedBulan.value = value;
+const handleSelectedBulan = (value: Date | null) => {
+  if (value) {
+    selectedTimestamp.value = dateToEpoch(value);
+  } else {
+    selectedTimestamp.value = 0;
+  }
 };
 const handleStartDate = (value: any) => {
   startDateFilter.value = value;
@@ -114,6 +131,7 @@ onBeforeRouteLeave((to, from) => {
 });
 
 interface Filter {
+  timestamp: number | undefined;
   page?: number;
   limit?: number;
   q?: string;
@@ -128,7 +146,17 @@ interface Filter {
   month?: number;
 }
 
-const fetchLaporanData = async (filter: Filter = {}) => {
+const praktisiProperties = ref({
+  page: 1,
+  page_size: 9999,
+  total: 0,
+});
+
+const searchDoctor = ref<string>("");
+
+const fetchLaporanData = async (filter: Filter = {
+  timestamp: undefined
+}) => {
   UseUtilsStore.setLoading(true);
   let response;
   try {
@@ -140,7 +168,7 @@ const fetchLaporanData = async (filter: Filter = {}) => {
       response = await IgdLaporanStore.getLaporanTindakan(filter);
     }
     if (response && response.payload) {
-      properties.value.total = response.payload.pagination.totalData;
+      properties.value.total = response.payload.pagination.total_data;
       return response.payload.data;
     } else return [];
   } catch (error) {
@@ -163,7 +191,13 @@ onMounted(() => {
 });
 const fetchPraktisi = async () => {
   try {
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {
@@ -240,6 +274,7 @@ const dokterDJP = ref([
         :rows="properties.page_size"
         :totalRecords="properties.total"
         @page="handlePage"
+        @export="handleExport"
       />
     </template>
   </Card>

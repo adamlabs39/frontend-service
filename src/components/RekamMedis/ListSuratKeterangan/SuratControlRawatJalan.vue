@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -9,6 +9,16 @@ import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
+import { usePraktisiStore } from "@/stores/datamaster/praktisi";
+import { utilsStore } from "@/stores/utils";
+import { useLokasiStore } from "@/stores/datamaster/lokasi";
+
+const props = defineProps({
+  nomorSurat: {
+    type: String,
+    default: "",
+  },
+});
 
 const emit = defineEmits(["onDelete", "update:dataSurat"]);
 
@@ -24,7 +34,7 @@ const schema = toTypedSchema(
     .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm } = useForm({
+const { errors, handleSubmit, defineField, resetForm, setFieldValue } = useForm({
   validationSchema: schema,
 });
 
@@ -34,12 +44,57 @@ const [poli] = defineField("poli");
 const [dokter] = defineField("dokter");
 const [keterangan] = defineField("keterangan");
 
-const itemsPoli = ref(["Poli Gigi", "Poli Mata", "Poli Anak"]);
-const itemsDokter = ref(["Dokter Aminah", "Dokter Siti", "Dokter Adam"]);
+const poliOptions = ref<any[]>([]);
+const doctorOptions = ref<any[]>([]);
+
+// STORE
+const praktisiStore = usePraktisiStore();
+const UseUtilsStore = utilsStore();
+const lokasiStore = useLokasiStore();
+
+const loadDropdownData = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const [doctorResponse, lokasiResponse] = await Promise.all([
+      praktisiStore.getApi({ page: 1, limit: 9999, name: "", isDoctor: true }),
+      lokasiStore.getApi(1, 9999)
+    ]);
+    if (doctorResponse && doctorResponse.payload) {
+      doctorOptions.value = doctorResponse.payload;
+    } else {
+      doctorOptions.value = [];
+    }
+    if (lokasiResponse && lokasiResponse.payload) {
+      poliOptions.value = lokasiResponse.payload
+        .filter((lokasi: any) => {
+          return (
+            lokasi.locationType?.toLowerCase() === "ward" &&
+            Boolean(lokasi.isPoli) === true
+          );
+        })
+        .map((lokasi: any) => ({
+          name: lokasi.name,
+          uuid: lokasi.uuid
+        }));
+    } else {
+      poliOptions.value = [];
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data untuk dropdown:", error);
+    doctorOptions.value = [];
+    poliOptions.value = [];
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+onMounted(() => {
+  loadDropdownData();
+});
 
 const submitForm = handleSubmit((values) => {
-  console.log(values);
   emit("update:dataSurat", values);
+  return values;
 });
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -54,6 +109,16 @@ const close = () => {
   }
 };
 const selectedTab = ref("non-bpjs");
+
+watch(
+  () => props.nomorSurat,
+  (newVal) => {
+    if (newVal) {
+      setFieldValue("noSurat", newVal);
+    }
+  },
+  { immediate: true }
+);
 
 defineExpose({
   submitForm,
@@ -122,9 +187,9 @@ defineExpose({
         <CustomSelect
           v-model="poli"
           label="Poli"
-          :options="itemsPoli"
-          option-label=""
-          option-value=""
+          :options="poliOptions"
+          option-label="name"
+          option-value="uuid"
           place-holder="Pilih Poli"
           class="col-span-7"
           :invalid="!!errors.poli"
@@ -133,9 +198,9 @@ defineExpose({
         <CustomSelect
           v-model="dokter"
           label="Dokter"
-          :options="itemsDokter"
-          option-label=""
-          option-value=""
+          :options="doctorOptions"
+          option-label="pegawai.name"
+          option-value="uuid"
           place-holder="Pilih Dokter"
           class="col-span-5"
           :invalid="!!errors.dokter"

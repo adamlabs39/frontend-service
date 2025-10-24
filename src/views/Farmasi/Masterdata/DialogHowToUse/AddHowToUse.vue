@@ -26,14 +26,23 @@ const props = defineProps({
 });
 
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Cara Pakai harus diisi"),
-    caraPakai: yup.string().required("Nama Cara Pakai harus diisi"),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().trim().required("Kode Cara Pakai harus diisi"),
+      caraPakai: yup.string().trim().required("Nama Cara Pakai harus diisi"),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  setFieldError,
+} = useForm({
   validationSchema: schema,
 });
 
@@ -44,6 +53,15 @@ const [caraPakai] = defineField("caraPakai");
 const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
+
+// Helper: terjemahkan error API ke bahasa Indonesia yang mudah dipahami
+const translateValidationError = (err: unknown) => {
+  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
+  if (rawMsg.includes("validation error")) {
+    return "Kode Aturan Pakai sudah terdaftar di faskes ini. Gunakan kode lain.";
+  }
+  return "Gagal menyimpan data. Silakan coba lagi.";
+};
 
 const onSubmit = handleSubmit(async (values: any) => {
   try {
@@ -61,6 +79,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     }
     closeDialog();
   } catch (error) {
+    setFieldError("code", translateValidationError(error));
     console.error("Failed to process the data:", error);
   }
 });
@@ -102,61 +121,65 @@ watch(
 </script>
 
 <template>
-    <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="600px">
-      <template #header>
-        <div class="grid grid-cols-1">
-          <p>Tambah Data Cara Pakai</p>
+  <CustomDialog
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    width="600px"
+  >
+    <template #header>
+      <div class="grid grid-cols-1">
+        <p>{{ title }} Data Cara Pakai</p>
+      </div>
+    </template>
+    <template #body>
+      <div class="grid grid-cols-[30%,70%]">
+        <div class="mt-[20px]">
+          <CustomTextfield
+            v-model="code"
+            :invalid="!!errors.code"
+            :invalidMessage="errors.code"
+            label="Kode Cara Pakai"
+            placeholder="Kode Cara Pakai"
+            class="mr-2"
+          />
         </div>
-      </template>
-      <template #body>
-        <div class="grid grid-cols-[30%,70%]">
-          <div class="mt-[20px]">
-            <CustomTextfield
-              v-model = "code"
-              :invalid="!!errors.code"
-              :invalidMessage="errors.code"
-              label="Kode Cara Pakai"
-              placeholder="Kode Cara Pakai"
-              class="mr-2"
-            />
-          </div>
-          <div class="mt-[20px]">
-            <CustomTextfield
-              v-model = "caraPakai"
-              :invalid="!!errors.caraPakai"
-              :invalidMessage="errors.caraPakai"
-              label="Nama Cara Pakai"
-              placeholder="Nama Cara Pakai"
-              class="ml-2"
-            />
-          </div>
+        <div class="mt-[20px]">
+          <CustomTextfield
+            v-model="caraPakai"
+            :invalid="!!errors.caraPakai"
+            :invalidMessage="errors.caraPakai"
+            label="Nama Cara Pakai"
+            placeholder="Nama Cara Pakai"
+            class="ml-2"
+          />
         </div>
-        <hr class="mt-[20px] border border-slate-300"/>
-        <div class="grid grid-cols-2 mt-[15px]">
-          <div>
-            <CustomSwitch
-              v-model="status"
-              :show-label="true"
-              label="Status"
-              sideLabel="NON-AKTIF"
-              sideLabelTrue="AKTIF"
-            />
-          </div>
+      </div>
+      <hr class="mt-[20px] border border-slate-300" />
+      <div class="grid grid-cols-2 mt-[15px]">
+        <div>
+          <CustomSwitch
+            v-model="status"
+            :show-label="true"
+            label="Status"
+            sideLabel="NON-AKTIF"
+            sideLabelTrue="AKTIF"
+          />
         </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-              @click="resetForm"
-            />
-            <CustomButton label="Simpan" @click="onSubmit"/>
-          </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="w-full">
+        <div class="flex gap-2.5 justify-end mt-5">
+          <CustomButton
+            label="Reset"
+            textColor="text-grey-300"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-grey-200"
+            @click="resetForm"
+          />
+          <CustomButton label="Simpan" @click="onSubmit" />
         </div>
-      </template>
-    </CustomDialog>
+      </div>
+    </template>
+  </CustomDialog>
 </template>

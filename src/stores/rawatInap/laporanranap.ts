@@ -46,5 +46,43 @@ export const useRIStore = defineStore({
                 payload
             );
         },
+         async DownloadKunjunganRanap(
+            {
+                q = "",
+                page = 1,
+                limit = 10,
+                room = "",
+                kelas = "",
+                practitionerUuid = "",
+                jenisKunjungan = "",
+                startDate = "",
+                endDate = "",
+            },
+            payload = {}
+        ) {
+            return apiRawatInapGet(
+                `/ranap/report/kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&kelas=${kelas}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&all=aktif`,
+                payload
+            );
+        },
+         async DownloadBatalRawat(
+            {
+                q = "",
+                page = 1,
+                limit = 10,
+                room = "",
+                kelas = "",
+                practitionerUuid = "",
+                jenisKunjungan = "",
+                startDate = "",
+                endDate = "",
+            },
+            payload = {}
+        ) {
+            return apiRawatInapGet(
+                `/ranap/report/batal-kunjungan?q=${q}&page=${page}&limit=${limit}&room=${room}&kelas=${kelas}&practitioner_uuid=${practitionerUuid}&jenis_kunjungan=${jenisKunjungan}&start_date=${startDate}&end_date=${endDate}&all=aktif`,
+                payload
+            );
+        },
     },
 });

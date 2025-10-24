@@ -12,6 +12,7 @@ import CustomDialog from "@/components/Base/CustomDialog.vue";
 import DialogAlkes from "./DialogAlkesPage.vue";
 import DialogCancel from "./DialogCancelOrderPage.vue";
 import DialogMoving from "./DialogMovingLocationPage.vue";
+import { createOrderAlkesPdf } from "@/utils/pdf/pdfOrderAlkes";
 
 const props = defineProps({
   payloadDetail: {
@@ -34,10 +35,13 @@ const MedicalItemPayload = ref();
 
 // Fetch MedicalItem
 const fetchMedicalItem = async () => {
-  const itemMedisName = props.payloadDetail.alkesItems[0].itemMedis.uuid;
+  const itemMedisName = props.payloadDetail?.alkesItems?.[0]?.uuid;
+  if (!itemMedisName) {
+    MedicalItemPayload.value = [];
+    return;
+  }
   try {
     const response = await MedicalItemStore.getAvailableStockApi(itemMedisName);
-
     if (response && response.payload) {
       MedicalItemPayload.value = response.payload;
     } else {
@@ -59,9 +63,12 @@ const updateStokAlkes = async (value: any, index: number) => {
   activedVerif.value = false;
   totalTagihan.value = 0;
   if (props.payloadDetail.alkesItems[index].listAlkes[0].stokAlkes != null) {
-    props.payloadDetail.alkesItems[index].listAlkes[0].sisaStok = value.totalStok;
-    props.payloadDetail.alkesItems[index].listAlkes[0].hargaSatuan = value.harga;
-    props.payloadDetail.alkesItems[index].listAlkes[0].total = props.payloadDetail.alkesItems[index].qty * value.harga;
+    props.payloadDetail.alkesItems[index].listAlkes[0].sisaStok =
+      value.totalStok;
+    props.payloadDetail.alkesItems[index].listAlkes[0].hargaSatuan =
+      value.harga;
+    props.payloadDetail.alkesItems[index].listAlkes[0].total =
+      props.payloadDetail.alkesItems[index].qty * value.harga;
     for (let i = 0; i < props.payloadDetail.alkesItems.length; i++) {
       const item = props.payloadDetail.alkesItems[i];
       totalTagihan.value += item.listAlkes[0].total;
@@ -97,16 +104,18 @@ const IncomingDetail = async () => {
     if (response && response.payload) {
       RoomPharmacyIncomingDetail.value = response.payload;
       RoomPharmacyIncomingDetail.value.alkesItems.forEach((element: any) => {
-        element.listAlkes = [{
-        stokAlkes: "",
-        sisaStok: 0,
-        hargaSatuan: 0,
-        total: 0,
-      }]
-      });      
+        element.listAlkes = [
+          {
+            stokAlkes: "",
+            sisaStok: 0,
+            hargaSatuan: 0,
+            total: 0,
+          },
+        ];
+      });
     } else {
       RoomPharmacyIncomingDetail.value = {};
-    }    
+    }
   } catch (error) {
     console.error("Failed to fetch data", error);
     RoomPharmacyIncomingDetail.value = {};
@@ -120,11 +129,11 @@ const activedVerif = ref(false);
 const verify = async () => {
   props.payloadDetail.alkesItems.forEach((item: any) => {
     if (item.listAlkes && item.listAlkes.length > 0) {
-      item.listAlkes.forEach((alkes: any) => {        
-        if (alkes.stokAlkes == '' || !alkes.stokAlkes) {          
-          activedVerif.value = true;          
+      item.listAlkes.forEach((alkes: any) => {
+        if (alkes.stokAlkes == "" || !alkes.stokAlkes) {
+          activedVerif.value = true;
         } else {
-          activedVerif.value = false;          
+          activedVerif.value = false;
         }
       });
     }
@@ -173,13 +182,30 @@ const movingLocationDialogConfig = ref<any>({
 });
 
 const openMovingLocationDialog = (data: any = {}) => {
+  console.log("[DetailRoomPharmacy] openMovingLocationDialog payload:", data);
   movingLocationDialogConfig.value = { data };
   movingLocationDialog.value = true;
 };
 
-onMounted(() => {
-  fetchMedicalItem();
-});
+watch(
+  () => props.payloadDetail.alkesItems,
+  () => {
+    if (props.payloadDetail.alkesItems?.length) {
+      fetchMedicalItem();
+    }
+  },
+  { immediate: true }
+);
+
+console.log("payloadDetail", props.payloadDetail);
+
+const printOrderAlkes = () => {
+  createOrderAlkesPdf(props.payloadDetail);
+};
+
+// onMounted(() => {
+//   fetchMedicalItem();
+// });
 </script>
 
 <template>
@@ -204,7 +230,9 @@ onMounted(() => {
           </div>
           <div class="flex justify-end">
             <div class="bg-white w-[0.5px] h-[30px] mr-[20px]"></div>
-            <p class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]">
+            <p
+              class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]"
+            >
               Tgl. Order : {{ epochToDate(payloadDetail.createdAt, "date") }}
             </p>
             <CustomButton
@@ -224,7 +252,9 @@ onMounted(() => {
           <div class="basis-1/2">
             <p class="font-bold text-MD">Nama lengkap pasien</p>
             <p>{{ payloadDetail.noReg }}</p>
-            <CustomButton class="w-24 h-5 text-sm">{{ payloadDetail.noRm }}</CustomButton>
+            <CustomButton class="w-24 h-5 text-sm">{{
+              payloadDetail.noRm
+            }}</CustomButton>
             <CustomChip
               :showCheckedIcon="false"
               label="Laki-laki"
@@ -347,14 +377,20 @@ onMounted(() => {
                 <div class="mt-[20px] p-4 rounded-t-lg bg-adameds-50 shadow-md">
                   <div class="grid grid-cols-2 gap-2">
                     <div class="flex">
-                      <CustomButton class="text-sm h-7">{{ index + 1 }}</CustomButton>
-                      <p class="my-auto ml-2 text-sm font-bold">{{ items.itemMedis.name }}</p>
+                      <CustomButton class="h-7 text-sm">{{
+                        index + 1
+                      }}</CustomButton>
+                      <p class="my-auto ml-2 text-sm font-bold">
+                        {{ items?.itemMedis?.name || "-" }}
+                      </p>
                       <PhArrowRight
                         :size="20"
                         class="my-auto ml-2 text-success-300"
                         weight="bold"
                       />
-                      <p class="my-auto ml-2 text-sm font-bold">{{ items.qty }} Pcs</p>
+                      <p class="my-auto ml-2 text-sm font-bold">
+                        {{ items.qty }} Pcs
+                      </p>
                     </div>
                     <div class="flex justify-end">
                       <CustomButton
@@ -368,15 +404,22 @@ onMounted(() => {
                     </div>
                   </div>
                 </div>
-                <div class="h-[140px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
-                  <DataTable :value="items.listAlkes" :pt="{ headerRow: 'text-SM' }">
+                <div
+                  class="h-[140px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
+                >
+                  <DataTable
+                    :value="items.listAlkes"
+                    :pt="{ headerRow: 'text-SM' }"
+                  >
                     <!-- Stok Alkes -->
                     <Column header="Stok Alkes">
                       <template #body="slotProps">
                         <div class="">
                           <CustomSelect
                             v-model="slotProps.data.stokAlkes"
-                            @update:model-value="updateStokAlkes(slotProps.data.stokAlkes, index)"
+                            @update:model-value="
+                              updateStokAlkes(slotProps.data.stokAlkes, index)
+                            "
                             :show-label="false"
                             place-holder="Pilih Stok"
                             optionLabel="detailStok.name"
@@ -398,14 +441,18 @@ onMounted(() => {
                     <Column header="Harga Satuan">
                       <template #body="slotProps">
                         <div>
-                          <p class="text-sm">{{ formatPrice(slotProps.data.hargaSatuan) }}</p>
+                          <p class="text-sm">
+                            {{ formatPrice(slotProps.data.hargaSatuan) }}
+                          </p>
                         </div>
                       </template>
                     </Column>
                     <!-- Total -->
                     <Column header="Sub. Total">
                       <template #body="slotProps">
-                        <div class="text-sm">{{ formatPrice(slotProps.data.total) }}</div>
+                        <div class="text-sm">
+                          {{ formatPrice(slotProps.data.total) }}
+                        </div>
                       </template>
                     </Column>
                   </DataTable>
@@ -458,65 +505,57 @@ onMounted(() => {
         </div>
         <hr class="mt-5 border-[1px] border-grey-200" />
         <!-- Verifikasi -->
-        <div class="grid grid-cols-[40%,20%,40%]">
-          <div class="flex">
-            <div class="mt-[20px]">
-              <CustomButton
-                label="Batal Order"
-                backgroundColor="bg-danger-300"
-                borderColor="border-danger-300"
-                textColor="text-white"
-                @click="openCancelDialog(payloadDetail)"
-              />
-              <CustomButton
-                label="Pindah Lokasi Order"
-                class="ml-[10px]"
-                @click="openMovingLocationDialog(payloadDetail)"
-              />
-            </div>
-          </div>
-          <div class="mt-[20px] ml-[-10px]">
-            <CustomButton @click="cetakDialog = true">
-              <div class="flex items-center gap-2">
+        <div class="flex justify-between items-center py-5">
+          <div class="flex gap-2">
+            <CustomButton
+              label="Batal Order"
+              backgroundColor="bg-danger-300"
+              borderColor="border-danger-300"
+              textColor="text-white"
+              @click="openCancelDialog(payloadDetail)"
+            />
+            <CustomButton
+              label="Pindah Lokasi Order"
+              class=""
+              @click="openMovingLocationDialog(payloadDetail)"
+            />
+            <CustomButton @click="printOrderAlkes">
+              <div class="flex gap-2 items-center">
                 <PhPrinter :size="18" color="#ffffff" weight="fill" />
                 <div class="text-sm">Cetak</div>
               </div>
             </CustomButton>
           </div>
-          <div class="flex justify-end">
-            <div class="mt-[20px]">
-              <CustomButton
-                :disabled="activedVerif"
-                @click="verify"
-                label="Verifikasi"
-                class="ml-[20px]"
-              />
-            </div>
-          </div>
+          <CustomButton
+            :disabled="activedVerif"
+            @click="verify"
+            label="Verifikasi"
+            class=""
+          />
         </div>
       </div>
     </div>
   </div>
-  
+
   <!-- Cetak Dialog -->
-  <CustomDialog v-model:visible="cetakDialog" width="435px">
+  <CustomDialog v-model:visible="cetakDialog" width="500px">
     <template #header>Cetak</template>
     <template #body>
       <div class="flex gap-3 mt-[20px]">
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">E-Tiket</div>
           </div>
         </CustomButton>
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">E-Resep</div>
           </div>
         </CustomButton>
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">Salinan E-Resep</div>
           </div>
@@ -524,7 +563,18 @@ onMounted(() => {
       </div>
     </template>
   </CustomDialog>
-  <DialogAlkes v-model:isDialogVisible="editDialog" :payloadEdit="editDialogConfig.data" @data-updated="IncomingDetail"/>
-  <DialogCancel v-model:isDialogVisible="cancelDialog" :payloadCancel="cancelDialogConfig.data"/>
-  <DialogMoving v-model:isDialogVisible="movingLocationDialog" :payloadMoving="movingLocationDialogConfig.data" @data-updated="closeDetail"/>
+  <DialogAlkes
+    v-model:isDialogVisible="editDialog"
+    :payloadEdit="editDialogConfig.data"
+    @data-updated="IncomingDetail"
+  />
+  <DialogCancel
+    v-model:isDialogVisible="cancelDialog"
+    :payloadCancel="cancelDialogConfig.data"
+  />
+  <DialogMoving
+    v-model:isDialogVisible="movingLocationDialog"
+    :payloadMoving="movingLocationDialogConfig.data"
+    @data-updated="closeDetail"
+  />
 </template>

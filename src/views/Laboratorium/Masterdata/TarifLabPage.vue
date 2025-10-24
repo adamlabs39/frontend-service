@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { utilsStore } from "@/stores/utils";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -11,6 +11,7 @@ import FormTarifLab from "../Layout/FormTarifLab.vue";
 import { useTarifPemeriksaanStore } from "@/stores/datamasterLaboratorium/tarifPemeriksaan";
 import * as XLSX from "xlsx-js-style";
 import DialogDelete from "../Layout/DialogDelete.vue";
+import NoData from "@/components/section/NoData.vue";
 
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
@@ -31,14 +32,14 @@ const tarifPemeriksaanProperties = ref({
   total: 0,
 });
 const searchQuery = ref<string>("");
-const selectedUnit = ref();
-const selectedPenjamin = ref("");
+const selectedPelayanan = ref<string[]>([]);
+const selectedPenjamin = ref<string[]>([]);
 
 const handleSearchQuery = (searchValue: string) => {
   searchQuery.value = searchValue;
 };
 const handleSelectedUnit = (selectedValue: any) => {
-  selectedUnit.value = selectedValue;
+  selectedPelayanan.value = selectedValue;
 };
 const handleSelectedPenjamin = (selectedValue: any) => {
   selectedPenjamin.value = selectedValue;
@@ -50,11 +51,36 @@ const searchData = () => {
   fetchTarifPemeriksaan();
 };
 
+const onSelectedPenjamin = (event: string) => {
+  console.log("event", event);
+  console.log("selectedPenjamin => ", selectedPenjamin.value);
+  if (selectedPenjamin.value.includes(event)) {
+    selectedPenjamin.value = selectedPenjamin.value.filter(
+      (item: string) => item !== event
+    );
+  } else {
+    selectedPenjamin.value.push(event);
+  }
+  console.log("selectedPenjamin", selectedPenjamin.value);
+};
+
+const onSelectedPelayanan = (event: string) => {
+  console.log("event", event);
+  console.log("selectedPelayanan => ", selectedPelayanan.value);
+  if (selectedPelayanan.value.includes(event)) {
+    selectedPelayanan.value = selectedPelayanan.value.filter(
+      (item: string) => item !== event
+    );
+  } else {
+    selectedPelayanan.value.push(event);
+  }
+  console.log("selectedPelayanan", selectedPelayanan.value);
+};
 // Filter Reset Data
 const resetData = () => {
   searchQuery.value = "";
-  selectedUnit.value = [];
-  selectedPenjamin.value = "";
+  selectedPelayanan.value = [];
+  selectedPenjamin.value = [];
   fetchTarifPemeriksaan();
 };
 
@@ -64,10 +90,15 @@ const utils = utilsStore();
 const fetchTarifPemeriksaan = async () => {
   utils.setLoading(true);
   try {
+    console.log("Selected Pelayanan", selectedPelayanan.value);
+    console.log("Selected Penjamin", selectedPenjamin.value.join(","));
+
     const response = await tarifPemeriksaanStore.getApi({
       page: tarifPemeriksaanProperties.value.page,
       limit: tarifPemeriksaanProperties.value.page_size,
       name: searchQuery.value,
+      penjamins: selectedPenjamin.value.join(","),
+      pelayanans: selectedPelayanan.value.join(","),
     });
     console.log("Response", response);
 
@@ -86,6 +117,10 @@ const fetchTarifPemeriksaan = async () => {
     utils.setLoading(false);
   }
 };
+
+const hasData = computed(() => {
+  return tarifPemeriksaanPayload.value.length > 0;
+});
 
 // Handle Page
 const handlePage = (event: any) => {
@@ -545,6 +580,7 @@ onMounted(() => {
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-adameds-300 border-adameds-300"
+                  @selected="onSelectedPelayanan"
                 />
                 <CustomChip
                   label="Rawat Inap"
@@ -556,6 +592,7 @@ onMounted(() => {
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-adameds-300 border-adameds-300"
+                  @selected="onSelectedPelayanan"
                 />
                 <CustomChip
                   label="IGD"
@@ -567,6 +604,7 @@ onMounted(() => {
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-adameds-300 border-adameds-300"
+                  @selected="onSelectedPelayanan"
                 />
               </div>
             </div>
@@ -586,6 +624,7 @@ onMounted(() => {
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-adameds-300 border-adameds-300"
+                  @selected="onSelectedPenjamin"
                 />
                 <CustomChip
                   label="ASURANSI"
@@ -597,6 +636,7 @@ onMounted(() => {
                   customClass="h-5"
                   class="ml-[10px]"
                   selectedColor="bg-warning-300 border-warning-300"
+                  @selected="onSelectedPenjamin"
                 />
               </div>
             </div>
@@ -618,6 +658,7 @@ onMounted(() => {
         </CustomAccordion>
       </template>
       <template #content>
+        <NoData v-if="!hasData" />
         <DataTable
           :value="tarifPemeriksaanPayload"
           v-model:selection="selectedData"
@@ -640,7 +681,11 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                {{ slotProps.index + 1 }}
+                {{
+                  (tarifPemeriksaanProperties.page - 1) *
+                    tarifPemeriksaanProperties.page_size +
+                  (slotProps.index + 1)
+                }}
               </div>
             </template>
           </Column>

@@ -19,9 +19,11 @@ import { useRuanganStore } from "@/stores/datamaster/ruangan";
 import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { useRIStore } from "@/stores/rawatInap/laporanranap";
 import { useMonitoringKamarStore } from "@/stores/admisi/monitoringKamar";
+import { downloadExportExcelBatalRawatRanap, downloadExportExcelKunjunganRanap } from "@/stores/rawatInap/exportexcelranap";
 
 // Filter 
 interface Filter {
+  timestamp: number;
   kelas: string;
   page?: number;
   limit?: number;
@@ -60,7 +62,8 @@ const dokterPayload = ref<any[]>([])
 const ruanganPayload = ref<any[]>([])
 
 const fetchLaporanData = async (filter: Filter = {
-  kelas: ""
+  kelas: "",
+  timestamp: 0
 }) => {
   useUtilsStore.setLoading(true);
   let response;
@@ -125,6 +128,15 @@ const fetchRuangan = async () => {
   }
 };
 
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-rawat-inap') {
+    downloadExportExcelKunjunganRanap(filter);
+  } else if (pageType.value === 'pembatalan-dirawat') {
+    downloadExportExcelBatalRawatRanap(filter);
+  }
+};
+
 // Kelas
 const optionsKelas = ref([
   { label: "Kelas 1", value: "Kelas 1" },
@@ -149,7 +161,7 @@ const setFilter = () => {
   filter.q = valueSearchRM.value;
   filter.room = searchRuanganFilter.value;
 
-  if (pageType.value === "kunjungan-rawat-inap") {
+  if (pageType.value === "kunjungan-rawat-inap" || pageType.value === "pembatalan-dirawat") {
     filter.practitionerUuid = searchDokterDPJPFilter.value;
     filter.jenisKunjungan = "RI";
     filter.kelas = searchKelasFilter.value ?? "";
@@ -162,7 +174,10 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
-  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+  if (valueBulan.value) {
+      filter.timestamp = Math.floor(valueBulan.value.getTime() / 1000);
+    }
+  // filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
 
   return filter
   
@@ -173,8 +188,9 @@ const valueSearchRM = ref();
 const valueSearchPraktisi = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-const valueBulan = ref();
+// const valueBulan = ref();
 
+const valueBulan = ref<Date | null>(null);
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -200,7 +216,7 @@ const resetForm = () => {
   valueSearchPraktisi.value = "";
   valueStartedDate.value = new Date();
   valueEndedDate.value = new Date();
-  valueBulan.value = 0;
+  valueBulan.value = null;
   searchRuanganFilter.value = "";
   searchKelasFilter.value = "";
   searchDokterDPJPFilter.value = "";
@@ -345,6 +361,7 @@ onMounted(() => {
           icon-type="fill"
           class="my-auto bg-adameds-300"
           label="Cetak"
+          @click="handleExport"
         />
        <CustomPaginator
           :rows="properties.page_size"

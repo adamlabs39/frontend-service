@@ -32,10 +32,14 @@ const searchQuery = ref<string>("");
 
 // Check if Data Exists
 const hasDataObat = computed(
-  () => TransactionHistoryObatPayload.value && TransactionHistoryObatPayload.value.length > 0
+  () =>
+    TransactionHistoryObatPayload.value &&
+    TransactionHistoryObatPayload.value.length > 0
 );
 const hasDataAlkes = computed(
-  () => TransactionHistoryAlkesPayload.value && TransactionHistoryAlkesPayload.value.length > 0
+  () =>
+    TransactionHistoryAlkesPayload.value &&
+    TransactionHistoryAlkesPayload.value.length > 0
 );
 
 // Fetch Transaction History
@@ -43,6 +47,12 @@ const fetchTransactionHistory = async () => {
   UseUtilsStore.setLoading(true);
   const selectedPaymentNew = [...selectedPayment.value];
   const selectedLocationNew = [...selectedLocation.value];
+  // Bangun parameter: satu pilihan -> kirim nilai; >1/0 -> kosong (tanpa filter)
+  const paymentParam =
+    selectedPaymentNew.length !== 1 ? "" : selectedPaymentNew[0];
+  const locationParam =
+    selectedLocationNew.length !== 1 ? "" : selectedLocationNew[0];
+
   try {
     const response = await TransactionHistoryStore.getApi({
       item_type: selectMedicine.value,
@@ -50,10 +60,10 @@ const fetchTransactionHistory = async () => {
       start_date: dateToEpoch(startDateFilter.value),
       end_date: dateToEpoch(endDateFilter.value),
       search: searchQuery.value,
-      lokasi_stok_uuid: selectedLocationNew.join(""),
-      payment_method: selectedPaymentNew.join(""),
+      lokasi_stok_uuid: locationParam,
+      payment_method: paymentParam,
       page: TransactionHistoryProperties.value.page,
-      limit: TransactionHistoryProperties.value.page_size
+      limit: TransactionHistoryProperties.value.page_size,
     });
 
     if (response && response.payload) {
@@ -93,7 +103,7 @@ const onSelectMedicine = (label: string) => {
 // Filter Lokasi
 const selectedLocation = ref<string[]>([]);
 const selectLocation = (label: string) => {
-  if (selectedLocation.value.includes(label)) {    
+  if (selectedLocation.value.includes(label)) {
     selectedLocation.value = selectedLocation.value.filter(
       (item) => item != label
     );
@@ -106,7 +116,7 @@ const selectLocation = (label: string) => {
 // Filter Pembayaran
 const selectedPayment = ref<string[]>([]);
 const onSelectPayment = (label: string) => {
-  if (selectedPayment.value.includes(label)) {    
+  if (selectedPayment.value.includes(label)) {
     selectedPayment.value = selectedPayment.value.filter(
       (item) => item != label
     );
@@ -129,6 +139,8 @@ const resetData = () => {
   searchQuery.value = "";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
+  selectedLocation.value = [];
+  selectedPayment.value = [];
   fetchTransactionHistory();
 };
 
@@ -139,7 +151,7 @@ const StockLocationPayload = ref<any[]>([]);
 // Fetch Stock Location
 const fetchStockLocation = async () => {
   try {
-    const response = await StockLocationStore.getApi();
+    const response = await StockLocationStore.getApi(1, 999999);
 
     if (response && response.payload) {
       StockLocationPayload.value = response.payload;
@@ -163,24 +175,32 @@ const handlePage = (event: any) => {
 const metaKeyObat = ref(true);
 const selectedDataObat = ref();
 const DrugHistory = ref(false);
-const refDialogDetailObat = ref<InstanceType<typeof DialogDetailObat> | null>(null);
+const refDialogDetailObat = ref<InstanceType<typeof DialogDetailObat> | null>(
+  null
+);
 
 const onRowSelectObat = (event: any) => {
   selectedDataObat.value = event.data;
   DrugHistory.value = true;
-  refDialogDetailObat.value?.fetchTransactionHistoryDetail(selectedDataObat.value.uuid);   
+  refDialogDetailObat.value?.fetchTransactionHistoryDetail(
+    selectedDataObat.value.uuid
+  );
 };
 
 // Selected Row Alkes
 const metaKeyAlkes = ref(true);
 const selectedDataAlkes = ref();
 const medicalEquipmentHistory = ref(false);
-const refDialogDetailAlkes = ref<InstanceType<typeof DialogDetailAlkes> | null>(null);
+const refDialogDetailAlkes = ref<InstanceType<typeof DialogDetailAlkes> | null>(
+  null
+);
 
 const onRowSelectAlkes = (event: any) => {
   selectedDataAlkes.value = event.data;
   medicalEquipmentHistory.value = true;
-  refDialogDetailAlkes.value?.fetchTransactionHistoryDetail(selectedDataAlkes.value.uuid);
+  refDialogDetailAlkes.value?.fetchTransactionHistoryDetail(
+    selectedDataAlkes.value.uuid
+  );
 };
 
 onMounted(() => {
@@ -201,7 +221,11 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchTransactionHistory" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchTransactionHistory"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Riwayat Transaksi',
@@ -246,7 +270,7 @@ onMounted(() => {
                 class="mt-auto"
               />
             </div>
-            
+
             <!-- Filter Riwayat -->
             <div class="grid grid-cols-3 mt-[15px]">
               <CustomButton
@@ -254,8 +278,14 @@ onMounted(() => {
                 label="RIWAYAT RESEP"
                 :outlined="selectedHistory != 'resep'"
                 borderColor="border-adameds-300"
-                :textColor="selectedHistory != 'resep' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedHistory != 'resep' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectedHistory != 'resep' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectedHistory != 'resep'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
                 class="font-semibold"
               />
               <CustomButton
@@ -263,8 +293,14 @@ onMounted(() => {
                 label="RIWAYAT RETUR"
                 :outlined="selectedHistory != 'retur'"
                 borderColor="border-adameds-300"
-                :textColor="selectedHistory != 'retur' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedHistory != 'retur' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectedHistory != 'retur' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectedHistory != 'retur'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
                 class="ml-[20px] font-semibold"
               />
               <CustomButton
@@ -272,8 +308,14 @@ onMounted(() => {
                 label="RIWAYAT PEMBATALAN"
                 :outlined="selectedHistory != 'batal'"
                 borderColor="border-adameds-300"
-                :textColor="selectedHistory != 'batal' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedHistory != 'batal' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectedHistory != 'batal' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectedHistory != 'batal'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
                 class="ml-[20px] font-semibold"
               />
             </div>
@@ -285,8 +327,12 @@ onMounted(() => {
                 label="OBAT"
                 :outlined="selectMedicine != 'obat'"
                 borderColor="border-adameds-300"
-                :textColor="selectMedicine != 'obat' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectMedicine != 'obat' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectMedicine != 'obat' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectMedicine != 'obat' ? 'bg-transparent' : 'bg-adameds-300'
+                "
                 class="font-semibold"
               />
               <CustomButton
@@ -294,43 +340,50 @@ onMounted(() => {
                 label="MATERIAL"
                 :outlined="selectMedicine != 'alkes'"
                 borderColor="border-adameds-300"
-                :textColor="selectMedicine != 'alkes' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectMedicine != 'alkes' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectMedicine != 'alkes' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectMedicine != 'alkes'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
                 class="ml-[20px] font-semibold"
               />
             </div>
 
             <!-- Filter Lokasi -->
-            <div class="flex mt-[15px]">
+            <div class="flex mt-[15px] items-center">
               <div class="w-[10%] font-semibold text-SM text-grey-300">
                 Filter Lokasi
               </div>
-              <div class="flex">
+              <div class="flex items-center">
                 <span class="text-grey-300">|</span>
-                <CustomChip
-                  v-for="(item, index) in StockLocationPayload"
-                  :key="item + index"
-                  :label="item.name"
-                  :value="item.uuid"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-50"
-                  iconColor="text-adameds-300"
-                  textColor="text-adameds-300"
-                  customClass="h-6 w-100"
-                  class="ml-[10px]"
-                  :isSelected="selectedLocation.includes(item.uuid)"
-                  @selected="selectLocation"
-                  selectedColor="bg-adameds-300 border-adameds-300"
-                />
+                <div class="grid grid-cols-9 items-center gap-[10px] ml-[10px]">
+                  <CustomChip
+                    v-for="(item, index) in StockLocationPayload"
+                    :key="item + index"
+                    :label="item.name"
+                    :value="item.uuid"
+                    borderColor="border-adameds-300"
+                    bgColor="bg-adameds-50"
+                    iconColor="text-adameds-300"
+                    textColor="text-adameds-300"
+                    customClass="h-6 w-100 min-h-[30px]"
+                    :isSelected="selectedLocation.includes(item.uuid)"
+                    @selected="selectLocation"
+                    selectedColor="bg-adameds-300 border-adameds-300"
+                  />
+                </div>
               </div>
             </div>
 
             <!-- Filter Pembayaran -->
-            <div class="flex mt-[15px]">
+            <div class="flex mt-[15px] items-center">
               <div class="w-[10%] font-semibold text-SM text-grey-300">
                 Filter Pembayaran
               </div>
-              <div class="flex">
+              <div class="flex items-center">
                 <span class="text-grey-300">|</span>
                 <CustomChip
                   label="TUNAI"
@@ -380,7 +433,7 @@ onMounted(() => {
       </template>
       <template #content>
         <!-- Datatable Obat -->
-        <NoData v-if="!hasDataObat" v-show="selectMedicine === 'obat'"/>
+        <NoData v-if="!hasDataObat" v-show="selectMedicine === 'obat'" />
         <DataTable
           v-else
           v-show="selectMedicine === 'obat'"
@@ -405,7 +458,9 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <p>{{ slotProps.data.code }}</p>
-                <p class="mt-[3px]">{{ epochToDate(slotProps.data.date, "dateTime") }}</p>
+                <p class="mt-[3px]">
+                  {{ epochToDate(slotProps.data.date, "dateTime") }}
+                </p>
               </div>
             </template>
           </Column>
@@ -428,7 +483,7 @@ onMounted(() => {
               </div>
             </template>
           </Column>
-          
+
           <!-- Keperawatan -->
           <Column header="Keperawatan" headerClass="bg-adameds-50">
             <template #body="slotProps">
@@ -493,22 +548,32 @@ onMounted(() => {
                     borderColor="border-sunFlower-300"
                     bgColor="bg-sunFlower-300"
                     textColor="text-white"
-                    customClass="h-6"
+                    customClass="h-6 ml-[5px]"
                   />
                 </div>
               </div>
             </template>
           </Column>
-          
+
           <!-- Status -->
           <Column header="Status" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'"
-                  :bgColor="slotProps.data.status == 'Lunas' ? 'bg-success-300' : 'bg-danger-75'"
-                  :textColor="slotProps.data.status == 'Lunas' ? 'text-white' : 'text-danger-300'"
+                  :label="
+                    slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'
+                  "
+                  :bgColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'bg-success-300'
+                      : 'bg-danger-75'
+                  "
+                  :textColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'text-white'
+                      : 'text-danger-300'
+                  "
                   customClass="h-6 pr-[6px] border-none"
                 />
               </div>
@@ -542,7 +607,9 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <p>{{ slotProps.data.code }}</p>
-                <p class="mt-[3px]">{{ epochToDate(slotProps.data.date, "dateTime") }}</p>
+                <p class="mt-[3px]">
+                  {{ epochToDate(slotProps.data.date, "dateTime") }}
+                </p>
               </div>
             </template>
           </Column>
@@ -641,9 +708,19 @@ onMounted(() => {
               <div class="">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'"
-                  :bgColor="slotProps.data.status == 'Lunas' ? 'bg-success-300' : 'bg-danger-75'"
-                  :textColor="slotProps.data.status == 'Lunas' ? 'text-white' : 'text-danger-300'"
+                  :label="
+                    slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'
+                  "
+                  :bgColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'bg-success-300'
+                      : 'bg-danger-75'
+                  "
+                  :textColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'text-white'
+                      : 'text-danger-300'
+                  "
                   customClass="h-6 pr-[6px] border-none"
                 />
               </div>
@@ -658,7 +735,7 @@ onMounted(() => {
           :filterStatus="selectedHistory"
           ref="refDialogDetailObat"
         />
-        
+
         <DialogDetailAlkes
           v-model:isDialogVisible="medicalEquipmentHistory"
           :payloadAlkes="selectedDataAlkes"

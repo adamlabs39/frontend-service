@@ -96,20 +96,42 @@ const fetchKelurahan = async (kecamatanId: string) => {
 };
 
 const schema = toTypedSchema(
-  yup.object({
-    code: yup.string().required("Kode Satuan harus diisi"),
-    name: yup.string().required("Nama Satuan harus diisi"),
-    kodePos: yup.string().required("Kode Pos harus diisi"),
-    alamat: yup.string().required("Alamat harus diisi"),
-    provinsiCode: yup.string(),
-    kabupatenCode: yup.string(),
-    kecamatanCode: yup.string(),
-    kelurahanCode: yup.string(),
-    status: yup.bool().default(true),
-  }).noUnknown()
+  yup
+    .object({
+      code: yup.string().trim().required("Kode Satuan harus diisi"),
+      name: yup.string().trim().required("Nama Satuan harus diisi"),
+      kodePos: yup
+        .string()
+        .required("Kode Pos harus diisi")
+        .matches(
+          /^\d{5}$/,
+          "Kode Pos harus tepat 5 angka dan harus berupa angka"
+        ),
+      alamat: yup
+        .string()
+        .required("Alamat harus diisi")
+        .test(
+          "no-only-spaces",
+          "Alamat tidak boleh hanya berisi spasi",
+          (value) => !!value && value.trim().length > 0
+        ),
+      provinsiCode: yup.string().required("Provinsi harus dipilih"),
+      kabupatenCode: yup.string().required("Kabupaten harus dipilih"),
+      kecamatanCode: yup.string().required("Kecamatan harus dipilih"),
+      kelurahanCode: yup.string().required("Kelurahan harus dipilih"),
+      status: yup.bool().default(true),
+    })
+    .noUnknown()
 );
 
-const { errors, handleSubmit, defineField, resetForm, setValues } = useForm({
+const {
+  errors,
+  handleSubmit,
+  defineField,
+  resetForm,
+  setValues,
+  setFieldError,
+} = useForm({
   validationSchema: schema,
 });
 const ManufacturingStore = useManufacturingStore();
@@ -126,8 +148,28 @@ const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
+const translateErrorMessage = (err: unknown): string => {
+  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
+  const resp = (err as any)?.response?.data;
+  const apiErrors = resp?.errors ?? [];
+
+  // Deteksi pesan unik dari payload errors maupun dari ringkasan message
+  const isCodeUniqueViolated = apiErrors.some((e: any) => {
+    const msg = (e?.message || "").toLowerCase();
+    const type = (e?.type || "").toLowerCase();
+    return (
+      (msg.includes("code") && msg.includes("unique")) ||
+      type === "unique violation"
+    );
+  });
+
+  if (isCodeUniqueViolated || rawMsg.includes("validation error")) {
+    return "Kode Manufaktur sudah terdaftar di faskes ini. Gunakan kode lain.";
+  }
+  return "";
+};
+
 const onSubmit = handleSubmit(async (values: any) => {
-  // console.log(values, 'values');
   try {
     if (method.value === "edit") {
       if (!props.payload || !props.payload.uuid) {
@@ -135,14 +177,16 @@ const onSubmit = handleSubmit(async (values: any) => {
       }
       const uuid = props.payload.uuid;
       const response = await ManufacturingStore.putApi(uuid, values);
-      console.log("Data updated successfully:", response);
       emit("data-updated");
     } else if (method.value === "add") {
       const response = await ManufacturingStore.postApi(values);
       emit("data-updated");
     }
     closeDialog();
-  } catch (error) {
+  } catch (error: any) {
+    // Tampilkan pesan ramah pengguna di field Kode pada kasus duplikasi
+    const message = translateErrorMessage(error);
+    setFieldError("code", message);
     console.error("Failed to process the data:", error);
   }
 });
@@ -174,8 +218,8 @@ const handleEdit = () => {
 watch(provinsiCode, (newProvinsi) => {
   if (newProvinsi) {
     fetchKabupaten(newProvinsi); // Ambil data kabupaten ketika provinsi berubah
-    kabupatenCode.value = ''; // Reset kabupaten dan kecamatan saat provinsi berubah
-    kecamatanCode.value = '';
+    kabupatenCode.value = ""; // Reset kabupaten dan kecamatan saat provinsi berubah
+    kecamatanCode.value = "";
     kelurahanPayload.value = [];
   }
 });
@@ -184,7 +228,7 @@ watch(provinsiCode, (newProvinsi) => {
 watch(kabupatenCode, (newKabupaten) => {
   if (newKabupaten) {
     fetchKecamatan(newKabupaten);
-    kecamatanCode.value = '';
+    kecamatanCode.value = "";
     kelurahanPayload.value = [];
   }
 });
@@ -201,7 +245,7 @@ watch(
   async (newValue) => {
     if (newValue) {
       resetDialogMode();
-      
+
       // Check if we are editing, and if so, set initial values
       if (props.method !== "add" && props.payload) {
         setValues({
@@ -212,7 +256,7 @@ watch(
         if (props.payload) {
           // Set provinsi
           provinsiCode.value = props.payload.provinsiCode;
-          await fetchKabupaten(provinsiCode.value as string);  // Fetch kabupaten after provinsi is set
+          await fetchKabupaten(provinsiCode.value as string); // Fetch kabupaten after provinsi is set
 
           // Set kabupaten
           kabupatenCode.value = props.payload.kabupatenCode;
@@ -239,224 +283,243 @@ onMounted(() => {
 </script>
 
 <template>
-    <CustomDialog :visible="isDialogVisible" @update:visible="updateVisibility" width="600px">
-      <template #header>
-        <div v-if="method !== 'detail'" class="grid grid-cols-1">
-            <p>Tambah Data Manufaktur</p>
+  <CustomDialog
+    :visible="isDialogVisible"
+    @update:visible="updateVisibility"
+    width="600px"
+  >
+    <template #header>
+      <div v-if="method !== 'detail'" class="grid grid-cols-1">
+        <p>{{ title }} Data Manufaktur</p>
+      </div>
+      <div v-if="method === 'detail'" class="grid grid-cols-1">
+        <p>Detail Data Manufaktur</p>
+      </div>
+    </template>
+    <template #body>
+      <div v-if="method !== 'detail'">
+        <!-- Kode Organisasi & Nama -->
+        <div class="grid grid-cols-[30%,70%]">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Kode Manufaktur"
+              v-model="code"
+              placeholder="Kode Manufaktur"
+              :invalid="!!errors.code"
+              :invalidMessage="errors.code"
+              :required="errors.code ? true : false"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomTextfield
+              label="Nama Manufaktur"
+              v-model="name"
+              placeholder="Nama Manufaktur"
+              class="ml-[20px]"
+              :invalid="!!errors.name"
+              :invalidMessage="errors.name"
+              :required="errors.name ? true : false"
+            />
+          </div>
         </div>
-        <div v-if="method === 'detail'" class="grid grid-cols-1">
-            <p>Detail Data Manufaktur</p>
+        <!-- Alamat -->
+        <div class="grid grid-cols-2">
+          <div class="mt-[20px] mr-[10px]">
+            <CustomSelect
+              label="Provinsi"
+              v-model="provinsiCode"
+              place-holder="Pilih Provinsi"
+              class=""
+              :options="provinsiPayload"
+              option-label="name"
+              option-value="code"
+              :invalid="!!errors.provinsiCode"
+              :invalidMessage="errors.provinsiCode"
+              :required="errors.provinsiCode ? true : false"
+            />
+          </div>
+          <div class="mt-[20px] ml-[10px]">
+            <CustomSelect
+              label="Kab / Kota"
+              v-model="kabupatenCode"
+              place-holder="Pilih Kab / Kota"
+              class=""
+              :options="kabupatenPayload"
+              option-label="name"
+              option-value="code"
+              :invalid="!!errors.kabupatenCode"
+              :invalidMessage="errors.kabupatenCode"
+              :required="errors.kabupatenCode ? true : false"
+            />
+          </div>
+          <div class="mt-[20px] mr-[10px]">
+            <CustomSelect
+              label="Kecamatan"
+              v-model="kecamatanCode"
+              place-holder="Pilih Kecamatan"
+              class=""
+              :options="kecamatanPayload"
+              option-label="name"
+              option-value="code"
+              :invalid="!!errors.kecamatanCode"
+              :invalidMessage="errors.kecamatanCode"
+              :required="errors.kecamatanCode ? true : false"
+            />
+          </div>
+          <div class="mt-[20px] ml-[10px]">
+            <CustomSelect
+              label="Kelurahan / Desa"
+              v-model="kelurahanCode"
+              place-holder="Pilih Kelurahan / Desa"
+              class=""
+              :options="kelurahanPayload"
+              option-label="name"
+              option-value="code"
+              :invalid="!!errors.kelurahanCode"
+              :invalidMessage="errors.kelurahanCode"
+              :required="errors.kelurahanCode ? true : false"
+            />
+          </div>
         </div>
-      </template>
-      <template #body>
-        <div v-if="method !== 'detail'">
-          <!-- Kode Organisasi & Nama -->
-          <div class="grid grid-cols-[30%,70%]">
-            <div class="mt-[20px]">
-              <CustomTextfield
-                label="Kode Manufaktur"
-                v-model="code"
-                placeholder="Kode Manufaktur"
-                :invalid="!!errors.code"
-                :invalidMessage="errors.code"
-                :required="errors.code ? true : false"
-              />
-            </div>
-            <div class="mt-[20px]">
-              <CustomTextfield
-                label="Nama Manufaktur"
-                v-model="name"
-                placeholder="Nama Manufaktur"
-                class="ml-[20px]"
-                :invalid="!!errors.name"
-                :invalidMessage="errors.name"
-                :required="errors.name ? true : false"
-              />
-            </div>
+        <div class="grid grid-cols-[30%,70%]">
+          <div class="mt-[20px]">
+            <CustomTextfield
+              v-model="kodePos"
+              label="Kode Pos"
+              placeholder="Kode Pos"
+              class=""
+              :invalid="!!errors.kodePos"
+              :invalidMessage="errors.kodePos"
+              :required="errors.kodePos ? true : false"
+            />
+          </div>
+          <div class="mt-[20px]">
+            <CustomTextArea
+              label="Alamat"
+              v-model="alamat"
+              placeholder="Alamat"
+              class="ml-[20px]"
+              :invalid="!!errors.alamat"
+              :invalidMessage="errors.alamat"
+              :required="errors.alamat ? true : false"
+            />
+          </div>
+        </div>
+        <hr class="mt-[20px] border border-slate-300" />
+        <div class="grid grid-cols-2 mt-[15px]">
+          <div>
+            <CustomSwitch
+              v-model="status"
+              :show-label="true"
+              label="Status"
+              sideLabel="NON-AKTIF"
+              sideLabelTrue="AKTIF"
+            />
+          </div>
+        </div>
+      </div>
+      <div v-if="method === 'detail'">
+        <div class="grid grid-cols-[40%,60%]">
+          <!-- Kode Manufaktur -->
+          <div>
+            <p class="mt-[10px] font-bold">Kode Manufaktur</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.code }}</p>
+          </div>
+          <!-- Nama Manufaktur -->
+          <div>
+            <p class="mt-[10px] font-bold">Nama Manufaktur</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.name }}</p>
+          </div>
+          <!-- Provinsi -->
+          <div>
+            <p class="mt-[10px] font-bold">Provinsi</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.province.name }}</p>
+          </div>
+          <!-- Kab / Kota -->
+          <div>
+            <p class="mt-[10px] font-bold">Kab / Kota</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.kabupaten.name }}</p>
+          </div>
+          <!-- Kecamatan -->
+          <div>
+            <p class="mt-[10px] font-bold">Kecamatan</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.kecamatan.name }}</p>
+          </div>
+          <!-- Kelurahan / Desa -->
+          <div>
+            <p class="mt-[10px] font-bold">Kelurahan / Desa</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.kelurahan.name }}</p>
+          </div>
+          <!-- Kode Pos -->
+          <div>
+            <p class="mt-[10px] font-bold">Kode Pos</p>
+          </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.kodePos }}</p>
           </div>
           <!-- Alamat -->
-          <div class="grid grid-cols-2">
-            <div class="mt-[20px] mr-[10px]">
-              <CustomSelect
-                label="Provinsi"
-                v-model="provinsiCode"
-                place-holder="Pilih Provinsi"
-                class=""
-                :options="provinsiPayload"
-                option-label="name"
-                option-value="code"
-              />
-            </div>
-            <div class="mt-[20px] ml-[10px]">
-              <CustomSelect
-                label="Kab / Kota"
-                v-model="kabupatenCode"
-                place-holder="Pilih Kab / Kota"
-                class=""
-                :options="kabupatenPayload"
-                option-label="name"
-                option-value="code"
-              /> 
-            </div>
-            <div class="mt-[20px] mr-[10px]">
-              <CustomSelect
-                label="Kecamatan"
-                v-model="kecamatanCode"
-                place-holder="Pilih Kecamatan"
-                class=""
-                :options="kecamatanPayload"
-                option-label="name"
-                option-value="code"
-              />
-            </div>
-            <div class="mt-[20px] ml-[10px]">
-              <CustomSelect
-                label="Kelurahan / Desa"
-                v-model="kelurahanCode"
-                place-holder="Pilih Kelurahan / Desa"
-                class=""
-                :options="kelurahanPayload"
-                option-label="name"
-                option-value="code"
-              />
-            </div>
+          <div>
+            <p class="mt-[10px] font-bold">Alamat</p>
           </div>
-          <div class="grid grid-cols-[30%,70%]">
-            <div class="mt-[20px]">
-              <CustomTextfield
-                v-model="kodePos"
-                label="Kode Pos"
-                placeholder="Kode Pos"
-                class=""
-                :invalid="!!errors.kodePos"
-                :invalidMessage="errors.kodePos"
-                :required="errors.kodePos ? true : false"
-              />
-            </div>
-            <div class="mt-[20px]">
-              <CustomTextArea
-                label="Alamat"
-                v-model="alamat"
-                placeholder="Alamat"
-                class="ml-[20px]"
-                :invalid="!!errors.alamat"
-                :invalidMessage="errors.alamat"
-                :required="errors.alamat ? true : false"
-              />
-            </div>
-          </div>
-          <hr class="mt-[20px] border border-slate-300"/>
-          <div class="grid grid-cols-2 mt-[15px]">
-            <div>
-              <CustomSwitch
-                v-model="status"
-                :show-label="true"
-                label="Status"
-                sideLabel="NON-AKTIF"
-                sideLabelTrue="AKTIF"
-              />
-            </div>
+          <div>
+            <p class="mt-[10px]">: {{ payload.alamat }}</p>
           </div>
         </div>
-        <div v-if="method === 'detail'">
-          <div class="grid grid-cols-[40%,60%]">
-            <!-- Kode Manufaktur -->
-            <div>
-              <p class="mt-[10px] font-bold">Kode Manufaktur</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.code }}</p>
-            </div>
-            <!-- Nama Manufaktur -->
-            <div>
-              <p class="mt-[10px] font-bold">Nama Manufaktur</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.name }}</p>
-            </div>
-            <!-- Provinsi -->
-            <div>
-              <p class="mt-[10px] font-bold">Provinsi</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.province.name }}</p>
-            </div>
-            <!-- Kab / Kota -->
-            <div>
-              <p class="mt-[10px] font-bold">Kab / Kota</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.kabupaten.name }}</p>
-            </div>
-            <!-- Kecamatan -->
-            <div>
-              <p class="mt-[10px] font-bold">Kecamatan</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.kecamatan.name }}</p>
-            </div>
-            <!-- Kelurahan / Desa -->
-            <div>
-              <p class="mt-[10px] font-bold">Kelurahan / Desa</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.kelurahan.name }}</p>
-            </div>
-            <!-- Kode Pos -->
-            <div>
-              <p class="mt-[10px] font-bold">Kode Pos</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.kodePos }}</p>
-            </div>
-            <!-- Alamat -->
-            <div>
-              <p class="mt-[10px] font-bold">Alamat</p>
-            </div>
-            <div>
-              <p class="mt-[10px]">: {{ payload.alamat }}</p>
-            </div>
-          </div>
-          <hr class="mt-[20px] border border-slate-300"/>
-          <div class="grid grid-cols-1">
-            <div class="flex">
-              <p class="mt-[20px] font-bold">Status <span class="font-normal ml-[165px]">:</span></p>
-              <CustomChip
-                :label="status ? 'AKTIF' : 'NON-AKTIF'"
-                :textColor="status ? 'text-white' : 'text-[#80868d]'"
-                :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
-                :borderColor="status ? 'border-none' : 'border-[#80868d]'"
-                :icon-color="status ? 'white' : '#80868d'"
-                customClass="text-xs font-semibold h-5 flex"
-                class="mt-[23px] ml-[5px]"
-              />
-            </div>
-          </div>
-        </div>
-      </template>
-      <template #footer>
-        <div class="w-full">
-          <!-- <hr class="-mx-5 border-grey-200" /> -->
-          <div class="mt-5 flex justify-end gap-2.5">
-            <CustomButton
-              v-if="method !== 'detail'"
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-              @click="resetForm"
-            />
-            <CustomButton 
-              v-if="method !== 'detail'"
-              label="Simpan" @click="onSubmit"
-            />
-            <CustomButton
-              v-if="method === 'detail'"
-              label="Edit"
-              @click="handleEdit"
+        <hr class="mt-[20px] border border-slate-300" />
+        <div class="grid grid-cols-1">
+          <div class="flex">
+            <p class="mt-[20px] font-bold">
+              Status <span class="font-normal ml-[165px]">:</span>
+            </p>
+            <CustomChip
+              :label="status ? 'AKTIF' : 'NON-AKTIF'"
+              :textColor="status ? 'text-white' : 'text-[#80868d]'"
+              :bgColor="status ? 'bg-adameds-300' : 'bg-white'"
+              :borderColor="status ? 'border-none' : 'border-[#80868d]'"
+              :icon-color="status ? 'white' : '#80868d'"
+              customClass="text-xs font-semibold h-5 flex"
+              class="mt-[23px] ml-[5px]"
             />
           </div>
         </div>
-      </template>
-    </CustomDialog>
+      </div>
+    </template>
+    <template #footer>
+      <div class="w-full">
+        <!-- <hr class="-mx-5 border-grey-200" /> -->
+        <div class="flex gap-2.5 justify-end mt-5">
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Reset"
+            textColor="text-grey-300"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-grey-200"
+            @click="resetForm"
+          />
+          <CustomButton
+            v-if="method !== 'detail'"
+            label="Simpan"
+            @click="onSubmit"
+          />
+          <CustomButton
+            v-if="method === 'detail'"
+            label="Edit"
+            @click="handleEdit"
+          />
+        </div>
+      </div>
+    </template>
+  </CustomDialog>
 </template>

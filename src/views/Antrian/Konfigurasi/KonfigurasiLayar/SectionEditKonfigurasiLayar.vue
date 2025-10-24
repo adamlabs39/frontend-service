@@ -20,9 +20,10 @@ import { useJadwalDokterStore } from "@/stores/antrian/jadwalDokter";
 import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian";
 import { useToast } from "primevue/usetoast";
 import Chips from "primevue/chips";
-import { Vue3Marquee } from "vue3-marquee";
 
 const toast = useToast();
+
+const marqueeDuration = ref(20); // durasi dalam detik
 
 const props = defineProps({
   isDialogVisible: {
@@ -85,7 +86,7 @@ const schema = toTypedSchema(
     isFarmasi: yup.boolean(),
     flashText: yup
       .array()
-      .of(yup.string())
+      .of(yup.string().max(100, "Panjang maksimal 100 karakter"))
       .default(["Selamat Datang di Klinik Adameds"]),
     media: yup
       .string()
@@ -235,6 +236,41 @@ watch(
   },
   { immediate: true, deep: true }
 );
+
+const flashTextSchema = yup.string().max(100, "Panjang maksimal 100 karakter");
+const flashTextRealtimeError = ref<string | null>(null);
+const validateFlashTextDraft = (val: string) => {
+  try {
+    flashTextSchema.validateSync(val.trim());
+    flashTextRealtimeError.value = null;
+  } catch (err: any) {
+    flashTextRealtimeError.value =
+      err?.message ?? "Panjang maksimal 100 karakter";
+  }
+};
+
+const onFlashTextComplete = (e: any) => validateFlashTextDraft(e?.query ?? "");
+const onFlashTextKeyup = (e: any) =>
+  validateFlashTextDraft(e?.target?.value ?? "");
+
+const onFlashTextKeydown = (e: KeyboardEvent) => {
+  if (e.key === "Enter") {
+    const draft = (e.target as HTMLInputElement)?.value ?? "";
+    const len = draft.trim().length;
+    if (len > 100) {
+      e.preventDefault();
+      e.stopImmediatePropagation?.();
+      e.stopPropagation();
+      flashTextRealtimeError.value = "Panjang maksimal 100 karakter";
+      return;
+    }
+    flashTextRealtimeError.value = null;
+  }
+};
+
+watch(flashText, () => {
+  flashTextRealtimeError.value = null;
+});
 </script>
 
 <template>
@@ -341,9 +377,16 @@ watch(
                   fluid
                   multiple
                   :typeahead="false"
+                  :invalid="!!(flashTextRealtimeError || errors.flashText)"
+                  @complete="onFlashTextComplete"
+                  @keyup="onFlashTextKeyup"
+                  @keydown.capture="onFlashTextKeydown"
                 />
-                <p v-if="errors.flashText" class="mt-1 text-xs text-red-500">
-                  {{ errors.flashText }}
+                <p
+                  v-if="flashTextRealtimeError || errors.flashText"
+                  class="mt-1 text-xs text-red-500"
+                >
+                  {{ flashTextRealtimeError || errors.flashText }}
                 </p>
               </div>
             </div>
@@ -405,13 +448,21 @@ watch(
                 </template>
               </div>
               <div
-                class="mt-3 text-white rounded-tl-lg rounded-tr-lg bg-adameds-300"
+                class="mt-3 text-white font-semibold rounded-tl-lg rounded-tr-lg bg-adameds-300"
               >
-                <Vue3Marquee>
-                  <span v-for="item in flashText" :key="item" class="mx-2">{{
-                    item
-                  }}</span>
-                </Vue3Marquee>
+                <div class="marquee" aria-label="Running text">
+                  <div
+                    class="marquee__track"
+                    :style="{ '--duration': marqueeDuration + 's' }"
+                  >
+                    <span
+                      v-for="(item, idx) in flashText"
+                      :key="`${idx}-${item}`"
+                      class="mx-2"
+                      >{{ item }}</span
+                    >
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -464,5 +515,29 @@ watch(
 
 .multiselect-wrap :deep(.p-multiselect-token) {
   @apply mb-1 mr-1;
+}
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+  position: relative;
+}
+.marquee__track {
+  padding: 6px 0;
+  will-change: transform;
+  display: inline-block; /* width mengikuti konten */
+  width: max-content; /* cegah melar mengikuti kontainer */
+  padding-left: 100%; /* mulai dari luar kanan */
+  animation: marquee var(--duration, 20s) linear infinite;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 </style>

@@ -17,6 +17,7 @@ import { dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useLokasiStore } from "@/stores/datamaster/lokasi";
 import { useRJStore } from "@/stores/rawatJalan/laporanrajal";
+import { downloadExportExcelKunjunganRajal, downloadExportExcelBatalRawatJalan } from "@/stores/rawatJalan/exportexcelrajal";
 
 
 const properties = ref({
@@ -39,6 +40,9 @@ const lokasiProperties = ref({
   total: 0,
 });
 
+// Search Dokter
+const searchDoctor = ref<string>("");
+
 
 // STORE
 const RJStore = useRJStore();
@@ -55,8 +59,9 @@ const praktisiPayload = ref<any[]>([]);
 const lokasiPayload = ref<any[]>([]);
 
 const fetchLaporanData = async (filter: Filter = {
-  polyclinic: ""
-  }) => {
+  polyclinic: "",
+  timestamp: 0
+}) => {
   useUtilsStore.setLoading(true);
   let response;
   try {
@@ -86,7 +91,13 @@ const searchQuery = ref<string>("");
 const fetchPraktisiData = async () => {
   useUtilsStore.setLoading(true);
     try {
-    const response = await praktisiStore.getAktifApi();
+    let isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: praktisiProperties.value.page,
+      limit: praktisiProperties.value.page_size,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
     if (response && response.payload) {
       praktisiPayload.value = response.payload;
     } else {
@@ -120,6 +131,16 @@ const fetchLokasiData = async () => {
     useUtilsStore.setLoading(false);
   }
 };
+
+const handleExport = () => {
+  const filter = setFilter();
+  if (pageType.value === 'kunjungan-rawat-jalan') {
+    downloadExportExcelKunjunganRajal(filter);
+  } else if (pageType.value === 'pembatalan-poli') {
+    downloadExportExcelBatalRawatJalan(filter);
+  }
+};
+
 const dataBreadCrumb = ref<MenuItem[]>([]);
 const route = useRoute();
 const pageType = ref("");
@@ -157,6 +178,7 @@ onMounted(() => {
 });
 
 interface Filter {
+  timestamp: number;
   polyclinic: string;
   page?: number;
   limit?: number;
@@ -219,7 +241,10 @@ const setFilter = () => {
   filter.endDate = `${dateToEpoch(
     setTimeForDate(valueEndedDate.value, 23, 59, 59)
   )}`;
-  filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
+   if (valueBulan.value) {
+      filter.timestamp = Math.floor(valueBulan.value.getTime() / 1000);
+    }
+  // filter.month = valueBulan.value !== 0 ? valueBulan.value : undefined; // Pastikan month hanya ada jika terisi
   filter.lokasiUuid = searchPoliklinikFilter.value ?? ""
 
   return filter;
@@ -229,8 +254,9 @@ const valueSearchRM = ref();
 const valueSearchDPJP = ref();
 const valueStartedDate = ref<Date>(new Date());
 const valueEndedDate = ref<Date>(new Date());
-const valueBulan = ref();
+// const valueBulan = ref();
 
+const valueBulan = ref<Date | null>(null);
 const handleSearchRM = (searchRM: string) => {
   valueSearchRM.value = searchRM;
 };
@@ -256,7 +282,7 @@ const resetForm = () => {
   valueSearchRM.value = "";
   searchPoliklinikFilter.value = "";
   searchPraktisiFilter.value = "";
-  valueBulan.value = 0;
+  valueBulan.value = null;
   valueSearchDPJP.value = "";
   searchDokterDPJPFilter.value = "";
 
@@ -367,6 +393,7 @@ const handleRefreshPage = () => {
           icon-type="fill"
           class="my-auto bg-adameds-300"
           label="Cetak"
+          @click="handleExport"
         />
         <CustomPaginator
           :rows="properties.page_size"

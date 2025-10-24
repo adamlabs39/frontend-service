@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoomPharmacyStore } from "@/stores/farmasi/RoomPharmacy";
 import { utilsStore } from "@/stores/utils";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
-import { epochToDate, dateToEpoch } from "@/utils/Helpers";
+import { epochToDate, dateToEpoch, setTimeForDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -79,8 +79,8 @@ const fetchRoomPharmacy = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await RoomPharmacyStoreStore.getApi({
-      startDate: dateToEpoch(startDate.value),
-      endDate: dateToEpoch(endDate.value),
+      startDate: dateToEpoch(setTimeForDate(startDate.value, 0, 0, 0)),
+      endDate: dateToEpoch(setTimeForDate(endDate.value, 23, 59, 59)),
       search: searchQuery.value,
       lokasiStokUuid: stockLocation.value,
     });
@@ -113,16 +113,18 @@ const IncomingDetail = async (uuid: string) => {
     if (response && response.payload) {
       RoomPharmacyIncomingDetail.value = response.payload;
       RoomPharmacyIncomingDetail.value.alkesItems.forEach((element: any) => {
-        element.listAlkes = [{
-        stokAlkes: "",
-        sisaStok: 0,
-        hargaSatuan: 0,
-        total: 0,
-      }]
-      });      
+        element.listAlkes = [
+          {
+            stokAlkes: "",
+            sisaStok: 0,
+            hargaSatuan: 0,
+            total: 0,
+          },
+        ];
+      });
     } else {
       RoomPharmacyIncomingDetail.value = {};
-    }    
+    }
   } catch (error) {
     console.error("Failed to fetch data", error);
     RoomPharmacyIncomingDetail.value = {};
@@ -153,16 +155,16 @@ const ReadyDetail = async (uuid: string) => {
   try {
     const response = await RoomPharmacyStoreStore.detailApi(uuid);
     if (response && response.payload) {
-      RoomPharmacyReadyDetail.value = response.payload;     
+      RoomPharmacyReadyDetail.value = response.payload;
     } else {
       RoomPharmacyReadyDetail.value = {};
-    }    
+    }
   } catch (error) {
     console.error("Failed to fetch data", error);
     RoomPharmacyReadyDetail.value = {};
   } finally {
     UseUtilsStore.setLoading(false);
-  }  
+  }
 };
 
 // Ready Medicine
@@ -187,16 +189,16 @@ const HandoverDetail = async (uuid: string) => {
   try {
     const response = await RoomPharmacyStoreStore.detailApi(uuid);
     if (response && response.payload) {
-      RoomPharmacyHandoverDetail.value = response.payload;     
+      RoomPharmacyHandoverDetail.value = response.payload;
     } else {
       RoomPharmacyHandoverDetail.value = {};
-    }    
+    }
   } catch (error) {
     console.error("Failed to fetch data", error);
     RoomPharmacyHandoverDetail.value = {};
   } finally {
     UseUtilsStore.setLoading(false);
-  }  
+  }
 };
 
 // Drug Handover
@@ -218,11 +220,11 @@ const drugHandoverClose = () => {
 
 // Filter Search Data
 const searchData = () => {
-  dateToEpoch(startDate.value),
-  dateToEpoch(endDate.value),
-  searchQuery.value,
-  stockLocation.value,
-  fetchRoomPharmacy();
+  dateToEpoch(setTimeForDate(startDate.value, 0, 0, 0)),
+    dateToEpoch(setTimeForDate(endDate.value, 23, 59, 59)),
+    searchQuery.value,
+    stockLocation.value,
+    fetchRoomPharmacy();
 };
 
 // Filter Reset Data
@@ -235,7 +237,7 @@ const resetData = () => {
 };
 
 // funcNextPage1
-const funcNextPage1 = (uuid: string) => {  
+const funcNextPage1 = (uuid: string) => {
   incomingDetail.value = false;
   readyMedicineOpen(uuid);
   incoming.value = false;
@@ -244,7 +246,7 @@ const funcNextPage1 = (uuid: string) => {
 };
 
 // funcNextPage2
-const funcNextPage2 = (uuid: string) => {  
+const funcNextPage2 = (uuid: string) => {
   readyMedicineDetails.value = false;
   drugHandoverOpen(uuid);
   incoming.value = false;
@@ -253,7 +255,7 @@ const funcNextPage2 = (uuid: string) => {
 };
 
 // funcPrevious
-const funcPrevious = (uuid: string) => {  
+const funcPrevious = (uuid: string) => {
   drugHandoverDetails.value = false;
   readyMedicineOpen(uuid);
   incoming.value = false;
@@ -269,7 +271,11 @@ onMounted(() => {
 
 <template>
   <div>
-    <Card pt:body:class="h-full pt-0" pt:content:class="h-full" class="h-full overflow-hidden overflow-y-auto">
+    <Card
+      pt:body:class="h-full pt-0"
+      pt:content:class="h-full"
+      class="h-full overflow-hidden overflow-y-auto"
+    >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
@@ -359,25 +365,40 @@ onMounted(() => {
         <div class="grid grid-cols-3 gap-3">
           <!-- Order Masuk -->
           <div v-show="incoming">
-            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between">
-              <div class="text-lg font-bold text-white font-poppins">Order Masuk</div>
+            <div
+              class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between"
+            >
+              <div class="text-lg font-bold text-white font-poppins">
+                Order Masuk
+              </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]">
+                <div
+                  class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]"
+                >
                   {{ RoomPharmacyPayload.orderMasuk.length }}
                 </div>
               </div>
             </div>
-            <div class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
-              <div v-if="RoomPharmacyPayload.orderMasuk.length"
+            <div
+              class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
+            >
+              <div
+                v-if="RoomPharmacyPayload.orderMasuk.length"
                 v-for="itemIncoming in RoomPharmacyPayload.orderMasuk"
                 :key="itemIncoming.uuid"
                 @click="incomingOpen(itemIncoming.uuid)"
               >
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">{{ itemIncoming.noRm }}</CustomButton>
+                    <CustomButton class="h-5 text-xs">{{
+                      itemIncoming.noRm
+                    }}</CustomButton>
                     <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">DPJP</div>
+                    <div
+                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
+                    >
+                      DPJP
+                    </div>
                     <div class="mt-[5px]">{{ itemIncoming.petugasOrder }}</div>
                     <div>
                       <CustomChip
@@ -392,10 +413,20 @@ onMounted(() => {
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">{{ itemIncoming.noOrderAlkes }}</div>
-                    <div class="text-sm font-bold mt-[5px]">{{ itemIncoming.noReg }}</div>
-                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">Tgl. Order</div>
-                    <div class="mt-[5px]">{{ epochToDate(itemIncoming.createdAt, "date") }}</div>
+                    <div class="text-sm font-bold">
+                      {{ itemIncoming.noOrderAlkes }}
+                    </div>
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ itemIncoming.noReg }}
+                    </div>
+                    <div
+                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
+                    >
+                      Tgl. Order
+                    </div>
+                    <div class="mt-[5px]">
+                      {{ epochToDate(itemIncoming.createdAt, "date") }}
+                    </div>
                     <div>
                       <CustomChip
                         label="BPJS"
@@ -417,25 +448,40 @@ onMounted(() => {
 
           <!-- Sedang Disiapkan -->
           <div v-show="readyMedicine">
-            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between">
-              <div class="text-lg font-bold text-white font-poppins">Sedang Disiapkan</div>
+            <div
+              class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between"
+            >
+              <div class="text-lg font-bold text-white font-poppins">
+                Sedang Disiapkan
+              </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]">
+                <div
+                  class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]"
+                >
                   {{ RoomPharmacyPayload.sedangDisiapkan.length }}
                 </div>
               </div>
             </div>
-            <div class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
-              <div v-if="RoomPharmacyPayload.sedangDisiapkan.length"
+            <div
+              class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
+            >
+              <div
+                v-if="RoomPharmacyPayload.sedangDisiapkan.length"
                 v-for="itemPrepared in RoomPharmacyPayload.sedangDisiapkan"
                 :key="itemPrepared.uuid"
                 @click="readyMedicineOpen(itemPrepared.uuid)"
               >
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">{{ itemPrepared.noRm }}</CustomButton>
+                    <CustomButton class="h-5 text-xs">{{
+                      itemPrepared.noRm
+                    }}</CustomButton>
                     <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">DPJP</div>
+                    <div
+                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
+                    >
+                      DPJP
+                    </div>
                     <div class="mt-[5px]">{{ itemPrepared.petugasOrder }}</div>
                     <div>
                       <CustomChip
@@ -450,10 +496,20 @@ onMounted(() => {
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">{{ itemPrepared.noOrderAlkes }}</div>
-                    <div class="text-sm font-bold mt-[5px]">{{ itemPrepared.noReg }}</div>
-                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">Tgl. Order</div>
-                    <div class="mt-[5px]">{{ epochToDate(itemPrepared.createdAt, "date") }}</div>
+                    <div class="text-sm font-bold">
+                      {{ itemPrepared.noOrderAlkes }}
+                    </div>
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ itemPrepared.noReg }}
+                    </div>
+                    <div
+                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
+                    >
+                      Tgl. Order
+                    </div>
+                    <div class="mt-[5px]">
+                      {{ epochToDate(itemPrepared.createdAt, "date") }}
+                    </div>
                     <div>
                       <CustomChip
                         label="BPJS"
@@ -475,25 +531,40 @@ onMounted(() => {
 
           <!-- Penyerahan Alkes -->
           <div v-show="drugHandover">
-            <div class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between">
-              <div class="text-lg font-bold text-white font-poppins">Penyerahan Alkes</div>
+            <div
+              class="mt-[10px] p-4 rounded-t-lg bg-adameds-300 shadow-md flex justify-between"
+            >
+              <div class="text-lg font-bold text-white font-poppins">
+                Penyerahan Alkes
+              </div>
               <div class="w-[40px] bg-white rounded-lg">
-                <div class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]">
+                <div
+                  class="flex items-center justify-center font-bold text-adameds-300 text-MD font-poppins mt-[3px]"
+                >
                   {{ RoomPharmacyPayload.penyerahanAlkes.length }}
                 </div>
               </div>
             </div>
-            <div class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md">
-              <div v-if="RoomPharmacyPayload.penyerahanAlkes.length"
+            <div
+              class="h-[430px] p-4 overflow-auto bg-white rounded-b-lg shadow-md"
+            >
+              <div
+                v-if="RoomPharmacyPayload.penyerahanAlkes.length"
                 v-for="itemHandover in RoomPharmacyPayload.penyerahanAlkes"
                 :key="itemHandover.uuid"
                 @click="drugHandoverOpen(itemHandover.uuid)"
               >
                 <div class="grid grid-cols-2">
                   <div class="grid justify-items-start">
-                    <CustomButton class="h-5 text-xs">{{ itemHandover.noRm }}</CustomButton>
+                    <CustomButton class="h-5 text-xs">{{
+                      itemHandover.noRm
+                    }}</CustomButton>
                     <div class="text-sm font-bold mt-[5px]">Nama Pasien</div>
-                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">DPJP</div>
+                    <div
+                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
+                    >
+                      DPJP
+                    </div>
                     <div class="mt-[5px]">{{ itemHandover.petugasOrder }}</div>
                     <div>
                       <CustomChip
@@ -508,10 +579,20 @@ onMounted(() => {
                     </div>
                   </div>
                   <div class="grid justify-items-end">
-                    <div class="text-sm font-bold">{{ itemHandover.noOrderAlkes }}</div>
-                    <div class="text-sm font-bold mt-[5px]">{{ itemHandover.noReg }}</div>
-                    <div class="text-xs font-bold underline underline-offset-2 mt-[5px]">Tgl. Order</div>
-                    <div class="mt-[5px]">{{ epochToDate(itemHandover.createdAt, "date") }}</div>
+                    <div class="text-sm font-bold">
+                      {{ itemHandover.noOrderAlkes }}
+                    </div>
+                    <div class="text-sm font-bold mt-[5px]">
+                      {{ itemHandover.noReg }}
+                    </div>
+                    <div
+                      class="text-xs font-bold underline underline-offset-2 mt-[5px]"
+                    >
+                      Tgl. Order
+                    </div>
+                    <div class="mt-[5px]">
+                      {{ epochToDate(itemHandover.createdAt, "date") }}
+                    </div>
                     <div>
                       <CustomChip
                         label="BPJS"
@@ -532,23 +613,23 @@ onMounted(() => {
           </div>
 
           <!-- Detail Order Masuk -->
-          <DetailRoomPharmacyPage 
-            v-if="incomingDetail" 
-            :payloadDetail="RoomPharmacyIncomingDetail" 
+          <DetailRoomPharmacyPage
+            v-if="incomingDetail"
+            :payloadDetail="RoomPharmacyIncomingDetail"
             @close="incomingClose(), fetchRoomPharmacy()"
-            @nextPage1="funcNextPage1"  
+            @nextPage1="funcNextPage1"
           />
           <!-- Detail Sedang Disiapkan -->
-          <DetailRoomPharmacyPage2 
-            v-if="readyMedicineDetails" 
-            :payloadDetail2="RoomPharmacyReadyDetail" 
+          <DetailRoomPharmacyPage2
+            v-if="readyMedicineDetails"
+            :payloadDetail2="RoomPharmacyReadyDetail"
             @close="readyMedicineClose(), fetchRoomPharmacy()"
             @nextPage2="funcNextPage2"
-            />
+          />
           <!-- Detail Penyerahan Alkes -->
-          <DetailRoomPharmacyPage3 
-            v-if="drugHandoverDetails" 
-            :payloadDetail3="RoomPharmacyHandoverDetail" 
+          <DetailRoomPharmacyPage3
+            v-if="drugHandoverDetails"
+            :payloadDetail3="RoomPharmacyHandoverDetail"
             @close="drugHandoverClose(), fetchRoomPharmacy()"
             @previous="funcPrevious"
           />

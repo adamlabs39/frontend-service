@@ -78,7 +78,7 @@ const sidebarBodyList = ref<SidebarBody[]>([
             type: linkType.LINK,
             url: "/rawat-jalan/poli",
           },
-        ], // Ini akan diupdate dengan data dari API
+        ],
       },
     ],
   },
@@ -191,38 +191,47 @@ let searchTimeout: ReturnType<typeof setTimeout>;
 
 const handleSearchPoli = (searchTerm: string) => {
   clearTimeout(searchTimeout);
-  const poliSection = sidebarBodyList.value[0]?.child?.[0]?.child ?? [];
 
-  if (searchTerm === "") {
-    // Kembalikan sidebarBodyList ke keadaan semula tanpa menambahkan item baru
-    if (!sidebarBodyList.value[0].child?.[0].child) {
-      sidebarBodyList.value[0].child![0].child = [];
-    }
+  searchTimeout = setTimeout(() => {
+    // Ambil referensi ke array 'child' dari dropdown 'Poli'
+    const poliSection = sidebarBodyList.value[0]?.child?.[0]?.child;
+    if (!poliSection) return;
 
-    sidebarBodyList.value[0].child![0].child!.push({
+    // 1. Kosongkan daftar poli yang ada di sidebar
+    poliSection.length = 0;
+
+    // 2. Selalu tambahkan opsi "Semua Poli" di paling atas
+    poliSection.push({
       name: "Semua Poli",
+      datas: "",
       icon: "",
       type: linkType.LINK,
       url: "/rawat-jalan/poli",
     });
-    updateSidebarBodyList();
-  } else {
-    // Filter poliSection berdasarkan searchTerm
-    searchTimeout = setTimeout(() => {
-      // Filter poliSection berdasarkan searchTerm
-      const filteredPoli = poliSection.filter((item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      if (!sidebarBodyList.value[0].child?.[0].child) {
-        sidebarBodyList.value[0].child![0].child = [];
-      }
-      sidebarBodyList.value[0].child![0].child!.push(...filteredPoli);
-    }, 300); // P
-  }
+
+    // 3. Filter dari sumber data asli (lokasiPayload)
+    const filteredPoli = lokasiPayload.value
+      .filter(
+        (item) =>
+          item.status &&
+          item.isPoli &&
+          item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map((item) => ({
+        name: item.name,
+        datas: item.uuid,
+        icon: "",
+        type: linkType.LINK,
+        url: "",
+      }));
+    
+    // 4. Tambahkan hasil filter ke daftar sidebar
+    poliSection.push(...filteredPoli);
+
+  }, 300);
 };
 
 
-// Mengambil data API saat komponen di-mount
 onMounted(() => {
   fetchLokasiData();
 
@@ -247,7 +256,7 @@ onMounted(() => {
       showStockBtn
       v-model:filter="filter"
       @filter-changed="updateFilterMenu"
-      @update:searchPoli="handleSearchPoli"
+      @update:search-sidebar="handleSearchPoli"
     />
     <component
       v-if="isSidebarReady"

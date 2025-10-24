@@ -3,7 +3,7 @@ import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomTextArea from "@/components/Base/CustomTextArea.vue";
 import GeneralIcon from "@/assets/icons/Avatar/general.svg";
-import { PhCalendarDots, PhClock } from "@phosphor-icons/vue";
+import { PhCaretLeft, PhCaretRight, PhCalendarDots, PhClock, PhPaperPlaneTilt } from "@phosphor-icons/vue";
 import { computed, onBeforeMount, ref, watch } from "vue";
 import CustomChip from "@/components/Base/CustomChip.vue";
 import { useForm } from "vee-validate";
@@ -14,6 +14,8 @@ import HistoriCatatanPerawat from "@/components/RekamMedis/CatatanPerawat/Histor
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
 import { epochToDate } from "@/utils/Helpers";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
+import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -32,6 +34,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  patientData: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const emit = defineEmits(["edit", "editAsesmen"]);
@@ -40,13 +46,13 @@ const currentMethod = ref(props.method);
 const modeChat = ref("Add");
 
 const messages = ref<any[]>([]);
+const petugasInput = ref<string>("-");
+const createdAt = ref<number | null>(null);
 
 const schemaCatatanPerawat = computed(() =>
-  toTypedSchema(
-    yup.object({
-      catatanPerawat: yup.string(),
-    })
-  )
+  yup.object({
+    catatanPerawat: yup.string(),
+  })
 );
 
 const {
@@ -101,12 +107,7 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat(
         if (response && response.payload) {
           rekamMedisStore.setAsesmentRekamMedisData(response.payload);
           resetForm();
-          const responseCatatan = await rekamMedisStore.getCatatan(
-            props.sessionUuid
-          );
-          if (responseCatatan && responseCatatan.payload) {
-            messages.value = responseCatatan.payload;
-          }
+          await setFormData();
         }
       } catch (error) {
         console.error("Failed to post data", error);
@@ -139,7 +140,7 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat(
       emit("edit", newReplyMessage);
       resetForm();
     }
-    modeChat.value = "";
+    modeChat.value = "Add";
     replyMessageRole.value = null;
     editMessageRole.value = null;
     editMessageIndex.value = null;
@@ -147,27 +148,108 @@ const onSubmitCatatanPerawat = handleSubmitCatatanPerawat(
 );
 
 const setFormData = async () => {
-  if (rekamMedisStore.openedRekamMedis.data.catatanPerawat) {
+  if (!props.sessionUuid) {
+    messages.value = [];
+    petugasInput.value = "-";
+    createdAt.value = null;
+    resetForm();
+    return;
+  }
+  try {
     const responseCatatan = await rekamMedisStore.getCatatan(props.sessionUuid);
     if (responseCatatan && responseCatatan.payload) {
-      messages.value = responseCatatan.payload;
+      messages.value = responseCatatan.payload.data || [];
+      petugasInput.value = responseCatatan.payload.petugas || "-";
+      createdAt.value = responseCatatan.payload.createdAt || null;
+    } else {
+      messages.value = [];
+      petugasInput.value = "-";
+      createdAt.value = null;
     }
-  } else resetForm();
+  } catch (error) {
+    console.error("Gagal mengambil catatan perawat:", error);
+    messages.value = [];
+    petugasInput.value = "-";
+    createdAt.value = null;
+  }
 };
 
 onBeforeMount(() => {
   setFormData();
 });
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
 });
 
 const compareDialog = ref(false);
-const showDialogCompare = () => {
+const historyData = ref<Array<any> | null>(null);
+const historyPageIndex = ref(0);
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
+
+const fetchHistoryData = async () => {
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noRm: props.patientData?.patient?.noRm,
+      key: "catatan_perawat",
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
+    });
+
+    if (response && response.payload) {
+      historyData.value = response.payload;
+      historyPageIndex.value = 0;
+    } else {
+      historyData.value = null;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data compare:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const showDialogCompare = async () => {
+  await fetchHistoryData();
   compareDialog.value = true;
+};
+
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (compareDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+    }
+});
+
+const currentHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value];
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 1 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value--;
+  }
+};
+
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value++;
+  }
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -231,113 +313,83 @@ defineExpose({
                 message.isMe
                   ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
                   : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
-                'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
-                message.textLama
-                  ? 'flex-col-reverse gap-4 py-4 justify-center'
-                  : 'items-center',
+                'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex items-center',
               ]"
             >
               {{ message.message }}
-              <div
-                v-if="message.textLama"
-                class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
-              >
-                <div class="flex justify-start">
-                  <span class="font-semibold text-adameds-300">
-                    {{ message.roleYangDibalas }}
-                  </span>
-                </div>
-                <hr class="border-t my-2 border-[#E2E8F0]" />
-                <div class="text-black">{{ message.textLama }}</div>
-              </div>
-            </div>
-            <div
-              :class="message.isMe ? 'justify-start' : 'justify-end'"
-              class="flex gap-4"
-            >
-              <button
-                v-for="action in message.actions"
-                :key="action.text"
-                v-if="currentMethod == 'form'"
-                class="flex items-center gap-2 font-medium text-SM"
-                :class="[
-                  action.text === 'Edit' ? 'text-info-300' : 'text-adameds-300',
-                ]"
-                @click="handleActionClick(action.text, message, index)"
-              >
-                <component :is="action.icon" :size="16" />
-                {{ action.text }}
-              </button>
             </div>
           </div>
         </div>
-
-        <hr class="border-grey-200 my-2.5" v-if="currentMethod == 'form'" />
-        <div v-if="currentMethod == 'form'" class="space-y-2.5">
-          <CustomChip
-            v-if="replyMessageRole || editMessageRole"
-            :label="
-              modeChat === 'Balas'
-                ? `Membalas Pesan ${replyMessageRole}`
-                : `Edit Pesan ${editMessageRole}`
-            "
-            selected-color="border-0 bg-adameds-300"
-            :showCheckedIcon="false"
-            bgColor="bg-adameds-300"
-            textColor="text-white"
-            borderColor="border-transparent"
-            customClass="h-5 pr-[6px]"
-          />
-          <div class="space-y-2.5">
-            <CustomTextArea
-              v-model="catatanPerawat"
-              label="Catatan Antar Perawat"
-              placeholder="Ketik Catatan..."
-            />
-            <CustomButton
-              :full="true"
-              icon="PhPaperPlaneTilt"
-              label="Kirim Catatan"
-              @click="onSubmitCatatanPerawat"
-            />
-          </div>
+        
+        <div v-if="currentMethod == 'form'">
+            <hr class="border-grey-200 my-2.5" />
+            <div class="space-y-2.5">
+                <CustomTextArea
+                    v-model="catatanPerawat"
+                    label="Catatan Antar Perawat"
+                    placeholder="Ketik Catatan..."
+                />
+                <CustomButton
+                    :full="true"
+                    icon="PhPaperPlaneTilt"
+                    label="Kirim Catatan"
+                    @click="onSubmitCatatanPerawat"
+                />
+            </div>
+        </div>
+        
+        <div v-if="currentMethod === 'detail'" class="flex flex-col gap-[19px] py-2">
+          <hr class="border-grey-200 my-2.5" />
+          <CustomInfoRow label="Petugas Input" :value="petugasInput" />
+          <CustomInfoRow label="Jam Input" :value="createdAt ? String(epochToDate(createdAt, 'time')) : '-'" />
         </div>
       </div>
-      <!-- Dialog compare -->
-      <CustomDialog
-        class=""
-        v-model:visible="compareDialog"
-        width="80%"
-        noScroll
-      >
+
+      <CustomDialog class="" v-model:visible="compareDialog" width="80%" noScroll>
         <template #header>Catatan Perawat</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
-            <div class="flex flex-col overflow-auto">
-              <div class="mb-[18px] flex justify-between">
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] h-full overflow-auto">
+            
+            <div class="flex flex-col overflow-auto pr-4">
+              <div class="mb-[18px] flex justify-between items-center">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
                 </div>
-                <div class="flex">
+                <div class="flex items-center">
+                  <CustomSelect
+                    v-model="selectedFilter"
+                    :options="filterOptions"
+                    optionLabel="name"
+                    optionValue="value"
+                    :show-label="false"
+                    class="w-40 mr-4"
+                  />
                   <CustomButton
-                    @click="() => {}"
+                    @click="previousHistory"
+                    :disabled="!canGoToPrevious"
                     class="!rounded-md mr-[10px]"
                     size="small"
-                    icon="PhCaretLeft"
-                  />
+                  >
+                    <PhCaretLeft :size="16" />
+                  </CustomButton>
                   <CustomButton
-                    @click="() => {}"
+                    @click="nextHistory"
+                    :disabled="!canGoToNext"
                     class="!rounded-md"
                     size="small"
-                    icon="PhCaretRight"
-                  />
+                  >
+                    <PhCaretRight :size="16" />
+                  </CustomButton>
                 </div>
               </div>
-              <div class="overflow-auto grow">
-                <HistoriCatatanPerawat />
+              <div>
+                <HistoriCatatanPerawat v-if="currentHistoryItem" :history="currentHistoryItem" />
+                <div v-else class="text-center text-grey-400 self-start pt-4 whitespace-nowrap">Tidak ada riwayat.</div>
               </div>
             </div>
+
             <div class="border border-adameds-300 mx-[15px]"></div>
+
             <div class="flex flex-col overflow-hidden">
               <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
                 <div
@@ -346,22 +398,20 @@ defineExpose({
                   class="flex items-start gap-2.5"
                   :class="{ 'flex-row-reverse': message.isMe }"
                 >
-                  <img :src="message.avatar" alt="Avatar" />
+                  <img :src="GeneralIcon" alt="Avatar" />
                   <div class="space-y-2.5">
                     <div class="flex items-center w-full gap-5">
                       <div class="font-semibold text-adameds-300 text-SM">
-                        {{ message.role }}
+                        {{ message.isMe ? "Anda" : message.name }}
                       </div>
-                      <div
-                        class="flex gap-2.5 font-medium text-SM text-grey-400"
-                      >
+                      <div class="flex gap-2.5 font-medium text-SM text-grey-400">
                         <div class="flex items-center gap-[2px]">
                           <PhCalendarDots :size="12" weight="fill" />
-                          {{ message.date }}
+                          {{ epochToDate(message.time, "date") }}
                         </div>
                         <div class="flex items-center gap-[2px]">
                           <PhClock :size="12" weight="fill" />
-                          {{ message.time }}
+                          {{ epochToDate(message.time, "time") }}
                         </div>
                       </div>
                     </div>
@@ -370,113 +420,56 @@ defineExpose({
                         message.isMe
                           ? 'rounded-tl-[10px] rounded-br-[10px] rounded-bl-[10px]'
                           : 'rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
-                        'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex',
-                        message.textLama
-                          ? 'flex-col-reverse gap-4 py-4 justify-center'
-                          : 'items-center',
+                        'min-h-[45px] bg-adameds-50 px-4 text-SM font-normal flex items-center',
                       ]"
                     >
-                      {{ message.text }}
-
-                      <div
-                        v-if="message.textLama"
-                        class="rounded-md bg-grey-50 p-2.5 border border-[#3DD5C6]"
-                      >
-                        <div class="flex justify-start">
-                          <span class="font-semibold text-adameds-300">
-                            {{ message.roleYangDibalas }}
-                          </span>
-                        </div>
-                        <hr class="border-t my-2 border-[#E2E8F0]" />
-                        <div class="text-black">{{ message.textLama }}</div>
-                      </div>
-                    </div>
-                    <div
-                      :class="message.isMe ? 'justify-start' : 'justify-end'"
-                      class="flex gap-4"
-                    >
-                      <button
-                        v-for="action in message.actions"
-                        :key="action.text"
-                        v-if="currentMethod == 'form'"
-                        class="flex items-center gap-2 font-medium text-SM"
-                        :class="[
-                          action.text === 'Edit'
-                            ? 'text-info-300'
-                            : 'text-adameds-300',
-                        ]"
-                        @click="handleActionClick(action.text, message, index)"
-                      >
-                        <component :is="action.icon" :size="16" />
-                        {{ action.text }}
-                      </button>
+                      {{ message.message }}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <hr
-                  class="border-grey-200 my-2.5"
-                  v-if="currentMethod == 'form'"
+              <hr class="border-grey-200 my-2.5" />
+              <div class="space-y-2.5">
+                <CustomTextArea
+                  v-model="catatanPerawat"
+                  label="Catatan Antar Perawat"
+                  placeholder="Ketik Catatan..."
                 />
-                <div v-if="currentMethod == 'form'" class="space-y-2.5">
-                  <CustomChip
-                    v-if="replyMessageRole || editMessageRole"
-                    :label="
-                      modeChat === 'Balas'
-                        ? `Membalas Pesan ${replyMessageRole}`
-                        : `Edit Pesan ${editMessageRole}`
-                    "
-                    selected-color="border-0 bg-adameds-300"
-                    :showCheckedIcon="false"
-                    bgColor="bg-adameds-300"
-                    textColor="text-white"
-                    borderColor="border-transparent"
-                    customClass="h-5 pr-[6px]"
-                  />
-                  <div class="space-y-2.5">
-                    <CustomTextArea
-                      v-model="catatanPerawat"
-                      label="Catatan Antar Perawat"
-                      placeholder="Ketik Catatan..."
-                    />
-                    <CustomButton
-                      :full="true"
-                      icon="PhPaperPlaneTilt"
-                      label="Kirim Catatan"
-                      @click="onSubmitCatatanPerawat"
-                    />
-                  </div>
-                </div>
+                <CustomButton
+                  :full="true"
+                  icon="PhPaperPlaneTilt"
+                  label="Kirim Catatan"
+                  @click="onSubmitCatatanPerawat"
+                />
               </div>
             </div>
           </div>
         </template>
         <template #footer>
-          <div class="flex items-end justify-end gap-3">
-            <CustomButton
-              v-if="currentMethod == 'form'"
-              label="Reset"
-              textColor="text-grey-300"
-              backgroundColor="bg-transparent"
-              borderColor="border-2 border-grey-200"
-            />
-            <CustomButton
-              v-if="currentMethod == 'form'"
-              label="Simpan"
-              @click="() => {}"
-            />
-            <CustomButton
-              v-if="currentMethod == 'detail'"
-              label="Edit"
-              @click="emit('editAsesmen')"
-            />
-          </div>
-        </template>
+          </template>
       </CustomDialog>
     </template>
-    <template #footer v-if="currentMethod == 'detail'">
-      <div class="flex items-end justify-end gap-3">
-        <CustomButton label="Edit" @click="emit('editAsesmen')" />
+    
+    <template #footer>
+      <div v-if="currentMethod == 'detail'" class="flex items-end justify-end gap-3">
+          <CustomButton
+            @click="emit('editAsesmen')"
+            label="Edit"
+          />
+        </div>
+      <div v-else class="flex items-end justify-end gap-3">
+        <CustomButton
+            @click="resetForm"
+            label="Reset"
+            textColor="text-[#9DA4B1]"
+            backgroundColor="bg-transparent"
+            borderColor="border-2 border-[#9DA4B1]"
+          />
+        <CustomButton
+          @click="onSubmitCatatanPerawat"
+          label="Simpan"
+        />
       </div>
     </template>
   </CustomAccordion>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onBeforeMount, computed, watch } from "vue";
+import { ref, onBeforeMount, computed, watch, onBeforeUpdate } from "vue";
 import { useForm, useFieldArray, ErrorMessage } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/yup";
 import * as yup from "yup";
@@ -15,12 +15,15 @@ import SuratKeteranganSehat from "./SuratKeteranganSehat.vue";
 import SuratRujukan from "./SuratRujukan.vue";
 import SuratKeteranganMeninggal from "./SuratKeteranganMeninggal.vue";
 import SuratResepKacamata from "./SuratResepKacamata.vue";
+import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+const rekamMedisStore = useRekamMedisStore();
 
 // Schema validasi menggunakan yup
 const schema = toTypedSchema(
   yup.object({
     datas: yup.array().of(
       yup.object({
+        file_uuid: yup.string(),
         namaSurat: yup.string().required("Nama surat harus diisi"),
         dataSurat: yup.object().default({}),
       })
@@ -36,9 +39,42 @@ const { errors, handleSubmit, resetForm, setValues } = useForm({
 // Field array untuk "datas"
 const { remove, push, fields, update } = useFieldArray("datas");
 
-// Fungsi submit
-const onSubmit = handleSubmit((values: any) => {
-  console.log("Semua data:", values);
+const onSubmit = handleSubmit(async (values) => {
+  const allSuratData = values.datas;
+
+  if (!allSuratData || allSuratData.length === 0) {
+    alert("Tidak ada surat untuk disimpan.");
+    return;
+  }
+  const rekamMedisUuid = rekamMedisStore.openedRekamMedis?.rekam_medisUuid;
+  if (!rekamMedisUuid) {
+    alert("Error: rekam_medis_uuid tidak ditemukan.");
+    return;
+  }
+  const apiPayloads = allSuratData.map((surat: any) => {
+    const suratInfo = itemsSurat.value.find(item => item.name === surat.namaSurat);
+    
+    return {
+      rekam_medis_uuid: rekamMedisUuid,
+      file: surat.dataSurat, 
+      file_type: suratInfo?.type, 
+      file_format: "json",
+      admission_type: "rj",
+      nomor_surat: surat.dataSurat.noSurat,
+    };
+  });
+
+  try {
+    const promises = apiPayloads.map(payload => rekamMedisStore.createFiles(payload));
+    await Promise.all(promises);
+
+    alert("Semua surat berhasil disimpan!");
+    resetData();
+
+  } catch (error) {
+    console.error("Gagal menyimpan satu atau lebih surat:", error);
+    alert("Terjadi kesalahan saat menyimpan surat. Silakan coba lagi.");
+  }
 });
 
 // Data array untuk ListSurat dan item Surat
@@ -47,99 +83,203 @@ const tipePeriksa = ref();
 const selectedSurat = ref<any[]>([]);
 const cariSurat = ref("");
 const itemsSurat = ref([
-  { name: "Surat Kontrol Rawat Jalan" },
-  { name: "Surat Permohonan Rawat Inap (SPRI)" },
-  { name: "Surat Keterangan Sakit" },
-  { name: "Surat Keterangan Sehat" },
-  { name: "Surat Rujukan" },
-  { name: "Surat Keterangan Meninggal" },
-  { name: "Surat Resep Kacamata" },
+  { name: "Surat Kontrol Rawat Jalan", type: "surat_kontrol_rawat_jalan" },
+  { name: "Surat Permohonan Rawat Inap (SPRI)", type: "surat_permohonan_rawat_inap" },
+  { name: "Surat Keterangan Sakit", type: "surat_keterangan_sakit" },
+  { name: "Surat Keterangan Sehat", type: "surat_keterangan_sehat" },
+  { name: "Surat Rujukan", type: "surat_rujuk_keluar_faskes" },
+  { name: "Surat Keterangan Meninggal", type: "surat_keterangan_meninggal" },
+  { name: "Surat Resep Kacamata", type: "resep_kacamata" },
 ]);
 
-// Set data awal form saat mount
 onBeforeMount(() => {
-  setValues({
-    datas: [
-      { namaSurat: "Surat Kontrol Rawat Jalan", dataSurat: {} },
-      { namaSurat: "Surat Kontrol Rawat Jalan", dataSurat: {} },
-    ],
-  });
+  loadSuratFromServer();
 });
 
-// Fungsi untuk menambahkan item surat ke selectedSurat
-const addToSelectedItems = (item: string) => {
-  const selectedItemSurat = itemsSurat.value.find(
-    (surat) => surat.name === item
-  );
-  if (selectedItemSurat) {
-    selectedSurat.value.push({
-      namaSurat: selectedItemSurat.name,
-      dataSurat: {},
+const loadSuratFromServer = async () => {
+  try {
+    const rekamMedisUuid = rekamMedisStore.openedRekamMedis?.meta?.rekamMedisUuid;
+    if (!rekamMedisUuid) {
+      console.error("Gagal memuat surat: rekamMedisUuid tidak ditemukan.");
+      return;
+    }
+
+    const response = await rekamMedisStore.getSurat({ rekamMedisUuid });
+    const suratFromServer = response.payload; 
+
+    if (!Array.isArray(suratFromServer)) {
+        console.error("Data yang diterima dari server bukan array:", suratFromServer);
+        setValues({ datas: [] });
+        return;
+    }
+
+    const formattedData = suratFromServer.map((surat: any) => {
+      const suratInfo = itemsSurat.value.find(item => item.type === surat.fileType);
+      
+      return {
+        file_uuid: surat.uuid, 
+        namaSurat: suratInfo ? suratInfo.name : 'Surat Tidak Dikenali',
+        dataSurat: typeof surat.file === 'string' ? JSON.parse(surat.file) : surat.file,
+      };
     });
-    cariSurat.value = "";
+
+    setValues({
+      datas: formattedData,
+    });
+
+  } catch (error) {
+    console.error("Gagal memuat data surat dari server:", error);
+    setValues({ datas: [] });
   }
 };
 
-// Fungsi untuk menghapus item surat dari selectedSurat
+const addToSelectedItems = async (itemName: string) => {
+  if (!itemName) return;
+  const selectedItemSurat = itemsSurat.value.find((s) => s.name === itemName);
+
+  if (selectedItemSurat && selectedItemSurat.type) {
+    try {
+      const response = await rekamMedisStore.GenerateNS({ type: selectedItemSurat.type });
+
+
+      const nomorSurat = response?.payload?.data;
+
+      if (!nomorSurat) {
+        console.error("API Error: 'nomorSurat' tidak ditemukan di response.data.", response);
+        return;
+      }
+      
+      selectedSurat.value.push({
+        namaSurat: selectedItemSurat.name,
+        nomorSurat: nomorSurat,
+        dataSurat: { noSurat: nomorSurat },
+      });
+
+      cariSurat.value = "";
+
+    } catch (error) {
+      console.error("Gagal men-generate nomor surat (error di blok catch):", error);
+    }
+  }
+};
+
 const removeFromSelectedItems = (index: number) => {
   selectedSurat.value.splice(index, 1);
 };
 
-// Watcher untuk mereset `selectedSurat` dan `cariSurat` saat modal ditutup
+const handleDeleteSurat = async (index: number) => {
+  const suratToDelete = fields.value[index].value as { file_uuid: string };
+  const fileUuid = suratToDelete.file_uuid;
+
+  if (!fileUuid) {
+    console.warn("file_uuid tidak ditemukan. Menghapus dari UI saja.");
+    remove(index);
+    return;
+  }
+
+  try {
+    await rekamMedisStore.deleteFiles({ file_uuid: fileUuid });
+    remove(index);
+  } catch (error) {
+    console.error(`Gagal menghapus file dengan UUID ${fileUuid}:`, error);
+  }
+};
+
+
 watch(buatSurat, (newValue) => {
   if (!newValue) {
     cariSurat.value = "";
     selectedSurat.value = [];
+    handleRef.value = [];
   }
 });
 
-// Fungsi reset form, termasuk selectedSurat dan cariSurat
 const resetData = () => {
   resetForm({
     values: {
-      datas: [], // Reset `datas` dengan array kosong atau data default
+      datas: [],
     },
   });
-  selectedSurat.value = []; // Reset `selectedSurat`
-  cariSurat.value = ""; // Reset `cariSurat`
+  selectedSurat.value = [];
+  cariSurat.value = "";
 };
 
 
 
 const handleRef = ref<any[]>([]);
 
-// Fungsi untuk submit semua form anak-anak
-const submitChildForm = () => {
-  handleRef.value.forEach((comp: any, index: number) => {
-    if (comp && comp.submitForm) {
-      comp.submitForm();
-    }
-  });
 
-  // Simpan dataSurat dari setiap form anak
-  handleRef.value.forEach((comp: any, index: number) => {
-    if (comp && comp.localDataSurat) {
-      selectedSurat.value[index].dataSurat = comp.localDataSurat.value;
-    }
-  });
+const submitChildForm = async () => {
+  try {
+    const submissionPromises = handleRef.value.map(comp => {
+      if (comp && comp.submitForm) {
+        return comp.submitForm();
+      }
+      return Promise.resolve(null);
+    });
 
-  console.log("selected:", selectedSurat.value);
+    const allFormsData = (await Promise.all(submissionPromises)).filter(data => data !== null);
+
+    const uniqueFormsData = Array.from(new Map(allFormsData.map(item => [item.noSurat, item])).values());
+
+    const rekamMedisUuid = rekamMedisStore.openedRekamMedis?.meta?.rekamMedisUuid;
+    if (!rekamMedisUuid) {
+      alert("Error: rekamMedisUuid tidak ditemukan.");
+      return;
+    }
+
+    const apiPayloads = uniqueFormsData.map((formData: any) => {
+      const originalSurat = selectedSurat.value.find(s => s.nomorSurat === formData.noSurat);
+      const suratInfo = itemsSurat.value.find(item => item.name === originalSurat?.namaSurat);
+
+      return {
+        rekamMedisUuid: rekamMedisUuid,
+        file: JSON.stringify(formData),
+        fileType: suratInfo?.type,
+        fileFormat: "json",
+        admissionType: "rj",
+        nomorSurat: formData.noSurat,
+      };
+    });
+
+    if (apiPayloads.length === 0 && handleRef.value.length > 0) {
+       throw new Error("Gagal membentuk payload, data surat tidak cocok.");
+    }
+
+    if (apiPayloads.length === 0) {
+      alert("Tidak ada surat baru untuk disimpan.");
+      return;
+    }
+    console.log("Payload FINAL (Setelah De-duplikasi) yang dikirim:", apiPayloads);
+    const promises = apiPayloads.map(payload => rekamMedisStore.createFiles(payload));
+    await Promise.all(promises);
+
+    alert("Surat baru berhasil disimpan!");
+
+    uniqueFormsData.forEach((formData: any) => {
+      const originalSurat = selectedSurat.value.find(s => s.nomorSurat === formData.noSurat);
+      if (originalSurat) {
+        push({
+          namaSurat: originalSurat.namaSurat,
+          dataSurat: formData,
+        });
+      }
+    });
+    
+    buatSurat.value = false;
+
+  } catch (error) {
+    console.error("Gagal menyimpan surat:", error);
+    alert("Proses simpan gagal. Harap pastikan semua field yang wajib diisi sudah benar.");
+  }
 };
 
-const updateSuratData = (index: number, dataSurat: any) => {
-  selectedSurat.value[index].dataSurat = dataSurat;
-  console.log("data:", dataSurat);
-  console.log("selected:", selectedSurat.value);
-  // console.log(nonProxyData);
-  selectedSurat.value.forEach((item) => {
-    push(item);
-  });
-  selectedSurat.value = [];
-  buatSurat.value = false;
-  const dataFormSurat = JSON.parse(JSON.stringify(fields));
-  console.log("fields",fields);
-  
+const updateSuratData = (index: number, dataFromChild: any) => {
+  if (selectedSurat.value[index]) {
+    selectedSurat.value[index].dataSurat = dataFromChild;
+  }
 };
+
 const accordion = ref<HTMLCanvasElement | null>(null);
 const open = () => {
   if (accordion.value) {
@@ -149,6 +289,12 @@ const open = () => {
 const close = () => {
   if (accordion.value) {
     (accordion.value as any).close();
+  }
+};
+
+const setItemRef = (el: any) => {
+  if (el) {
+    handleRef.value.push(el);
   }
 };
 
@@ -209,7 +355,7 @@ defineExpose({
                 label=""
                 background-color="bg-danger-300 rounded-lg"
                 class="h-6 w-[26px] p-0"
-                @click="() => remove(slotProps.index)"
+                @click="handleDeleteSurat(slotProps.index)"
               >
                 <img src="@/assets/icons/delete.svg" alt="" />
               </CustomButton>
@@ -262,64 +408,48 @@ defineExpose({
               />
 
               <div v-for="(surat, index) in selectedSurat" :key="index">
-                <!-- Surat Control Rawat Jalan -->
-                <SuratControlRawatJalan
-                  v-if="surat.namaSurat === 'Surat Kontrol Rawat Jalan'"
-                  @onDelete="() => removeFromSelectedItems(index)"
-                  @update:dataSurat="(data) => updateSuratData(index, data)"
-                  ref="handleRef"
-                  :attr="index"
-                />
-                <!-- Surat Permohonan Rawat Inap (SPRI) -->
-                <SuratPermohonanRawatInap
-                  v-if="
-                    surat.namaSurat === 'Surat Permohonan Rawat Inap (SPRI)'
-                  "
-                  @onDelete="() => removeFromSelectedItems(index)"
-                  @update:dataSurat="(data) => updateSuratData(index, data)"
-                  ref="handleRef"
-                  :attr="index"
-                />
-                <!-- Surat Keterangan Sakit -->
-                <SuratKeteranganSakit
-                  v-if="surat.namaSurat === 'Surat Keterangan Sakit'"
-                  @onDelete="() => removeFromSelectedItems(index)"
-                  @update:dataSurat="(data) => updateSuratData(index, data)"
-                  ref="handleRef"
-                  :attr="index"
-                />
-                <!-- Surat Keterangan Sehat -->
-                <SuratKeteranganSehat
-                  v-if="surat.namaSurat === 'Surat Keterangan Sehat'"
-                  @onDelete="() => removeFromSelectedItems(index)"
-                  @update:dataSurat="(data) => updateSuratData(index, data)"
-                  ref="handleRef"
-                  :attr="index"
-                />
-                <!-- Surat Rujukan -->
-                <SuratRujukan
-                  v-if="surat.namaSurat === 'Surat Rujukan'"
-                  @onDelete="() => removeFromSelectedItems(index)"
-                  @update:dataSurat="(data) => updateSuratData(index, data)"
-                  ref="handleRef"
-                  :attr="index"
-                />
-                <!-- Surat Keterangan Meninggal -->
-                <SuratKeteranganMeninggal
-                  v-if="surat.namaSurat === 'Surat Keterangan Meninggal'"
-                  @onDelete="() => removeFromSelectedItems(index)"
-                  @update:dataSurat="(data) => updateSuratData(index, data)"
-                  ref="handleRef"
-                  :attr="index"
-                />
-                <!-- Surat Resep Kacamata -->
-                <SuratResepKacamata
-                  v-if="surat.namaSurat === 'Surat Resep Kacamata'"
-                  @onDelete="() => removeFromSelectedItems(index)"
-                  @update:dataSurat="(data) => updateSuratData(index, data)"
-                  ref="handleRef"
-                  :attr="index"
-                />
+                  <SuratControlRawatJalan
+                    v-if="surat.namaSurat === 'Surat Kontrol Rawat Jalan'"
+                    :nomor-surat="surat.nomorSurat" @onDelete="() => removeFromSelectedItems(index)"
+                    @update:dataSurat="(data) => updateSuratData(index, data)"
+                    :ref="setItemRef" :attr="index"
+                  />
+                  <SuratPermohonanRawatInap
+                    v-if="surat.namaSurat === 'Surat Permohonan Rawat Inap (SPRI)'"
+                    :nomor-surat="surat.nomorSurat" @onDelete="() => removeFromSelectedItems(index)"
+                    @update:dataSurat="(data) => updateSuratData(index, data)"
+                    :ref="setItemRef" :attr="index"
+                  />
+                  <SuratKeteranganSakit
+                    v-if="surat.namaSurat === 'Surat Keterangan Sakit'"
+                    :nomor-surat="surat.nomorSurat" @onDelete="() => removeFromSelectedItems(index)"
+                    @update:dataSurat="(data) => updateSuratData(index, data)"
+                    :ref="setItemRef" :attr="index"
+                  />
+                  <SuratKeteranganSehat
+                    v-if="surat.namaSurat === 'Surat Keterangan Sehat'"
+                    :nomor-surat="surat.nomorSurat" @onDelete="() => removeFromSelectedItems(index)"
+                    @update:dataSurat="(data) => updateSuratData(index, data)"
+                    :ref="setItemRef" :attr="index"
+                  />
+                  <SuratRujukan
+                    v-if="surat.namaSurat === 'Surat Rujukan'"
+                    :nomor-surat="surat.nomorSurat" @onDelete="() => removeFromSelectedItems(index)"
+                    @update:dataSurat="(data) => updateSuratData(index, data)"
+                    :ref="setItemRef" :attr="index"
+                  />
+                  <SuratKeteranganMeninggal
+                    v-if="surat.namaSurat === 'Surat Keterangan Meninggal'"
+                    :nomor-surat="surat.nomorSurat" @onDelete="() => removeFromSelectedItems(index)"
+                    @update:dataSurat="(data) => updateSuratData(index, data)"
+                    :ref="setItemRef" :attr="index"
+                  />
+                  <SuratResepKacamata
+                    v-if="surat.namaSurat === 'Surat Resep Kacamata'"
+                    :nomor-surat="surat.nomorSurat" @onDelete="() => removeFromSelectedItems(index)"
+                    @update:dataSurat="(data) => updateSuratData(index, data)"
+                    :ref="setItemRef" :attr="index"
+                  />
               </div>
             </div>
           </div>

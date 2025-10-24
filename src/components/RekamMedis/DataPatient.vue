@@ -83,11 +83,18 @@ const showPatientData = ref(true);
               <div class="font-semibold underline mb-[5px] leading-5">
                 Tanggal Pelayanan
               </div>
-              <div class="text-normal">
-                {{ epochToDate(patientData?.tanggalDirawat, "date") }}
-                <span class="text-grey-400">{{
-                  epochToDate(patientData?.tanggalDirawat, "time")
-                }}</span>
+              <div v-if="(rmType === 'rawat-inap' || rmType === 'igd') && patientData?.tanggalDirawat" class="text-normal">
+                {{ epochToDate(patientData?.tanggalDirawat, "date") || '-' }}
+                <span class="text-grey-400">
+                  {{ epochToDate(patientData?.tanggalDirawat, "time") || '-' }}
+                </span>
+              </div>
+
+              <div v-else-if="rmType === 'rawat-jalan' && patientData?.tanggalPeriksa" class="text-normal">
+                {{ epochToDate(patientData?.tanggalPeriksa, "date") || '-' }}
+                <span class="text-grey-400">
+                  {{ epochToDate(patientData?.tanggalPeriksa, "time") || '-' }}
+                </span>
               </div>
             </div>
             <!-- FIXME Belum Ada -->
@@ -108,7 +115,7 @@ const showPatientData = ref(true);
                 />
               </div>
               <div class="text-normal">
-                {{
+                <!-- {{
                   `${
                     patientData?.practitioner?.pegawai?.firstTitle &&
                     patientData?.practitioner?.pegawai?.firstTitle != "-"
@@ -120,17 +127,28 @@ const showPatientData = ref(true);
                       ? `${patientData?.practitioner?.pegawai?.lastTitle} `
                       : ""
                   }`
-                }}
+                }}   -->
+                  {{ patientData?.practitioner?.pegawai?.firstTitle || '' }}
+                  {{ patientData?.practitioner?.pegawai?.nama || '' }}
+                  {{ patientData?.practitioner?.pegawai?.lastTitle || '' }}
               </div>
             </div>
             <!-- FIXME Belum Ada -->
+            <!-- Data yang ditampilkan masih bukan tanggal asesmen terakhir ( masih belum sesuai )-->
             <div class="mr-5">
               <div class="font-semibold underline mb-[5px] leading-5">
-                Asesmen Terakhir
-              </div>
-              <div class="text-normal">
-                25 Okt 2023 <span class="text-grey-400">09:00</span>
-              </div>
+              Asesmen Terakhir
+            </div>
+            <div v-if="rmType === 'rawat-inap' && patientData?.tanggalDirawat" class="text-normal">
+              {{ epochToDate(patientData?.tanggalDirawat, "date") }}
+              <span class="text-grey-400">
+                {{ epochToDate(patientData?.tanggalDirawat, "time") }}
+              </span>
+            </div>
+
+            <div v-else class="text-normal">
+              -
+            </div>
             </div>
             <div class="mr-5">
               <div class="font-semibold underline mb-[5px] leading-5">
@@ -238,6 +256,7 @@ const showPatientData = ref(true);
                 </div>
                 <!-- FIXME Kurang Data -->
                 <div
+                {{ warnaTriase }}
                   v-if="rmType == 'igd' && summaryData.warnaTriase != '-'"
                   class="`font-semibold text-center h-5 leading-5 rounded-[50px] shadow-lg`"
                   :class="[

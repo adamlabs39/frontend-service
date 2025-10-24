@@ -21,7 +21,6 @@ const props = defineProps({
     type: Array,
     required: true,
   },
- 
 });
 
 const emit = defineEmits([
@@ -184,8 +183,8 @@ const resetSelection = () => {
     :value="dataPatient"
     tableStyle="min-width: 50rem"
     scrollable
-    scrollHeight="70vh"
-    class=""
+    scrollHeight="flex"
+    class="flex-1"
     @row-click="openDialogRM($event)"
     @row-select-all="handleSelectedAll"
     @row-unselect-all="handleUnselectAll"
@@ -203,9 +202,10 @@ const resetSelection = () => {
           <div
             class="max-w-[75px] mx-auto bg-adameds-50 text-adameds-300 rounded-[5px] text-SM font-semibold"
           >
-            {{ slotProps.data.polyclinic.code }}
+            {{ slotProps.data.noAntrianPoli }}
           </div>
           <div class="text-SM">{{ slotProps.data.noReg }}</div>
+          <div class="text-SM">{{ slotProps.data.noPelayanan }}</div>
         </div>
       </template>
     </Column>
@@ -363,33 +363,25 @@ const resetSelection = () => {
           <CustomChip
             :showCheckedIcon="false"
             :label="
-              slotProps.data.statusRj == '0'
+              String(slotProps.data.statusRj) == '0'
                 ? 'DIBATALKAN'
-                : slotProps.data.statusRj == '1'
-                ? 'BOOKING'
-                : slotProps.data.statusRj == '2'
+                : ['1', '2', '3'].includes(String(slotProps.data.statusRj))
                 ? 'ANTRI'
-                : slotProps.data.statusRj == '3'
-                ? 'ANTRIAN'
-                : slotProps.data.statusRj == '4'
+                : String(slotProps.data.statusRj) == '4'
                 ? 'DIPERIKSA'
                 : 'DISCHARGE'
             "
-            customClass="h-5 pr-[5px] mr-[5px] border-none"
+            customClass="h-5 pr-[9px] mr-[5px] border-none"
             :bgColor="
-              slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3'
-                ? 'bg-grey-75'
-                : slotProps.data.statusRj == '4'
-                ? 'bg-blueJeans-75'
-                : 'bg-danger-75'
+              String(slotProps.data.statusRj) == '0'
+                ? 'bg-danger-300' 
+                : ['1', '2', '3'].includes(String(slotProps.data.statusRj))
+                ? 'bg-warning-300' 
+                : String(slotProps.data.statusRj) == '4'
+                ? 'bg-blueJeans-300'
+                : 'bg-danger-300'
             "
-            :textColor="
-              slotProps.data.statusRj == '2' || slotProps.data.statusRj == '3'
-                ? 'text-grey-400'
-                : slotProps.data.statusRj == '4'
-                ? 'text-blueJeans-300'
-                : 'text-danger-300'
-            "
+            :textColor="'text-white'"
           />
         </div>
         <div v-if="slotProps.data.statusPembayaran">
@@ -422,6 +414,7 @@ const resetSelection = () => {
   <!-- Else -->
   <NoData v-else />
   <MedicalRecord ref="medicalRecord" rmType="rawat-jalan" :patientData="selectedPatientForRM" />
+   
 </template>
 
 <style>

@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import { useDrugReturStore } from "@/stores/farmasi/DrugRetur";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import { utilsStore } from "@/stores/utils";
-import { dateToEpoch, epochToDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -23,9 +23,9 @@ const StockLocationStore = useStockLocationStore();
 const StockLocationPayload = ref<any[]>([]);
 
 // Fetch Stock Location
-const fetchStockLocation = async () => {  
+const fetchStockLocation = async () => {
   try {
-    const response = await StockLocationStore.getApi();
+    const response = await StockLocationStore.getApi(1, 999999);
 
     if (response && response.payload) {
       StockLocationPayload.value = response.payload;
@@ -41,9 +41,9 @@ const fetchStockLocation = async () => {
 // Filter Search Data
 const searchData = () => {
   searchQuery.value;
-  dateToEpoch(startDateFilter.value);
-  dateToEpoch(endDateFilter.value);
-  fetchDrugRetur();
+  dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+    dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
+    fetchDrugRetur();
 };
 
 // Filter Reset Data
@@ -51,6 +51,8 @@ const resetData = () => {
   searchQuery.value = "";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
+  selectedLocation.value = [];
+  selectedPaymentMethod.value = [];
   fetchDrugRetur();
 };
 
@@ -113,14 +115,19 @@ const fetchDrugRetur = async () => {
   const selectedPayment = [...selectedPaymentMethod.value];
   const selectedLocationNew = [...selectedLocation.value];
 
+  // Bangun parameter query: satu pilihan -> kirim nilai; >1/0 -> kosong (tanpa filter)
+  const paymentParam = selectedPayment.length !== 1 ? "" : selectedPayment[0];
+  const locationParam =
+    selectedLocationNew.length !== 1 ? "" : selectedLocationNew[0];
+
   try {
     const response = await DrugReturStore.getApi(
       selectMedicine.value,
-      dateToEpoch(startDateFilter.value),
-      dateToEpoch(endDateFilter.value),
+      dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
       searchQuery.value,
-      selectedLocationNew.join(""),
-      selectedPayment.join(""),
+      locationParam,
+      paymentParam,
       DrugReturObatProperties.value.page,
       DrugReturObatProperties.value.page_size
     );
@@ -156,24 +163,30 @@ const handlePage = (event: any) => {
 const metaKeyObat = ref(true);
 const selectedDataObat = ref();
 const dialogDetailObat = ref(false);
-const refDialogDetailObat = ref<InstanceType<typeof DialogDetailObat> | null>(null);
+const refDialogDetailObat = ref<InstanceType<typeof DialogDetailObat> | null>(
+  null
+);
 
 const onRowSelectObat = (event: any) => {
-  selectedDataObat.value = event.data;  
+  selectedDataObat.value = event.data;
   dialogDetailObat.value = true;
-  refDialogDetailObat.value?.fetchDrugReturDetail(selectedDataObat.value.uuid);  
+  refDialogDetailObat.value?.fetchDrugReturDetail(selectedDataObat.value.uuid);
 };
 
 // Selected Row Alkes
 const metaKeyAlkes = ref(true);
 const selectedDataAlkes = ref();
 const dialogDetailAlkes = ref(false);
-const refDialogDetailAlkes = ref<InstanceType<typeof DialogDetailAlkes> | null>(null);
+const refDialogDetailAlkes = ref<InstanceType<typeof DialogDetailAlkes> | null>(
+  null
+);
 
 const onRowSelectAlkes = (event: any) => {
-  selectedDataAlkes.value = event.data;  
+  selectedDataAlkes.value = event.data;
   dialogDetailAlkes.value = true;
-  refDialogDetailAlkes.value?.fetchDrugReturDetail(selectedDataAlkes.value.uuid);  
+  refDialogDetailAlkes.value?.fetchDrugReturDetail(
+    selectedDataAlkes.value.uuid
+  );
 };
 
 onMounted(() => {
@@ -183,18 +196,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
+  <div class="flex overflow-hidden flex-col h-full">
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDrugRetur" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchDrugRetur"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Retur Obat & Material',
@@ -247,8 +264,12 @@ onMounted(() => {
                 label="OBAT"
                 :outlined="selectMedicine != 'obat'"
                 borderColor="border-adameds-300"
-                :textColor="selectMedicine != 'obat' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectMedicine != 'obat' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectMedicine != 'obat' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectMedicine != 'obat' ? 'bg-transparent' : 'bg-adameds-300'
+                "
                 class="font-semibold"
               />
               <CustomButton
@@ -256,34 +277,41 @@ onMounted(() => {
                 label="MATERIAL"
                 :outlined="selectMedicine != 'alkes'"
                 borderColor="border-adameds-300"
-                :textColor="selectMedicine != 'alkes' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectMedicine != 'alkes' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectMedicine != 'alkes' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectMedicine != 'alkes'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
                 class="ml-[20px] font-semibold"
               />
             </div>
 
             <!-- Filter Lokasi -->
-            <div class="flex mt-[15px]">
-              <div class="w-[12%] font-semibold text-SM text-grey-300">
+            <div class="flex mt-[15px] items-center">
+              <div class="w-[10%] font-semibold text-SM text-grey-300">
                 Filter Lokasi
               </div>
-              <div class="flex">
+              <div class="flex items-center">
                 <span class="text-grey-300">|</span>
-                <CustomChip
-                  v-for="(item, index) in StockLocationPayload"
-                  :key="item + index"
-                  :label="item.name"
-                  :value="item.uuid"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-50"
-                  iconColor="text-adameds-300"
-                  textColor="text-adameds-300"
-                  customClass="h-6 w-100"
-                  class="ml-[10px]"
-                  :isSelected="selectedLocation.includes(item.uuid)"
-                  @selected="selectLocation"
-                  selectedColor="bg-adameds-300 border-adameds-300"
-                />
+                <div class="grid grid-cols-9 items-center gap-[10px] ml-[10px]">
+                  <CustomChip
+                    v-for="(item, index) in StockLocationPayload"
+                    :key="item + index"
+                    :label="item.name"
+                    :value="item.uuid"
+                    borderColor="border-adameds-300"
+                    bgColor="bg-adameds-50"
+                    iconColor="text-adameds-300"
+                    textColor="text-adameds-300"
+                    customClass="h-6 w-100 min-h-[30px]"
+                    :isSelected="selectedLocation.includes(item.uuid)"
+                    @selected="selectLocation"
+                    selectedColor="bg-adameds-300 border-adameds-300"
+                  />
+                </div>
               </div>
             </div>
 
@@ -368,7 +396,9 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <p>{{ slotProps.data.noResep }}</p>
-                <p class="mt-[3px]">{{ epochToDate(slotProps.data.orderDate, "dateTime") }}</p>
+                <p class="mt-[3px]">
+                  {{ epochToDate(slotProps.data.orderDate, "dateTime") }}
+                </p>
               </div>
             </template>
           </Column>
@@ -438,9 +468,19 @@ onMounted(() => {
               <div class="">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'"
-                  :bgColor="slotProps.data.status == 'Lunas' ? 'bg-success-300' : 'bg-danger-75'"
-                  :textColor="slotProps.data.status == 'Lunas' ? 'text-white' : 'text-danger-300'"
+                  :label="
+                    slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'
+                  "
+                  :bgColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'bg-success-300'
+                      : 'bg-danger-75'
+                  "
+                  :textColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'text-white'
+                      : 'text-danger-300'
+                  "
                   customClass="h-6 pr-[6px] border-none"
                 />
               </div>
@@ -474,7 +514,9 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <p>{{ slotProps.data.noOrderAlkes }}</p>
-                <p class="mt-[3px]">{{ epochToDate(slotProps.data.createdAt, "dateTime") }}</p>
+                <p class="mt-[3px]">
+                  {{ epochToDate(slotProps.data.createdAt, "dateTime") }}
+                </p>
               </div>
             </template>
           </Column>
@@ -544,9 +586,19 @@ onMounted(() => {
               <div class="">
                 <CustomChip
                   :showCheckedIcon="false"
-                  :label="slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'"
-                  :bgColor="slotProps.data.status == 'Lunas' ? 'bg-success-300' : 'bg-danger-75'"
-                  :textColor="slotProps.data.status == 'Lunas' ? 'text-white' : 'text-danger-300'"
+                  :label="
+                    slotProps.data.status == 'Lunas' ? 'Lunas' : 'Piutang'
+                  "
+                  :bgColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'bg-success-300'
+                      : 'bg-danger-75'
+                  "
+                  :textColor="
+                    slotProps.data.status == 'Lunas'
+                      ? 'text-white'
+                      : 'text-danger-300'
+                  "
                   customClass="h-6 pr-[6px] border-none"
                 />
               </div>

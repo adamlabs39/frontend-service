@@ -10,7 +10,7 @@ import { useConfigLayarAntrianStore } from "@/stores/antrian/configLayarAntrian"
 import { utilsStore } from "@/stores/utils";
 import EditDataKonfigurasiLayar from "./SectionEditKonfigurasiLayar.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
-import DeleteModalComponent from "../../ModalComponents/DeleteModalComponent.vue";
+import DeleteModalComponent from "@/components/Antrian/DeleteModalComponent.vue";
 
 const pageType = ref("");
 
@@ -535,7 +535,7 @@ const selectedPatient = ref([]);
                   :label="konten"
                   bgColor="bg-adameds-300"
                   textColor="text-white"
-                  customClass="h-5 border-none mr-[5px]"
+                  customClass="h-auto min-h-[20px] mr-[5px] max-w-[320px] whitespace-normal break-words leading-tight px-2 py-1 border-none"
                 />
               </div>
               <div v-else class="flex justify-center items-center">

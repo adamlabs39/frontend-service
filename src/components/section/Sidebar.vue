@@ -4,8 +4,8 @@ import { linkType } from "@/utils/Enum";
 import Accordion from "../utils/Accordion.vue";
 import { PhMagnifyingGlass, PhStack } from "@phosphor-icons/vue";
 import { useRouter, useRoute, routerKey } from "vue-router";
-import { ref, watch, onMounted } from "vue";
-import dialogPermintaanBarang from "@/views/Stok/PermintaanBarang.vue";
+import { onMounted, ref, watch } from "vue";
+import dialogStokView from "@/views/Stok/StokView.vue";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import { useStorageLocationStore } from "@/stores/inventory/storageLocation";
 import CustomSelect from "../Base/CustomSelect.vue";
@@ -64,7 +64,7 @@ const router = useRouter();
 const route = useRoute();
 
 const showSidebar = ref(true);
-const DialogPermintaanBarang = ref(false);
+const DialogStokView = ref(false);
 const emit = defineEmits(["filterChanged", "update:searchSidebar"]);
 const searchSidebar = ref("");
 
@@ -161,7 +161,10 @@ onMounted(() => {
               class="mb-[20px] mt-[20px]"
             />
           </div>
-          <div v-for="(section, index) in props.sidebarBodyList" class="text-SM">
+          <div
+            v-for="(section, index) in props.sidebarBodyList"
+            class="text-SM"
+          >
             <hr :class="[index == 0 ? 'mb-[20px]' : 'my-[20px]']" />
             <div v-for="row1 in section.child">
               <div v-if="showSidebar">
@@ -277,13 +280,13 @@ onMounted(() => {
       <div
         v-if="showStockBtn && showSidebar"
         class="flex justify-center flex-none w-full h-10 align-middle bg-white rounded-md cursor-pointer text-adameds-300"
-        @click="DialogPermintaanBarang = true"
+        @click="DialogStokView = true"
       >
         <PhStack size="20" weight="bold" class="mr-[10px] my-auto" />
         <div class="my-auto font-semibold">Stok</div>
       </div>
-      <dialogPermintaanBarang
-        v-model:isDialogVisible="DialogPermintaanBarang"
+      <dialogStokView
+        v-model:isDialogVisible="DialogStokView"
         :full-screen="true"
       />
     </div>
