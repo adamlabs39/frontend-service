@@ -98,7 +98,6 @@ const showDialogCompare = async () => {
   compareDialog.value = true;
 };
 
-// Panggil ulang API setiap kali filter berubah
 watch(selectedFilter, async (newValue, oldValue) => {
   if (compareDialog.value && newValue !== oldValue) {
     await fetchHistoryData();

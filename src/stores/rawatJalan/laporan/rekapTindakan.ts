@@ -12,7 +12,6 @@ export const useRekapTindakanStore = defineStore({
                 limit = 10,
                 name = "",
                 practitionerUuid = "",
-                // month = 0,
                 timestamp = 0,
                 lokasiUuid = "",
                 pelayanan = "",
@@ -21,7 +20,6 @@ export const useRekapTindakanStore = defineStore({
 
         ) {
             let url = `/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitionerUuid}&lokasi_uuid=${lokasiUuid}&pelayanan=${pelayanan}`
-            // Menyusun URL query dengan kondisi untuk mont
              if (timestamp !== 0) {
                 url += `&timestamp=${timestamp}`;
             }
@@ -33,7 +31,6 @@ export const useRekapTindakanStore = defineStore({
                 limit = 10,
                 name = "",
                 practitionerUuid = "",
-                // month = 0,
                 timestamp = 0,
                 lokasiUuid = "",
                 pelayanan = "",
@@ -42,7 +39,6 @@ export const useRekapTindakanStore = defineStore({
 
         ) {
             let url = `/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitionerUuid}&lokasi_uuid=${lokasiUuid}&pelayanan=${pelayanan}&all=aktif`
-            // Menyusun URL query dengan kondisi untuk mont
              if (timestamp !== 0) {
                 url += `&timestamp=${timestamp}`;
             }

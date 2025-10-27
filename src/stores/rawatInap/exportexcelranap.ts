@@ -39,7 +39,6 @@ export const downloadExportExcelKunjunganRanap = async (filter?: any) => {
     const response = await riStore.DownloadKunjunganRanap(filter || {});
 
     console.log("Full response object from store action:", response);
-    // [FIX 1] Ambil array dari dalam response.payload.data
     const reportData = response.payload.data;
 
     if (!reportData || reportData.length === 0) {
@@ -136,7 +135,6 @@ export const downloadExportExcelKunjunganRanap = async (filter?: any) => {
     XLSX.utils.sheet_add_aoa(worksheet, [title], { origin: "A1" });
     XLSX.utils.sheet_add_aoa(worksheet, [tanggalExport], { origin: "A2" });
 
-    // Sesuaikan merge cell dengan jumlah kolom baru
     worksheet["!merges"] = [
       { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
       { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } },
@@ -155,7 +153,6 @@ export const downloadExportExcelKunjunganRanap = async (filter?: any) => {
       alignment: { horizontal: "center", vertical: "center" },
       font: { bold: true },
     };
-    // Sesuaikan header range
     const headers = ["A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4", "I4", "J4", "K4", "L4", "M4", "N4", "O4"];
     headers.forEach(header => {
       if (worksheet[header]) {
@@ -306,7 +303,7 @@ export const downloadExportExcelRekapTindakanPasien = async (
     }
 
     let bulanTahunTerpilih = "Bulan Ini";
-    let namaBulan = "Ini"; // Default
+    let namaBulan = "Ini";
 
     if (filter?.timestamp) {
       const tanggal = new Date(Number(filter.timestamp) * 1000);

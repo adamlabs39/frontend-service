@@ -286,10 +286,9 @@ export const downloadExportExcelBatalRawatJalan = async (
         return;
       }
 
-      // --- PERUBAHAN DIMULAI DI SINI ---
 
       let bulanTahunTerpilih = "Bulan Ini";
-      let namaBulan = "Jumlah"; // Default header
+      let namaBulan = "Jumlah";
       if (filter?.timestamp) {
         const tanggal = new Date(Number(filter.timestamp) * 1000);
 

@@ -211,9 +211,6 @@ const osIsRetinopati = ref(false);
 const historyData = ref<any>(null);
 const historyDialog = ref(false);
 const historyPageIndex = ref(0);
-// const showDialogHistory = () => {
-//   historyDialog.value = true;
-// };
 
 const showDialogHistory = async () => {
   if (!props.patientData?.patient) {
