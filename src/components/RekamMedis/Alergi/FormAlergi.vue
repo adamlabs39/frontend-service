@@ -147,9 +147,9 @@ const setFormData = () => {
       reaksiAlergi: tempAlergi.reaksiAlergi,
       tingkatKeparahanAlergi: tempAlergi.tingkatKeparahanAlergi,
       efekSampingAlergi: tempAlergi.efekSampingAlergi,
-      tanggalKejadianAlergi: epochToDate(
-        tempAlergi.tanggalKejadianAlergi as number
-      ) as Date,
+      tanggalKejadianAlergi: new Date(
+        (tempAlergi.tanggalKejadianAlergi as number) * 1000
+      ),
       petugas: tempAlergi.petugas,
       createdAt: tempAlergi.createdAt,
     });
@@ -331,7 +331,7 @@ defineExpose({
         <CustomInfoRow label="Efek Samping" :value="efekSampingAlergi" />
         <CustomInfoRow
           label="Tanggal Kejadian"
-          :value="`${tanggalKejadianAlergi}`"
+          :value="tanggalKejadianAlergi ? `${String(tanggalKejadianAlergi.getDate()).padStart(2, '0')} - ${String(tanggalKejadianAlergi.getMonth() + 1).padStart(2, '0')} - ${tanggalKejadianAlergi.getFullYear()}` : '-'"
         />
         <hr class="border-grey-200" />
         <CustomInfoRow label="Petugas Input" :value="petugas" />

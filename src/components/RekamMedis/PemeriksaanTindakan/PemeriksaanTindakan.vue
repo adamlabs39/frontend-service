@@ -15,6 +15,7 @@ import { utilsStore } from "@/stores/utils";
 import { usePraktisiStore } from "@/stores/datamaster/praktisi";
 import { useTarifStore } from "@/stores/datamaster/tarif";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { epochToDate } from "@/utils/Helpers";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -34,6 +35,10 @@ const props = defineProps({
   sessionUuid: {
     type: String,
     default: "",
+  },
+  patientData: {
+    type: Object as () => any,
+    default: () => ({}),
   },
 });
 
@@ -321,9 +326,85 @@ watch(tambahTindakan, (newValue) => {
   }
 });
 
+const historyData = ref<any[] | null>(null);
+const historyPageIndex = ref(0);
 const historyDialog = ref(false);
-const showDialogHistory = () => {
+
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
+
+const fetchHistoryData = async () => {
+  if (!props.patientData?.patient) {
+    console.warn("Data Pasien tidak lengkap untuk mengambil riwayat.");
+    historyData.value = null;
+    return;
+  }
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData.noPelayanan || props.patientData.no_pelayanan,
+      noRm: props.patientData.patient.noRm,
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
+      key: "pemeriksaan_tindakan", // Key untuk tindakan
+    });
+
+    if (response && response.payload && response.payload.length > 0) {
+      historyData.value = response.payload;
+    } else {
+      historyData.value = null;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data perbandingan untuk tindakan:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const showDialogHistory = async () => {
+  await fetchHistoryData();
+  historyPageIndex.value = 0; 
   historyDialog.value = true;
+};
+
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (historyDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+        historyPageIndex.value = 0;
+    }
+});
+
+const leftHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value];
+});
+
+const rightHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  return historyData.value[historyPageIndex.value + 1];
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 2 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value -= 2;
+  }
+};
+
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value += 2;
+  }
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -693,47 +774,46 @@ defineExpose({
         </CustomDialog>
         <!-- Dialog History -->
         <CustomDialog class="" v-model:visible="historyDialog" width="80%">
-          <template #header>Pemeriksaan Fisik</template>
+          <template #header>Riwayat Pemeriksaan dan Tindakan</template>
           <template #body>
-            <div
-              class="pt-5 grid grid-cols-[1fr_min-content_1fr_min-content_1fr]"
-            >
-              <div class="mb-[18px] flex justify-between col-span-5">
-                <div class="font-semibold text-grey-400">
-                  Riwayat Sebelumnya
-                </div>
-                <div class="flex">
+            <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+              <div class="mb-[18px] flex justify-between col-span-3 items-center">
+                <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
+                <div class="flex items-center">
+                  <CustomSelect
+                    v-model="selectedFilter"
+                    :options="filterOptions"
+                    optionLabel="name"
+                    optionValue="value"
+                    :show-label="false"
+                    class="w-40 mr-4"
+                  />
                   <CustomButton
-                    @click="() => {}"
+                    @click="previousHistory"
+                    :disabled="!canGoToPrevious"
                     class="!rounded-md mr-[10px]"
                     size="small"
                     icon="PhCaretLeft"
                   />
                   <CustomButton
-                    @click="() => {}"
+                    @click="nextHistory"
+                    :disabled="!canGoToNext"
                     class="!rounded-md"
                     size="small"
                     icon="PhCaretRight"
                   />
                 </div>
               </div>
-              <HistoriPemeriksaanTindakan
-                @showDetail="detail = true"
-                :fields="fields"
-                :product="products"
-              />
+
+              <div class="overflow-auto pr-4">
+                <HistoriPemeriksaanTindakan :history="leftHistoryItem" />
+              </div>
+
               <div class="border border-adameds-300 mx-[15px]"></div>
-              <HistoriPemeriksaanTindakan
-                @showDetail="detail = true"
-                :fields="fields"
-                :product="products"
-              />
-              <div class="border border-adameds-300 mx-[15px]"></div>
-              <HistoriPemeriksaanTindakan
-                @showDetail="detail = true"
-                :fields="fields"
-                :product="products"
-              />
+
+              <div class="overflow-auto pl-4">
+                <HistoriPemeriksaanTindakan :history="rightHistoryItem" />
+              </div>
             </div>
           </template>
         </CustomDialog>

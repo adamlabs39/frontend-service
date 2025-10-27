@@ -162,6 +162,7 @@ const props = defineProps({
       initialState="0"
       :rmUuid="rmUuid"
       :sessionUuid="sessionUuid"
+      :patientData="patientData"
     />
     <PemeriksaanFisik
       v-if="selectedAssesment == 'Pemeriksaan Fisik'"
@@ -174,6 +175,9 @@ const props = defineProps({
     <PemeriksaanGigi
       v-if="selectedAssesment == 'Pemeriksaan Gigi'"
       initialState="0"
+      :rm-uuid="rmUuid"
+      :session-uuid="sessionUuid"
+      :patient-data="patientData"
     />
     <PemeriksaanMata
       v-if="selectedAssesment == 'Pemeriksaan Mata'"
