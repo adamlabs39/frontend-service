@@ -57,15 +57,6 @@ const [status] = defineField("status");
 
 const emit = defineEmits(["update:isDialogVisible", "close", "data-updated"]);
 
-// Helper: terjemahkan error API ke bahasa Indonesia yang mudah dipahami
-const translateValidationError = (err: unknown) => {
-  const rawMsg = (err as any)?.message?.toLowerCase?.() || "";
-  if (rawMsg.includes("validation error")) {
-    return "Kode Aturan Pakai sudah terdaftar di faskes ini. Gunakan kode lain.";
-  }
-  return "Gagal menyimpan data. Silakan coba lagi.";
-};
-
 const onSubmit = handleSubmit(async (values: any) => {
   try {
     if (method.value === "edit") {
@@ -82,7 +73,6 @@ const onSubmit = handleSubmit(async (values: any) => {
     }
     closeDialog();
   } catch (error) {
-    setFieldError("code", translateValidationError(error));
     console.error("Failed to process the data:", error);
   }
 });
