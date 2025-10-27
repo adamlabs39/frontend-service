@@ -31,6 +31,10 @@ const props = defineProps({
     type: Object as PropType<any>,
     default: null,
   },
+  patientData: {
+    type: Object as PropType<any>,
+    required: true,
+  },
 });
 
 const listHasilPinhole = ref([
@@ -203,9 +207,70 @@ const osGlaukoma = ref();
 const osHasilGlaukoma = ref();
 const osIsRetinopati = ref(false);
 
+
+const historyData = ref<any>(null);
 const historyDialog = ref(false);
-const showDialogHistory = () => {
-  historyDialog.value = true;
+const historyPageIndex = ref(0);
+// const showDialogHistory = () => {
+//   historyDialog.value = true;
+// };
+
+const showDialogHistory = async () => {
+  if (!props.patientData?.patient) {
+    console.warn("Data Pasien tidak lengkap untuk mengambil riwayat.");
+    historyData.value = null;
+    historyDialog.value = true;
+    return;
+  }
+  
+  try {
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData.noPelayanan || props.patientData.no_pelayanan,
+      noRm: props.patientData.patient.noRm,
+      jenisKunjungan: props.patientData.jenisKunjungan,
+      key: "pemeriksaan_mata",
+    });
+
+    if (response && response.payload && response.payload.length > 0) {
+      historyData.value = response.payload;
+    } else {
+      historyData.value = null;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data perbandingan untuk skrining mata:", error);
+    historyData.value = null;
+  } finally {
+    historyPageIndex.value = 0; 
+    historyDialog.value = true;
+  }
+};
+
+const leftHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value].data;
+});
+
+const rightHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  return historyData.value[historyPageIndex.value + 1].data;
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 2 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value -= 2;
+  }
+};
+
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value += 2;
+  }
 };
 
 // NOTE Get Text
@@ -1085,34 +1150,39 @@ defineExpose({
       </div>
 
       <!-- Dialog History -->
-      <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+       <CustomDialog class="" v-model:visible="historyDialog" width="80%">
         <template #header>Pemeriksaan Fisik</template>
         <template #body>
-          <div
-            class="pt-5 grid grid-cols-[1fr_min-content_1fr_min-content_1fr]"
-          >
-            <div class="mb-[18px] flex justify-between col-span-5">
+          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+            <div class="mb-[18px] flex justify-between col-span-3">
               <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
               <div class="flex">
                 <CustomButton
-                  @click="() => {}"
+                  @click="previousHistory"
+                  :disabled="!canGoToPrevious"
                   class="!rounded-md mr-[10px]"
                   size="small"
                   icon="PhCaretLeft"
                 />
                 <CustomButton
-                  @click="() => {}"
+                  @click="nextHistory"
+                  :disabled="!canGoToNext"
                   class="!rounded-md"
                   size="small"
                   icon="PhCaretRight"
                 />
               </div>
             </div>
-            <HistoriSkriningMata />
+
+            <div class="overflow-auto pr-4">
+              <HistoriSkriningMata :history="leftHistoryItem" />
+            </div>
+
             <div class="border border-adameds-300 mx-[15px]"></div>
-            <HistoriSkriningMata />
-            <div class="border border-adameds-300 mx-[15px]"></div>
-            <HistoriSkriningMata />
+
+            <div class="overflow-auto pl-4">
+              <HistoriSkriningMata :history="rightHistoryItem" />
+            </div>
           </div>
         </template>
       </CustomDialog>

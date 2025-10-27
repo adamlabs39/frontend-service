@@ -199,6 +199,8 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
+          :historyKey="'pemeriksaan_mata'"
+          :patientData="patientData"
         />
         <CustomCanvasDrawer
           ref="canvasAnterior"
@@ -207,6 +209,8 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
+          :historyKey="'pemeriksaan_mata'"
+          :patientData="patientData"
         />
         <CustomCanvasDrawer
           ref="canvasPosterior"
@@ -215,6 +219,8 @@ defineExpose({
           class="mb-[10px]"
           :method="method"
           :openedData="rekamMedisStore.openedRekamMedis.data.pemeriksaanMata"
+          :historyKey="'pemeriksaan_mata'"
+          :patientData="patientData"
         />
         <SkriningMata
           ref="skriningMata"

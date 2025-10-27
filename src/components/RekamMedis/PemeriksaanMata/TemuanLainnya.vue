@@ -8,6 +8,7 @@ import HistoriTemuanLainnya from "@/components/RekamMedis/PemeriksaanMata/Histor
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -29,7 +30,7 @@ const props = defineProps({
   patientData: {
     type: Object,
     default: () => ({}),
-  }, 
+  },
 });
 
 const temuanLainnya = ref();
@@ -49,19 +50,38 @@ const setFormData = () => {
 
 const historyData = ref<Array<any> | null>(null);
 const historyPageIndex = ref(0);
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
 
 const fetchHistoryData = async () => {
   try {
     storeUtils.setLoading(true);
     const response = await rekamMedisStore.getCompare({
-      noPelayanan: props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
+      noPelayanan:
+        props.patientData?.noPelayanan || props.patientData?.no_pelayanan,
       noRm: props.patientData?.patient?.noRm,
       key: "pemeriksaan_mata",
+      jenisKunjungan:
+        selectedFilter.value === "semua" ? "" : selectedFilter.value,
     });
 
     if (response && response.payload) {
-      historyData.value = response.payload;
-      historyPageIndex.value = 0;
+      const filteredPayload = response.payload.filter(
+        (item: any) => item.data && item.data.temuanLainnya
+      );
+      historyData.value = filteredPayload.map((item: any) => {
+        return {
+          ...item.data,
+          createdAt: item.data.createdAt, 
+        };
+      });
+
+      historyPageIndex.value = 0; 
     } else {
       historyData.value = null;
     }
@@ -78,15 +98,25 @@ const showDialogCompare = async () => {
   compareDialog.value = true;
 };
 
+// Panggil ulang API setiap kali filter berubah
+watch(selectedFilter, async (newValue, oldValue) => {
+  if (compareDialog.value && newValue !== oldValue) {
+    await fetchHistoryData();
+  }
+});
+
 const leftHistoryItem = computed(() => {
-  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  if (!historyData.value || !historyData.value[historyPageIndex.value])
+    return null;
   return historyData.value[historyPageIndex.value];
 });
 
 const rightHistoryItem = computed(() => {
-  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1])
+    return null;
   return historyData.value[historyPageIndex.value + 1];
 });
+
 const canGoToPrevious = computed(() => historyPageIndex.value > 0);
 const canGoToNext = computed(() => {
   if (!historyData.value) return false;
@@ -156,49 +186,83 @@ defineExpose({
         <CustomInfoRow v-else label="Temuan Lainnya" :value="temuanLainnya" />
       </div>
 
-      <!-- Dialog compare -->
       <CustomDialog
         class=""
         v-model:visible="compareDialog"
         width="80%"
         noScroll
       >
-        <template #header>Antropometri</template>
+        <template #header>Temuan Lainnya</template>
         <template #body>
-          <div class="pt-5 grid grid-cols-[1fr_min-content_1fr] overflow-auto">
-            <div class="flex flex-col overflow-auto">
-              <div class="mb-[18px] flex justify-between">
+          <div
+            class="pt-5 grid grid-cols-[1fr_min-content_1fr] h-full overflow-auto"
+          >
+            <div class="flex flex-col overflow-auto pr-4">
+              <div class="mb-[18px] flex justify-between items-center">
                 <div class="font-semibold text-grey-400">
                   Riwayat Sebelumnya
                 </div>
-                <div class="flex">
+                <div class="flex items-center">
+                  <CustomSelect
+                    v-model="selectedFilter"
+                    :options="filterOptions"
+                    optionLabel="name"
+                    optionValue="value"
+                    :show-label="false"
+                    class="w-40 mr-4"
+                  />
                   <CustomButton
-                    @click="() => {}"
+                    @click="previousHistory"
+                    :disabled="!canGoToPrevious"
                     class="!rounded-md mr-[10px]"
                     size="small"
                     icon="PhCaretLeft"
                   />
                   <CustomButton
-                    @click="() => {}"
+                    @click="nextHistory"
+                    :disabled="!canGoToNext"
                     class="!rounded-md"
                     size="small"
                     icon="PhCaretRight"
                   />
                 </div>
               </div>
-              <div class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto gap-x-4">
-                <HistoriTemuanLainnya v-if="leftHistoryItem" :history="leftHistoryItem.data" />
-                <div v-else class="text-center text-grey-400 self-start pt-4">Tidak ada riwayat.</div>
+              <div
+                class="grid grid-cols-[1fr_min-content_1fr] grow overflow-auto gap-x-4"
+              >
+                <HistoriTemuanLainnya
+                  v-if="leftHistoryItem"
+                  :history="leftHistoryItem"
+                />
+                <div
+                  v-else
+                  class="text-center text-grey-400 self-start pt-4 whitespace-nowrap"
+                >
+                  Tidak ada riwayat.
+                </div>
 
-                <div v-if="rightHistoryItem" class="border border-adameds-300"></div>
-                
-                <HistoriTemuanLainnya v-if="rightHistoryItem" :history="rightHistoryItem.data" />
+                <div
+                  v-if="rightHistoryItem"
+                  class="border border-adameds-300"
+                ></div>
+
+                <HistoriTemuanLainnya
+                  v-if="rightHistoryItem"
+                  :history="rightHistoryItem"
+                />
+                <div
+                  v-else
+                  class="text-center text-grey-400 self-start pt-4 whitespace-nowrap"
+                >
+                  Tidak ada riwayat.
+                </div>
               </div>
             </div>
             <div class="border border-adameds-300 mx-[15px]"></div>
             <div class="flex flex-col overflow-hidden">
               <div class="flex flex-col pb-1 overflow-auto gap-y-5 grow">
                 <CustomTextArea
+                  v-model="temuanLainnya"
                   label="Temuan Lainnya"
                   placeholder="Masukkan Temuan Lainnya..."
                 />
