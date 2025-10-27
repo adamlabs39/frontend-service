@@ -6,10 +6,10 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import Card from "primevue/card";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { usePurchaseAcceptanceStore } from "@/stores/inventory/purchaseAcceptance";
 import { utilsStore } from "@/stores/utils";
-import { formatPrice, epochToDate } from "@/utils/Helpers";
+import { formatPrice, epochToDate, formatStringDate } from "@/utils/Helpers";
 
 const props = defineProps({
     selectedDataUuid: { type: String, required: true },
@@ -32,6 +32,19 @@ const fetchDetail = async () => {
     }
 };
 
+// Kalkulasi PPN
+const ppnNominal = computed(() => {
+    if (!DetailPayload.value || !DetailPayload.value.items || !DetailPayload.value.ppn) {
+        return 0;
+    }
+    const subTotal = DetailPayload.value.items.reduce((total: any, item: { totalHarga: any; }) => {
+        return total + (item.totalHarga || 0);
+    }, 0);
+    const totalSetelahDiskon = subTotal - (DetailPayload.value.diskon || 0);
+    const nilaiPpn = totalSetelahDiskon * (DetailPayload.value.ppn / 100);
+    return Math.max(0, nilaiPpn);
+});
+
 onMounted(fetchDetail);
 </script>
 
@@ -41,7 +54,7 @@ onMounted(fetchDetail);
             <template #header>
                 <CustomAccordion :openWithHeader="false" noBorder initialState="0">
                     <template #header>
-                        <div class="flex items-center justify-between w-full p-4 border-b">
+                        <div class="flex items-center justify-between w-full p-2 ">
                             <div class="flex items-center">
                                 <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDetail" />
                                 <CustomBreadCrumb :home="{ label: 'Penerimaan Barang' }"
@@ -123,7 +136,7 @@ onMounted(fetchDetail);
                                 <div>
                                     <p class="font-bold underline">Tgl. Penerimaan</p>
                                     <p>{{ DetailPayload.tanggalPenerimaan ? epochToDate(DetailPayload.tanggalPenerimaan,
-                                        "dateTime") : '-' }}</p>
+                                        "date") : '-' }}</p>
                                 </div>
                                 <div>
                                     <p class="font-bold underline">No. Faktur</p>
@@ -133,7 +146,7 @@ onMounted(fetchDetail);
                                     <p class="font-bold underline">Tgl. Faktur</p>
                                     <p>{{ DetailPayload.tanggalFaktur ? epochToDate(DetailPayload.tanggalFaktur, "date")
                                         : '-'
-                                        }}</p>
+                                    }}</p>
                                 </div>
                                 <div>
                                     <p class="font-bold underline">No. Surat Jalan</p>
@@ -141,7 +154,7 @@ onMounted(fetchDetail);
                                 </div>
                                 <div>
                                     <p class="font-bold underline">Catatan</p>
-                                    <p>{{ DetailPayload.catatan || '-' }}</p>
+                                    <p>{{ DetailPayload.catatanPenerimaan || '-' }}</p>
                                 </div>
                             </div>
 
@@ -157,16 +170,15 @@ onMounted(fetchDetail);
                                     <Column field="qtyTerima" header="Terima" headerClass="bg-adameds-50"></Column>
                                     <Column field="satuanBeli" header="Satuan/Isi" headerClass="bg-adameds-50"></Column>
                                     <Column header="Exp. Date" headerClass="bg-adameds-50">
-                                        <template #body="slotProps">{{ slotProps.data.expDate ?
-                                            epochToDate(slotProps.data.expDate, "date") : '-' }}</template>
+                                        <template #body="slotProps">{{ formatStringDate(slotProps.data.expDate, "date") }} </template>
                                     </Column>
                                     <Column header="Harga Satuan" headerClass="bg-adameds-50 text-end">
                                         <template #body="slotProps">{{ formatPrice(slotProps.data.hargaSatuan)
-                                            }}</template>
+                                        }}</template>
                                     </Column>
                                     <Column header="Total" headerClass="bg-adameds-50 text-end">
                                         <template #body="slotProps">{{ formatPrice(slotProps.data.totalHarga)
-                                            }}</template>
+                                        }}</template>
                                     </Column>
                                 </DataTable>
                             </div>
@@ -174,24 +186,24 @@ onMounted(fetchDetail);
                     </template>
 
                     <template #footer>
-                        <div class="flex flex-col gap-4 p-4">
-                            <hr class="border-grey-200" />
+                        <div class="flex flex-col gap-4 p-2">
+                            <!-- <hr class="border-grey-200" /> -->
                             <div class="flex justify-between">
-                                <div class="flex gap-6 text-sm">
-                                    <div>
+                                <div class="flex gap-16 text-sm">
+                                    <div class="mr-12">
                                         <p class="font-semibold underline">Diskon</p>
                                         <p>{{ formatPrice(DetailPayload.diskon) }}</p>
                                     </div>
-                                    <div>
+                                    <div class="ml-12 mr-12">
                                         <p class="font-semibold underline">Materai</p>
                                         <p>{{ formatPrice(DetailPayload.materai) }}</p>
                                     </div>
-                                    <div>
+                                    <div class="ml-12">
                                         <p class="font-semibold underline">PPN</p>
-                                        <p>{{ formatPrice(DetailPayload.ppn) }}</p>
+                                        <p>{{ formatPrice(ppnNominal) }}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-5">
+                                <div class="flex items-center gap-5 mr-16">
                                     <hr class="h-3/4 border-x-[1px] border-adameds-300" />
                                     <div>
                                         <p class="font-semibold underline">Grand Total</p>
@@ -201,7 +213,7 @@ onMounted(fetchDetail);
                             </div>
                             <hr class="border-grey-200" />
                             <div class="flex justify-between text-sm">
-                                <div class="flex gap-6">
+                                <div class="flex gap-16">
                                     <div>
                                         <p class="font-semibold underline">Total Item</p>
                                         <p>{{ DetailPayload.totalItem || 0 }}</p>

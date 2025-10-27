@@ -9,6 +9,9 @@ export const useSupplierStore = defineStore({
     async getApi( page: number = 1, limit: number = 10, name: String = "", payload = {} ) {
       return apiInventoryGet(`/inventory/datamaster/supplier?page=${page}&limit=${limit}&name=${name}`, payload);
     },
+    async getApiAktif( payload = {} ) {
+      return apiInventoryGet(`/inventory/datamaster/supplier/aktif?status=true`, payload);
+    },
     async postApi(payload = {}) {
       return apiInventoryPost("/inventory/datamaster/supplier", payload);
     },

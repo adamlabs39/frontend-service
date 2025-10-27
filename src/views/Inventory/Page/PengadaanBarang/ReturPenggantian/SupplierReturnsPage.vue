@@ -15,6 +15,13 @@ import DialogInvoice from "./DialogInvoice.vue"
 import AddSupplierReturns from "./AddSupplierReturnsPage.vue";
 import DetailSupplierReturns from "./DetailSupplierReturnsPage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("retur");
 
@@ -58,7 +65,7 @@ const fetchSupplierReturns = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await SupplierReturnsStore.getApi(
-      '0196a8ca-1fda-71ca-a133-7383413ef200',
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       SupplierReturnsProperties.value.page,
@@ -78,6 +85,11 @@ const fetchSupplierReturns = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, () => {
+  SupplierReturnsProperties.value.page = 1; // Reset ke halaman pertama
+  fetchSupplierReturns();
+});
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {
@@ -217,6 +229,9 @@ onMounted(() => {
                   borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
                 <CustomChip v-if="slotProps.data.jenisItem == 'alkes'" label="ALKES" :showCheckedIcon="false"
                   borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="mr-[5px]" />
+                <CustomChip v-if="slotProps.data.jenisStok" :label="slotProps.data.jenisStok.toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" customClass="h-5" class="ml-2" />
               </div>
             </template>
           </Column>
@@ -240,7 +255,7 @@ onMounted(() => {
               <div class="flex items-center justify-center">
                 <CustomChip v-if="slotProps.data.status == 'retur'" label="RETUR" :showCheckedIcon="false"
                   borderColor="border-lavender-300" bgColor="bg-lavender-300" textColor="text-white" />
-                <CustomChip v-if="slotProps.data.status == 'diterima'" label="RETUR" :showCheckedIcon="false"
+                <CustomChip v-if="slotProps.data.status == 'terima'" label="DITERIMA" :showCheckedIcon="false"
                   borderColor="border-success-300" bgColor="bg-success-300" textColor="text-white" />
               </div>
             </template>

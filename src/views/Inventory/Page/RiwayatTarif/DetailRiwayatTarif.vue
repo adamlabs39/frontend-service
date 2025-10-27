@@ -1,97 +1,73 @@
 <script lang="ts" setup>
+// [DIUBAH] Import yang dibutuhkan untuk data dinamis
+import { useRateHistoryStore } from "@/stores/inventory/rateHistory";
+import { utilsStore } from "@/stores/utils";
+import { epochToDate, formatPrice } from "@/utils/Helpers";
 import CustomAccordion from "@/components/Base/CustomAccordion.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
 import CustomButton from "@/components/Base/CustomButton.vue";
-import CustomChip from "@/components/Base/CustomChip.vue";
-import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
-import CustomInputNumber from "@/components/Base/CustomInputNumber.vue";
-
 import Card from "primevue/card";
 import type { MenuItem } from "primevue/menuitem";
-import { computed, onMounted, ref, type PropType } from "vue";
-import CustomSelect from "@/components/Base/CustomSelect.vue";
+import { onMounted, ref, type PropType } from "vue";
 
+// [DIUBAH] Props sekarang menerima UUID, bukan seluruh objek data
 const props = defineProps({
-  pageType: {
+  selectedDataUuid: {
     type: String,
     required: true,
   },
-  dataBreadCrumb: {
-    type: Array as PropType<MenuItem[]>,
-    default: () => [],
-  },
-  detailData: {
-    type: Object,
-  },
 });
 
-const emit = defineEmits(["kembali", "diterima"]);
+const emit = defineEmits(["kembali"]);
 
-const konversiSatuanData = ref<any | null>(null);
-const riwayatPenerimaanPembelianData = ref<any | null>(null);
+// [BARU] State untuk menampung data dari API
+const detailData = ref<any>({}); // Menggunakan nama yang sama dengan yang ada di template
+
+// [BARU] State Management
+const RateHistoryStore = useRateHistoryStore();
+const UseUtilsStore = utilsStore();
+
+// [BARU] Fungsi untuk mengambil data detail dari API
+const fetchDetail = async () => {
+  UseUtilsStore.setLoading(true);
+  try {
+    const response = await RateHistoryStore.getApiDetail(props.selectedDataUuid);
+    detailData.value = response?.payload || {};
+  } catch (error) {
+    console.error("Gagal mengambil detail riwayat tarif:", error);
+    detailData.value = {}; // Pastikan tetap objek kosong jika error
+  } finally {
+    UseUtilsStore.setLoading(false);
+  }
+};
+
+// [DIUBAH] onMounted sekarang memanggil fungsi fetch, bukan membuat data statis
 onMounted(() => {
-  konversiSatuanData.value = [
-    {
-      jenisSatuan: "Satuan Penggunaan (Terkecil)",
-      satuan: "Pcs",
-      konversiIsi: 1,
-    },
-    {
-      jenisSatuan: "Satuan Pembelian (Terkecil)",
-      satuan: "Pcs",
-      konversiIsi: 1,
-    },
-  ];
-  riwayatPenerimaanPembelianData.value = [
-    {
-      tanggal: "01-01-2024",
-      expDate: "01-01-2025",
-      hargaDasar: 10000,
-      HNA: 10000,
-      HPP: 10000,
-    },
-    {
-      tanggal: "01-01-2024",
-      expDate: "01-01-2025",
-      hargaDasar: 10000,
-      HNA: 10000,
-      HPP: 10000,
-    },
-  ];
+  fetchDetail();
 });
 </script>
 
 <template>
   <!-- {{ detailData }} -->
-  <Card pt:body:class="h-full pt-0" pt:content:class="h-full">
+  <Card pt:body:class="h-full pt-0" class="h-full overflow-hidden overflow-y-auto">
     <template #header>
       <CustomAccordion :openWithHeader="false" noBorder initialState="0">
         <template #header>
           <div class="flex items-center justify-between w-full align-middle">
             <div class="flex items-center">
-              <CustomButton icon="PhArrowClockwise" class="mr-5" />
-              <CustomBreadCrumb
-                :home="{
-                  label: 'Riwayat Tarif',
-                  home: true,
-                }"
-                :model="[
-                  {
-                    label: detailData?.namaItem,
-                  },
-                ]"
-              >
+              <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDetail" />
+              <CustomBreadCrumb :home="{
+                label: 'Riwayat Tarif',
+                home: true,
+              }" :model="[
+                {
+                  label: detailData?.name,
+                },
+              ]">
               </CustomBreadCrumb>
             </div>
-            <CustomButton
-              @click="emit('kembali')"
-              icon="PhCaretLeft"
-              label="Kembali"
-              class="mr-[10px]"
-              outlined
-              borderColor="border-adameds-300"
-              textColor="text-adameds-300"
-            />
+            <CustomButton @click="emit('kembali')" icon="PhCaretLeft" label="Kembali" class="mr-[10px]" outlined
+              borderColor="border-adameds-300" textColor="text-adameds-300" />
           </div>
         </template>
         <template #content>
@@ -102,7 +78,7 @@ onMounted(() => {
                   <div>
                     <div class="font-semibold underline text-SM">Kode Item</div>
                     <div class="font-normal text-normal">
-                      {{ detailData?.kodeItem }}
+                      {{ detailData?.kodeItem || '-' }}
                     </div>
                   </div>
                 </div>
@@ -110,7 +86,7 @@ onMounted(() => {
                   <div>
                     <div class="font-semibold underline text-SM">Pabrik</div>
                     <div class="font-normal text-normal">
-                      {{ detailData?.pabrik }}
+                      {{ detailData?.pabrik || '-' }}
                     </div>
                   </div>
                 </div>
@@ -120,19 +96,19 @@ onMounted(() => {
                 <div>
                   <div class="font-semibold underline text-SM">Kategori</div>
                   <div class="font-normal text-normal">
-                    {{ detailData?.kategoriItem }}
+                    {{ detailData?.kategoriItem || '-' }}
                   </div>
                 </div>
                 <div>
                   <div class="font-semibold underline text-SM">Jenis Stok</div>
                   <div class="font-normal text-normal">
-                    {{ detailData?.jenisStok }}
+                    {{ detailData?.jenisStok || '-' }}
                   </div>
                 </div>
                 <div>
                   <div class="font-semibold underline text-SM">Jenis Item</div>
                   <div class="font-normal text-normal">
-                    {{ detailData?.jenisItem }}
+                    {{ detailData?.jenisItem || '-' }}
                   </div>
                 </div>
                 <div>
@@ -140,7 +116,7 @@ onMounted(() => {
                     Satuan Penggunaan
                   </div>
                   <div class="font-normal text-normal">
-                    {{ detailData?.satuanPenggunaan }}
+                    {{ detailData?.satuanPenggunaan || '-' }}
                   </div>
                 </div>
               </div>
@@ -152,21 +128,21 @@ onMounted(() => {
                       Harga Dasar
                     </div>
                     <div class="font-normal text-normal">
-                      Rp. {{ detailData?.hargaDasar }}
+                      Rp. {{ detailData?.hargaDasar || '-' }}
                     </div>
                   </div>
                   <div>
                     <div class="font-semibold underline text-SM">HNA</div>
                     <div class="font-normal text-normal">
-                      Rp. {{ detailData?.HNA }}
+                      Rp. {{ detailData?.hja|| '-' }}
                     </div>
                   </div>
                 </div>
                 <div class="grid grid-cols-2">
                   <div>
-                    <div class="font-semibold underline text-SM">HPP</div>
+                    <div class="font-semibold underline text-SM">HJA</div>
                     <div class="font-normal text-normal">
-                      Rp. {{ detailData?.HPP }}
+                      Rp. {{ detailData?.hpp || '-' }}
                     </div>
                   </div>
                 </div>
@@ -176,40 +152,21 @@ onMounted(() => {
           </div>
         </template>
         <template #collapseIcon>
-          <CustomButton
-            icon="PhCaretUp"
-            backgroundColor="bg-adameds-75"
-            textColor="text-adameds-300"
-          />
+          <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
         </template>
         <template #expandIcon>
-          <CustomButton
-            icon="PhCaretDown"
-            backgroundColor="bg-adameds-75"
-            textColor="text-adameds-300"
-          />
+          <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
         </template>
       </CustomAccordion>
     </template>
     <template #content>
-      <CustomAccordion
-        :openWithHeader="false"
-        noBorder
-        initialState="0"
-        header-class="-mt-4"
-      >
+      <CustomAccordion :openWithHeader="false" noBorder initialState="0" header-class="-mt-4">
         <template #header>
           <div class="-mx-4">Konversi Satuan</div>
         </template>
         <template #content>
-          <DataTable
-            :value="konversiSatuanData"
-            tableStyle="min-width: 50rem"
-            scrollable
-            class="-mx-[18px]"
-            scrollHeight="240px"
-            :pt="{ headerRow: 'text-SM' }"
-          >
+          <DataTable :value="detailData.conversions" tableStyle="min-width: 50rem" scrollable class="-mx-[18px]"
+            scrollHeight="240px" :pt="{ headerRow: 'text-SM' }">
             <Column field="jenisSatuan" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">Jenis Satuan</div>
@@ -217,7 +174,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.jenisSatuan }}
+                    {{ slotProps.data.satuanPembelian || '-' }}
                   </div>
                 </div>
               </template>
@@ -229,7 +186,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.satuan }}
+                    {{ slotProps.data.satuanPenggunaan || '-' }}
                   </div>
                 </div>
               </template>
@@ -241,7 +198,7 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.konversiIsi }} Pcs
+                    {{ slotProps.data.konversi || '-' }} Pcs
                   </div>
                 </div>
               </template>
@@ -249,38 +206,19 @@ onMounted(() => {
           </DataTable>
         </template>
         <template #collapseIcon>
-          <CustomButton
-            icon="PhCaretUp"
-            backgroundColor="bg-white"
-            textColor="text-adameds-300"
-          />
+          <CustomButton icon="PhCaretUp" backgroundColor="bg-white" textColor="text-adameds-300" />
         </template>
         <template #expandIcon>
-          <CustomButton
-            icon="PhCaretDown"
-            backgroundColor="bg-white"
-            textColor="text-adameds-300"
-          />
+          <CustomButton icon="PhCaretDown" backgroundColor="bg-white" textColor="text-adameds-300" />
         </template>
       </CustomAccordion>
-      <CustomAccordion
-        :openWithHeader="false"
-        noBorder
-        initialState="0"
-        header-class="-mt-4"
-      >
+      <CustomAccordion :openWithHeader="false" noBorder initialState="0" header-class="-mt-4">
         <template #header>
           <div class="-mx-4">Riwayat Penerimaan Pembelian</div>
         </template>
         <template #content>
-          <DataTable
-            :value="riwayatPenerimaanPembelianData"
-            tableStyle="min-width: 50rem"
-            scrollable
-            class="-mx-[18px]"
-            scrollHeight="240px"
-            :pt="{ headerRow: 'text-SM' }"
-          >
+          <DataTable :value="detailData.purchaseHistory" tableStyle="min-width: 60rem" scrollable class="-mx-[18px]"
+            scrollHeight="380px" :pt="{ headerRow: 'text-SM' }">
             <Column field="tanggal" headerClass="bg-adameds-50">
               <template #header>
                 <div class="font-semibold">Tanggal</div>
@@ -288,19 +226,31 @@ onMounted(() => {
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.tanggal }}
+                    {{ epochToDate(slotProps.data.tanggal || '-', "date") }}
                   </div>
                 </div>
               </template>
             </Column>
             <Column field="expDate" headerClass="bg-adameds-50">
               <template #header>
+                <div class="font-semibold">No.Po</div>
+              </template>
+              <template #body="slotProps">
+                <div>
+                  <div class="text-SM">
+                    {{ slotProps.data.noPo || '-' }}
+                  </div>
+                </div>
+              </template>
+            </Column>
+            <Column field="expDate" headerClass="bg-adameds-50"">
+              <template #header>
                 <div class="font-semibold">Exp Date</div>
               </template>
               <template #body="slotProps">
                 <div>
                   <div class="text-SM">
-                    {{ slotProps.data.expDate }}
+                    {{ slotProps.data.expDate || '-' }}
                   </div>
                 </div>
               </template>
@@ -311,7 +261,7 @@ onMounted(() => {
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">Rp. {{ slotProps.data.hargaDasar }}</div>
+                  <div class="text-SM">Rp. {{ slotProps.data.hargaDasar || '-' }}</div>
                 </div>
               </template>
             </Column>
@@ -321,35 +271,27 @@ onMounted(() => {
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">Rp. {{ slotProps.data.HNA }}</div>
+                  <div class="text-SM">Rp. {{ slotProps.data.hja || '-' }}</div>
                 </div>
               </template>
             </Column>
             <Column field="HPP" headerClass="bg-adameds-50">
               <template #header>
-                <div class="font-semibold">HPP</div>
+                <div class="font-semibold">HJA</div>
               </template>
               <template #body="slotProps">
                 <div>
-                  <div class="text-SM">Rp. {{ slotProps.data.HPP }}</div>
+                  <div class="text-SM">Rp. {{ slotProps.data.hpp || '-' }}</div>
                 </div>
               </template>
             </Column>
           </DataTable>
         </template>
         <template #collapseIcon>
-          <CustomButton
-            icon="PhCaretUp"
-            backgroundColor="bg-white"
-            textColor="text-adameds-300"
-          />
+          <CustomButton icon="PhCaretUp" backgroundColor="bg-white" textColor="text-adameds-300" />
         </template>
         <template #expandIcon>
-          <CustomButton
-            icon="PhCaretDown"
-            backgroundColor="bg-white"
-            textColor="text-adameds-300"
-          />
+          <CustomButton icon="PhCaretDown" backgroundColor="bg-white" textColor="text-adameds-300" />
         </template>
       </CustomAccordion>
     </template>

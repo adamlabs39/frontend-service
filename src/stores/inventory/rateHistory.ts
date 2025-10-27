@@ -20,7 +20,7 @@ export const useRateHistoryStore = defineStore({
         `/inventory/riwayat-tarif?lokasi_stok_uuid=${lokasiStok}&kategori=${kategori}&jenis_stok_uuid=${jenisStok}&jenis_item=${jenis}&search=${search}&page=${page}&limit=${limit}`, payload);
     },
     async getApiDetail(uuid: string, payload = {}) {
-      return apiInventoryGet(`/inventory/pengadaan/pembelian-barang/${uuid}`, payload);
+      return apiInventoryGet(`/inventory/riwayat-tarif/${uuid}`, payload);
     },
   },
 });

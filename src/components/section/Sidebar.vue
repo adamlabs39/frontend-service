@@ -7,6 +7,7 @@ import { useRouter, useRoute, routerKey } from "vue-router";
 import { onMounted, ref, watch } from "vue";
 import dialogStokView from "@/views/Stok/StokView.vue";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
+import { useStorageLocationStore } from "@/stores/inventory/storageLocation";
 import CustomSelect from "../Base/CustomSelect.vue";
 
 const props = defineProps({
@@ -34,24 +35,30 @@ const props = defineProps({
 });
 
 // State Management Stock Location
-const StockLocationStore = useStockLocationStore();
-const StockLocationPayload = ref<any[]>([]);
+const StorageLocationStore = useStorageLocationStore();
+const StorageLocationPayload = ref<any[]>([]);
+const selectedLokasiStok = ref("");
 
 // Fetch Stock Location
 const fetchStockLocation = async () => {
   try {
-    const response = await StockLocationStore.getApi();
-
+    // Panggil API dengan limit tinggi agar semua data lokasi termuat
+    const response = await StorageLocationStore.getApi(1, 9999);
     if (response && response.payload) {
-      StockLocationPayload.value = response.payload;
+      StorageLocationPayload.value = response.payload;
     } else {
-      StockLocationPayload.value = [];
+      StorageLocationPayload.value = [];
     }
   } catch (error) {
     console.error("Failed to fetch data", error);
-    StockLocationPayload.value = [];
+    StorageLocationPayload.value = [];
   }
 };
+
+// Untuk Mendeteksi perubahan (buat inventory)
+watch(selectedLokasiStok, (newValue) => {
+  emit("update:searchSidebar", newValue);
+});
 
 const router = useRouter();
 const route = useRoute();
@@ -145,11 +152,12 @@ onMounted(() => {
           <hr v-if="props.sidebarTitle === 'Inventory'" />
           <div v-if="props.sidebarTitle === 'Inventory'">
             <CustomSelect
+            v-model="selectedLokasiStok"
               place-holder="Pilih Lokasi Stok"
               :showLabel="false"
               optionLabel="name"
               optionValue="uuid"
-              :options="StockLocationPayload"
+              :options="StorageLocationPayload"
               class="mb-[20px] mt-[20px]"
             />
           </div>

@@ -17,8 +17,12 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  detailData: {
+  selectedData: {
     type: Object,
+  },
+  lokasiStokUuid: {
+    type: String,
+    default: "",
   },
 });
 
@@ -52,7 +56,7 @@ const fetchDetail = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await StokOpnameStore.getApiDetail(
-      "0196a8ca-1fda-71ca-a133-7383413ef200",
+      props.selectedData?.uuid,
       searchQuery.value,
       jenisItem.value,
       DetailProperties.value.page,
@@ -73,13 +77,19 @@ const fetchDetail = async () => {
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchDetail();
-  }, 500);
-});
+// PERBAIKAN 4: Tambahkan fungsi handleSearch
+const handleSearch = () => {
+  DetailProperties.value.page = 1;
+  fetchDetail();
+};
+
+// PERBAIKAN 5: Tambahkan fungsi handleReset
+const handleReset = () => {
+  searchQuery.value = "";
+  jenisItem.value = "";
+  DetailProperties.value.page = 1;
+  fetchDetail();
+};
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -89,7 +99,9 @@ const handlePage = (event: any) => {
 };
 
 onMounted(() => {
-  fetchDetail();
+  if (props.selectedData?.uuid) {
+    fetchDetail();
+  }
 });
 </script>
 
@@ -108,14 +120,14 @@ onMounted(() => {
                 }"
                 :model="[
                   {
-                    noStokOpname: detailData?.noStokOpname,
+                    label: props.selectedData?.noStokOpname,
                   },
                 ]"
               >
               </CustomBreadCrumb>
               <CustomChip
                 :showCheckedIcon="false"
-                :label="detailData?.status"
+                :label="props.selectedData?.status"
                 bgColor="bg-mint-75"
                 textColor="text-mint-400"
                 customClass="h-5 pr-[6px] border-none mr-[5px]"
@@ -143,7 +155,7 @@ onMounted(() => {
             <div>
               <div class="font-semibold underline text-SM">Tgl. Cut Off</div>
               <div class="font-normal text-normal">
-                {{ detailData?.tglCutOff }}
+                {{ epochToDate(props.selectedData?.tanggalCutOff, "date") }}
               </div>
             </div>
             <!-- Judul Stok Opname -->

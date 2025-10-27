@@ -14,6 +14,14 @@ import DetailPurchaseAcceptancePage from "./DetailPurchaseAcceptancePage.vue";
 import AcceptedPurchaseDetailPage from "./AcceptedPurchaseDetailPage.vue";
 import NoData from "@/components/section/NoData.vue";
 
+// Props sidebar stok lokasi
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("verifikasi");
 
@@ -55,6 +63,7 @@ const fetchPurchasingOfSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await PurchaseAcceptanceStore.getApi(
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       PurchaseAcceptanceProperties.value.page,
@@ -75,13 +84,25 @@ const fetchPurchasingOfSupplier = async () => {
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchPurchasingOfSupplier();
-  }, 500);
+watch(() => props.lokasiStokUuid, () => {
+  PurchaseAcceptanceProperties.value.page = 1;
+  fetchPurchasingOfSupplier();
 });
+
+
+// let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+// watch(searchQuery, (newValue) => {
+//   if (searchTimeout) clearTimeout(searchTimeout);
+//   searchTimeout = setTimeout(() => {
+//     fetchPurchasingOfSupplier();
+//   }, 500);
+// });
+
+// Handle reset button
+const handleReset = () => {
+  searchQuery.value = ""; // Mengosongkan input pencarian
+  fetchPurchasingOfSupplier(); // Memanggil data lagi dengan query kosong
+};
 
 // Handle Pagination
 const handlePage = (event: any) => {
@@ -140,9 +161,14 @@ onMounted(() => {
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
+            <div class="flex items-end gap-2.5 mt-[10px]">
               <CustomTextfield v-model="searchQuery" label="Pencarian" prependIcon="PhMagnifyingGlass"
-                placeholder="Cari No. Pembelian" />
+                placeholder="Cari No. Pembelian" class="grow" />
+
+              <CustomButton label="Cari" icon="PhMagnifyingGlass" @click="fetchPurchasingOfSupplier" />
+
+              <CustomButton label="Reset" outlined borderColor="border-adameds-300" textColor="text-adameds-300"
+                @click="handleReset" />
             </div>
 
             <!-- Filter -->
@@ -203,12 +229,9 @@ onMounted(() => {
                   borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
                 <CustomChip v-if="slotProps.data.jenisItem == 'alkes'" label="ALKES" :showCheckedIcon="false"
                   borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
-                <CustomChip v-if="slotProps.data.jenisStok == 'BPJS'" label="BPJS" :showCheckedIcon="false"
-                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
-                <CustomChip v-if="slotProps.data.jenisStok == 'UMUM'" label="UMUM" :showCheckedIcon="false"
-                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
-                <CustomChip v-if="slotProps.data.jenisStok == 'ASR'" label="ASURANSI LAIN" :showCheckedIcon="false"
-                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-2" />
+                <CustomChip v-if="slotProps.data.jenisStok" :label="slotProps.data.jenisStok.toUpperCase()"
+                  :showCheckedIcon="false" borderColor="border-adameds-300" bgColor="bg-adameds-300"
+                  textColor="text-white" customClass="h-5" class="ml-2" />
               </div>
             </template>
           </Column>
@@ -218,7 +241,7 @@ onMounted(() => {
               <div class="">Supplier</div>
             </template>
             <template #body="slotProps">
-              <div class="font-bold">{{ slotProps.data.spplr?.name }}</div>
+              <div class="font-bold">{{ slotProps.data.supplier }}</div>
             </template>
           </Column>
           <!-- Petugas -->
@@ -235,7 +258,7 @@ onMounted(() => {
                 <CustomChip v-if="slotProps.data.status == 'cancel'" label="DIBATALKAN" :showCheckedIcon="false"
                   borderColor="border-danger-300" bgColor="bg-danger-300" textColor="text-white" />
                 <CustomChip v-if="slotProps.data.status == 'diterima'" label="DITERIMA" :showCheckedIcon="false"
-                  borderColor="border-grey-300" bgColor="bg-grey-300" textColor="text-white" />
+                  borderColor="border-grey-300" bgColor="bg-success-300" textColor="text-white" />
               </div>
             </template>
           </Column>

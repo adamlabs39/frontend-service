@@ -127,6 +127,14 @@ const sidebarBodyList = ref<SidebarBody[]>([
   },
 ]);
 const filter = ref("");
+
+//  STATE UNTUK MENYIMPAN UUID LOKASI STOK
+const selectedLokasiStokUuid = ref("");
+
+// FUNGSI UNTUK MENG-UPDATE STATE
+const handleLokasiStokUpdate = (uuid: string) => {
+  selectedLokasiStokUuid.value = uuid;
+};
 </script>
 
 <template>
@@ -137,11 +145,12 @@ const filter = ref("");
       class="flex-none"
       :sidebar-body-list="sidebarBodyList"
       v-model:filter="filter"
-    />
+      @update:searchSidebar="handleLokasiStokUpdate" />
     <component
       class="max-h-full overflow-auto grow"
       :is="$route.meta.page || 'div'"
       :filter="filter"
+      :lokasi-stok-uuid="selectedLokasiStokUuid"
     ></component>
   </div>
 </template>

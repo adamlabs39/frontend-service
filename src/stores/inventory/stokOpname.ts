@@ -8,11 +8,12 @@ export const useStokOpnameStore = defineStore({
   actions: {
     async getApi(
       lokasiStok: String = "",
+      search: String = "",
       page: Number = 1,
       limit: Number = 10,
       payload = {}
     ) {
-      return apiInventoryGet(`/inventory/stok-opname?lokasi_stok_uuid=${lokasiStok}&page=${page}&limit=${limit}`, payload);
+      return apiInventoryGet(`/inventory/stok-opname?lokasi_stok_uuid=${lokasiStok}&search=${search}&page=${page}&limit=${limit}`, payload);
     },
 
     async getApiDetail(

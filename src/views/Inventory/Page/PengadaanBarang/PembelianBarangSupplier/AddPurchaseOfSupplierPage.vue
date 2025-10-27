@@ -30,7 +30,7 @@ const props = defineProps({
 
 function generateRandomNoPembelian() {
   const randomNumber = Math.floor(1000 + Math.random() * 9000); // Angka acak 4 digit
-  return `PO${randomNumber}`; 
+  return `PO${randomNumber}`;
 }
 
 const optionKategori = ref([
@@ -127,6 +127,7 @@ const materai = ref(0);
 const ppn = ref(0);
 const ppnNominal = ref(0);
 const grandTotal = ref(0);
+const petugasPembelian = ref("Nama Petugas");
 const totalItem = ref(0);
 const noPembelian = ref("");
 const StockLocationStore = useStockLocationStore();
@@ -173,7 +174,7 @@ const SupplierPayload = ref<any[]>([]);
 const fetchSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
-    const response = await SupplierStore.getApi(1, 9999);
+    const response = await SupplierStore.getApiAktif();
 
     if (response && response.payload) {
       SupplierPayload.value = response.payload;
@@ -243,11 +244,11 @@ const fetchSatuanItem = async (uuid: string): Promise<any[]> => {
         ? response.payload
         : [response.payload];
     } else {
-      return []; 
+      return [];
     }
   } catch (error) {
     console.error("Failed to fetch item unit data:", error);
-    return []; 
+    return [];
   }
 };
 
@@ -306,7 +307,7 @@ const onSubmit = handleSubmit(async (values: any) => {
     isCito: values.isCito,
     diskon: diskon.value,
     materai: materai.value,
-    ppn: ppn.value,
+    ppn: ppn.value === 11,
     items: (values.items || []).map((item: any) => {
       return {
         itemUuid: item.itemUuid,
@@ -355,14 +356,10 @@ const calculateAllTotals = () => {
   filedsPenjualan.value.forEach((item) => {
     subTotal += item.value.qtyOrder * item.value.hargaSatuan;
   });
-
   const totalSetelahDiskon = subTotal - diskon.value;
-
   // Tambahkan ppnAmount.value HANYA JIKA switch ppn aktif (bernilai 11)
   const ppnYangDitambahkan = ppn.value === 11 ? ppnAmount.value : 0;
-
   const finalTotal = totalSetelahDiskon + materai.value + ppnYangDitambahkan;
-
   grandTotal.value = Math.max(0, finalTotal);
   totalItem.value = filedsPenjualan.value.length;
 };
@@ -643,15 +640,19 @@ onMounted(async () => { // Jadikan onMounted async
             <hr class="mt-[20px] border-1 border-grey-200" />
             <!-- Total Item -->
             <div class="flex justify-between w-full mt-[10px]">
-              <div class="flex">
+              <div class="flex items-center gap-6">
                 <div>
                   <p class="font-bold underline underline-offset-2">Total Item</p>
-                  <p>{{ totalItem }}</p>
+                  <p>{{ totalItem }} item</p>
                 </div>
                 <!-- <div class="ml-[70px]">
                   <p class="font-bold underline underline-offset-2">Nama Petugas Pembelian</p>
                   <p>{{  }}</p>
                 </div> -->
+                <div>
+                  <p class="font-bold underline underline-offset-2">Petugas Pembelian</p>
+                  <p>{{ petugasPembelian }}</p>
+                </div>
               </div>
               <div class="flex">
                 <CustomButton @click="emit('back')" label="Batal" outlined borderColor="border-mediumGrey-300"

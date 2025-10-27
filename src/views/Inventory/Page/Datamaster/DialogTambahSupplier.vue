@@ -150,7 +150,7 @@ const onSubmit = handleSubmit(async (values: any) => {
       kecamatan_code: values.kecamatanCode,
       alamat: values.alamat,
       no_tlp: values.noTlp,
-      supplier_items: values.kategori.map((kategori: string) => ({
+      supllier_items: values.kategori.map((kategori: string) => ({
         kategori_item: kategori
       })),
       status: values.status

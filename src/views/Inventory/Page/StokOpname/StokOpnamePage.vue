@@ -14,6 +14,13 @@ import NoData from "@/components/section/NoData.vue";
 import AddStokOpname from "./AddStokOpnamePage.vue";
 import DetailStokOpname from "./DetailStokOpnamePage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Title Label
 const pageType = ref("");
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -42,12 +49,13 @@ const hasData = computed(
   () => StokOpnamePayload.value && StokOpnamePayload.value.length > 0
 );
 
-// Fetch Purchasing Of Supplier
-const fetchPurchasingOfSupplier = async () => {
+// Fetch Stok Opname
+const fetchStokOpname = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await StokOpnameStore.getApi(
-      "0196a8ca-1fda-71ca-a133-7383413ef200",
+      props.lokasiStokUuid,
+      searchQuery.value, // <-- Tambahkan ini
       StokOpnameProperties.value.page,
       StokOpnameProperties.value.page_size
     );
@@ -66,19 +74,27 @@ const fetchPurchasingOfSupplier = async () => {
   }
 };
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-watch(searchQuery, (newValue) => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    fetchPurchasingOfSupplier();
-  }, 500);
+watch(() => props.lokasiStokUuid, () => {
+  StokOpnameProperties.value.page = 1;
+  fetchStokOpname();
 });
+
+const handleSearch = () => {
+  fetchStokOpname();
+};
+
+// Handle reset 
+const handleReset = () => {
+  searchQuery.value = "";
+  StokOpnameProperties.value.page = 1;
+  fetchStokOpname();
+};
 
 // Handle Pagination
 const handlePage = (event: any) => {
   StokOpnameProperties.value.page = event.page + 1;
   StokOpnameProperties.value.page_size = event.rows;
-  fetchPurchasingOfSupplier();
+  fetchStokOpname();
 };
 
 // Selected Row
@@ -92,90 +108,80 @@ const onRowSelect = (event: any) => {
 
 const closePurchaseOfSupplierPage = () => {
   dataBreadCrumb.value.pop();
-  fetchPurchasingOfSupplier();
+  fetchStokOpname();
 };
 
 const closeEditPage = async () => {
   dataBreadCrumb.value.pop();
   dataBreadCrumb.value.pop();
-  await fetchPurchasingOfSupplier();
+  await fetchStokOpname();
 };
 
 onMounted(() => {
-  fetchPurchasingOfSupplier();
+  fetchStokOpname();
 });
 </script>
 
 <template>
   <div>
-    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto" pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
+    <Card v-if="dataBreadCrumb.length == 0" pt:body:class="h-full pt-0 overflow-auto"
+      pt:content:class="h-full overflow-hidden" class="h-full overflow-hidden">
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchPurchasingOfSupplier"/>
-                <CustomBreadCrumb
-                  :home="{
-                    label: 'Stok Opname',
-                    home: true,
-                  }"
-                />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchStokOpname" />
+                <CustomBreadCrumb :home="{
+                  label: 'Stok Opname',
+                  home: true,
+                }" />
               </div>
-              <CustomButton
-                @click="changeSection('Tambah Stok Opname')"
-                icon="PhPlus"
-                label="Stok Opname"
-                class="mr-[10px]"
-              />
+              <CustomButton @click="changeSection('Tambah Stok Opname')" icon="PhPlus" label="Stok Opname"
+                class="mr-[10px]" />
             </div>
           </template>
           <template #content>
-            <div class="grid grid-cols-1 mt-[10px]">
-              <CustomTextfield
-                v-model="searchQuery"
-                label="Pencarian"
+            <div class="flex items-end gap-2.5 mt-[10px]">
+              <CustomTextfield 
+                v-model="searchQuery" 
+                label="Pencarian" 
                 prependIcon="PhMagnifyingGlass"
                 placeholder="Cari No. Stok Opname / Nama Judul Stok Opname"
+                class="grow"
+              />
+              <CustomButton
+                label="Cari"
+                icon="PhMagnifyingGlass"
+                @click="handleSearch"
+              />
+              <CustomButton
+                label="Reset"
+                outlined
+                borderColor="border-adameds-300"
+                textColor="text-adameds-300"
+                @click="handleReset"
               />
             </div>
           </template>
           <template #collapseIcon>
-            <CustomButton
-              icon="PhCaretUp"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretUp" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
           <template #expandIcon>
-            <CustomButton
-              icon="PhCaretDown"
-              backgroundColor="bg-adameds-75"
-              textColor="text-adameds-300"
-            />
+            <CustomButton icon="PhCaretDown" backgroundColor="bg-adameds-75" textColor="text-adameds-300" />
           </template>
         </CustomAccordion>
       </template>
       <template #content>
         <NoData v-if="!hasData" />
-        <DataTable
-          v-else
-          :value="StokOpnamePayload"
-          v-model:selection="selectedData"
-          :metaKeySelection="metaKey"
-          @rowClick="onRowSelect"
-          stripedRows
-          class="text-xs"
-          scrollable
-          scrollHeight="flex"
-          :dt="{
+        <DataTable v-else :value="StokOpnamePayload" v-model:selection="selectedData" :metaKeySelection="metaKey"
+          @rowClick="onRowSelect" stripedRows class="text-xs" scrollable scrollHeight="flex" :dt="{
             rowSelectedColor: '#000000',
             rowSelectedBackground: 'transparent',
             bodyCellSelectedBorderColor: 'transparent',
             bodyCellBorderColor: 'transparent',
             rowStripedBackground: '#F8F8F8',
-          }"
-        >
+          }">
           <!-- Tgl. Cut Off -->
           <Column headerClass="bg-adameds-50 font-semibold text-SM">
             <template #header>
@@ -195,41 +201,14 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="mb-[5px]">{{ slotProps.data.noStokOpname }}</div>
               <div class="flex flex-wrap">
-                <CustomChip
-                  v-if="slotProps.data.kategoriItem == 'medis'"
-                  label="MEDIS"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                />
-                <CustomChip
-                  v-if="slotProps.data.kategoriItem == 'non-medis'"
-                  label="NON-MEDIS"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisItems == 'obat'"
-                  label="OBAT"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisItems == 'alkes'"
-                  label="ALKES"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300"
-                  textColor="text-white"
-                  class="ml-[5px]"
-                />
+                <CustomChip v-if="slotProps.data.kategoriItem == 'medis'" label="MEDIS" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" />
+                <CustomChip v-if="slotProps.data.kategoriItem == 'non-medis'" label="NON-MEDIS" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-[5px]" />
+                <CustomChip v-if="slotProps.data.jenisItems == 'obat'" label="OBAT" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-[5px]" />
+                <CustomChip v-if="slotProps.data.jenisItems == 'alkes'" label="ALKES" :showCheckedIcon="false"
+                  borderColor="border-adameds-300" bgColor="bg-adameds-300" textColor="text-white" class="ml-[5px]" />
               </div>
             </template>
           </Column>
@@ -269,22 +248,10 @@ onMounted(() => {
             </template>
             <template #body="slotProps">
               <div class="flex items-center justify-center">
-                <CustomChip
-                  v-if="slotProps.data.status == 'draft'"
-                  label="DRAFT"
-                  :showCheckedIcon="false"
-                  borderColor="border-warning-75"
-                  bgColor="bg-warning-75"
-                  textColor="text-warning-300"
-                />
-                <CustomChip
-                  v-if="slotProps.data.status == 'selesai'"
-                  label="SELESAI"
-                  :showCheckedIcon="false"
-                  borderColor="border-danger-300"
-                  bgColor="bg-danger-300"
-                  textColor="text-white"
-                />
+                <CustomChip v-if="slotProps.data.status == 'draft'" label="DRAFT" :showCheckedIcon="false"
+                  borderColor="border-warning-75" bgColor="bg-warning-75" textColor="text-warning-300" />
+                <CustomChip v-if="slotProps.data.status == 'selesai'" label="SELESAI" :showCheckedIcon="false"
+                  borderColor="border-danger-300" bgColor="bg-danger-300" textColor="text-white" />
               </div>
             </template>
           </Column>
@@ -292,27 +259,15 @@ onMounted(() => {
       </template>
       <template #footer>
         <div class="flex justify-end">
-          <CustomPaginator
-            :rows="StokOpnameProperties.page_size"
-            :totalRecords="StokOpnameProperties.total"
-            :rowsPerPageOptions="[10, 20, 30]"
-            @page="handlePage"
-          />
+          <CustomPaginator :rows="StokOpnameProperties.page_size" :totalRecords="StokOpnameProperties.total"
+            :rowsPerPageOptions="[10, 20, 30]" @page="handlePage" />
         </div>
       </template>
     </Card>
-    <AddStokOpname
-      v-else-if="dataBreadCrumb[0].label == 'Tambah Stok Opname'"
-      :dataBreadCrumb="dataBreadCrumb"
-      :pageType="pageType"
-      @back="closePurchaseOfSupplierPage"
-      @backEdit="closeEditPage"
-    />
-    <DetailStokOpname
-      v-else-if="dataBreadCrumb[0].label == 'Detail'"
-      :pageType="pageType"
-      :selectedData="selectedData"
-      @back="closePurchaseOfSupplierPage"
-    />
+    <AddStokOpname v-else-if="dataBreadCrumb[0].label == 'Tambah Stok Opname'" :dataBreadCrumb="dataBreadCrumb"
+      :pageType="pageType" @back="closePurchaseOfSupplierPage" @backEdit="closeEditPage"
+      :lokasi-stok-uuid="lokasiStokUuid" />
+    <DetailStokOpname v-else-if="dataBreadCrumb[0].label == 'Detail'" :pageType="pageType" :selectedData="selectedData"
+      @back="closePurchaseOfSupplierPage" />
   </div>
 </template>

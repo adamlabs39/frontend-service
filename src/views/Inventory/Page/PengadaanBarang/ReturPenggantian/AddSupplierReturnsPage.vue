@@ -97,7 +97,7 @@ const grandTotal = ref(0);
 const ppnAmount = computed(() => {
   const subTotal = (itemFields.value || []).reduce((total, item) => {
     const qty = item.value.qtyRetur || 0;
-    const harga = item.value.harga || 0;
+    const harga = item.value.hargaSatuan || 0;
     return total + (qty * harga);
   }, 0);
   const totalSetelahDiskon = subTotal - diskon.value;
@@ -110,7 +110,7 @@ const ppnAmount = computed(() => {
 watchEffect(() => {
   const subTotal = (itemFields.value || []).reduce((total, item) => {
     const qty = item.value.qtyRetur || 0;
-    const harga = item.value.harga || 0;
+    const harga = item.value.hargaSatuan || 0;
     return total + (qty * harga);
   }, 0);
   const totalSetelahDiskon = subTotal - diskon.value;
@@ -132,13 +132,20 @@ const handleFakturSelected = async (faktur: any) => {
         alasanRetur: FakturPayload.value.alasanRetur,
         asalLokasiGudang: FakturPayload.value.lokasiStokUuid,
         catatan: FakturPayload.value.catatan,
-        items: FakturPayload.value.availableItems.map((item: any) => ({ ...item, qtyRetur: 0 })),
+        items: FakturPayload.value.availableItems.map((item: any) => ({
+          ...item,
+          konversi: item.satuanBeli,
+          qtyRetur: 0
+        })),
       });
 
+      // Set nilai footer (jika ada di response, jika tidak biarkan 0)
       diskon.value = FakturPayload.value.diskon || 0;
       materai.value = FakturPayload.value.materai || 0;
       ppn.value = (FakturPayload.value.ppn > 0) ? 11 : 0;
     }
+  } catch (error) {
+    console.error("Gagal mengambil detail faktur:", error);
   } finally {
     UseUtilsStore.setLoading(false);
   }
@@ -163,7 +170,7 @@ const onSubmit = handleSubmit(async (values) => {
           qty_retur: item.qtyRetur,
           konversi_uuid: item.konversiUuid,
           harga_satuan: item.hargaSatuan,
-          exp_date: epochToDate(item.expDate, "date"), // Menggunakan epochToDate untuk format
+          exp_date: item.expDate, 
         })),
     };
 
@@ -214,7 +221,9 @@ onMounted(() => {
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" />
+                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="if (props.fakturPayload) {
+    handleFakturSelected(props.fakturPayload);
+  }"/>
                 <CustomBreadCrumb :home="{ label: 'Pengadaan Barang', home: true }"
                   :model="[{ label: 'Retur & Penggantian Barang Supplier' }, { label: 'Tambah Retur' }]" />
               </div>
@@ -309,7 +318,7 @@ onMounted(() => {
               </Column>
               <Column field="value.name" header="Nama Item" headerClass="bg-adameds-50 font-bold"></Column>
               <Column header="Exp. Date" headerClass="bg-adameds-50 font-bold">
-                <template #body="slotProps">{{ slotProps.data.value.expDate }}</template>
+                <template #body="slotProps">{{ slotProps.data.value.expDate || '-' }}</template>
               </Column>
               <Column field="value.qty" header="Diterima" headerClass="bg-adameds-50 font-bold"></Column>
               <Column header="Retur" headerClass="bg-adameds-50 font-bold">
@@ -324,10 +333,13 @@ onMounted(() => {
               <Column header="Harga Satuan" headerClass="bg-adameds-50 font-bold text-end">
                 <template #body="slotProps">{{ formatPrice(slotProps.data.value.hargaSatuan) }}</template>
               </Column>
+
               <Column header="Total" headerClass="bg-adameds-50 font-bold text-end">
-                <template #body="slotProps">{{ formatPrice(slotProps.data.value.qtyRetur * slotProps.data.value.harga)
-                }}</template>
+                <template #body="slotProps">
+                  {{ formatPrice(slotProps.data.value.qtyRetur * slotProps.data.value.hargaSatuan) || '-' }}
+                </template>
               </Column>
+
               <Column header="Action" headerClass="bg-adameds-50 font-bold">
                 <template #body="slotProps">
                   <div class="flex justify-center">

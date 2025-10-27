@@ -14,6 +14,13 @@ import NoData from "@/components/section/NoData.vue";
 import AddPurchaseOfSupplier from "./AddPurchaseOfSupplierPage.vue";
 import DetailPurchaseOfSupplierPage from "./DetailPurchaseOfSupplierPage.vue";
 
+const props = defineProps({
+  lokasiStokUuid: {
+    type: String,
+    default: "",
+  },
+});
+
 // Filter
 const onSelected = ref<string>("pending");
 
@@ -55,6 +62,7 @@ const fetchPurchasingOfSupplier = async () => {
   UseUtilsStore.setLoading(true);
   try {
     const response = await PurchasingOfSupplierStore.getApi(
+      props.lokasiStokUuid,
       onSelected.value,
       searchQuery.value,
       PurchasingOfSupplierProperties.value.page,
@@ -74,6 +82,12 @@ const fetchPurchasingOfSupplier = async () => {
     UseUtilsStore.setLoading(false);
   }
 };
+
+watch(() => props.lokasiStokUuid, (newValue) => {
+  // Reset ke halaman 1 dan panggil ulang API
+  PurchasingOfSupplierProperties.value.page = 1;
+  fetchPurchasingOfSupplier();
+});
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 watch(searchQuery, (newValue) => {
@@ -278,30 +292,13 @@ onMounted(() => {
                   class="ml-2"
                 />
                 <CustomChip
-                  v-if="slotProps.data.jenisStok == 'BPJS'"
-                  label="BPJS"
+                  v-if="slotProps.data.jenisStok"
+                  :label="slotProps.data.jenisStok.toUpperCase()"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300" 
                   textColor="text-white"
-                  class="ml-2"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisStok == 'UMUM'"
-                  label="UMUM"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
-                  class="ml-2"
-                />
-                <CustomChip
-                  v-if="slotProps.data.jenisStok == 'ASR'"
-                  label="ASURANSI LAIN"
-                  :showCheckedIcon="false"
-                  borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
-                  textColor="text-white"
+                  customClass="h-5"
                   class="ml-2"
                 />
               </div>
@@ -313,7 +310,7 @@ onMounted(() => {
               <div class="">Supplier</div>
             </template>
             <template #body="slotProps">
-              <div class="font-bold">{{ slotProps.data.spplr?.name }}</div>
+              <div class="font-bold">{{ slotProps.data.supplier }}</div>
             </template>
           </Column>
           <!-- Petugas -->

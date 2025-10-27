@@ -10,6 +10,7 @@ export const usePurchaseAcceptanceStore = defineStore({
     //   return apiInventoryGet(`/inventory/penerimaan-retur-unit?lokasi_stok_tujuan_uuid=${filter}&alasan=${name}&page=${page}&limit=${limit}`, payload);
     // },
     async getApi(
+      lokasiStok: String= "",
       filter: String = "",
       name: String = "",
       page: number = 1,
@@ -17,7 +18,7 @@ export const usePurchaseAcceptanceStore = defineStore({
       payload = {}
     ) {
       return apiInventoryGet(
-        `/inventory/pengadaan/pembelian-barang?filter=${filter}&no_po=${name}&page=${page}&limit=${limit}`,
+        `/inventory/pengadaan/pembelian-barang?lokasi_stok_uuid=${lokasiStok}&filter=${filter}&search=${name}&page=${page}&limit=${limit}`,
         payload
       );
     },
