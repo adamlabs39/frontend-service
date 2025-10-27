@@ -89,26 +89,27 @@ const searchQuery = ref<string>("");
 
 // Fetch data Praktisi dari API
 const fetchPraktisiData = async () => {
-  useUtilsStore.setLoading(true);
-    try {
-    let isDoctor = true;
-    const response = await praktisiStore.getApi({
-      page: praktisiProperties.value.page,
-      limit: praktisiProperties.value.page_size,
-      name: searchDoctor.value,
-      isDoctor: isDoctor,
-    });
-    if (response && response.payload) {
-      praktisiPayload.value = response.payload;
-    } else {
-      praktisiPayload.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch kategori ruangan", error);
-    praktisiPayload.value = [];
-  }finally {
-    useUtilsStore.setLoading(false);
-  }
+  useUtilsStore.setLoading(true);
+    try {
+    const isDoctor = true;
+    const response = await praktisiStore.getApi({
+      page: 1,
+      limit: 9999,
+      name: searchDoctor.value,
+      isDoctor: isDoctor,
+    });
+
+    if (response && response.payload) {
+      praktisiPayload.value = response.payload;
+    } else {
+      praktisiPayload.value = [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch praktisi data", error);
+    praktisiPayload.value = [];
+  } finally {
+    useUtilsStore.setLoading(false);
+  }
 };
 const fetchLokasiData = async () => {
   useUtilsStore.setLoading(true);
