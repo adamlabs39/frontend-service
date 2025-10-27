@@ -130,7 +130,7 @@ const resetFilter = () => {
 
 const setFilter = (dataFilter: FilterAdmisi) => {
   selectedPaymentMethod.value = dataFilter.paymentMethod
-    ? [dataFilter.paymentMethod]
+    ? dataFilter.paymentMethod.split(',')
     : [];
   startDateFilter.value = dataFilter.startDate
     ? (epochToDate(parseInt(dataFilter.startDate)) as Date)
@@ -174,17 +174,9 @@ defineExpose({
 const emit = defineEmits(["search", "reload-data", "payment", "reset"]);
 
 onMounted(() => {
-  setFilter(props.filterData);
+  setFilter(props.filterData); 
   fetchPraktisiData();
-  let date = new Date(),
-    y = date.getFullYear(),
-    m = date.getMonth();
-
-  startDateFilter.value = new Date(y, m, 1);
-  endDateFilter.value = new Date(y, m + 1, 0);
 });
-
-// Ketika tombol "Cari" diklik, emit event searchExecuted
 </script>
 
 <template>

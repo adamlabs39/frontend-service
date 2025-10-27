@@ -36,7 +36,20 @@ const properties = ref({
   page_size: 10,
   total: 0,
 });
-const filterData = ref<FilterAdmisi>({});
+
+const filterData = ref<FilterAdmisi>({
+  startDate: `${dateToEpoch(
+    setTimeForDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1), 0, 0, 0)
+  )}`,
+  endDate: `${dateToEpoch(
+    setTimeForDate(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0), 23, 59, 59)
+  )}`,
+  status: "2",
+  poly: [],
+  q: "",
+  dpjp: "",
+  paymentMethod: "",
+});
 
 const search = async () => {
   const headerFilters = headerPoliBPJSRef.value?.searchData() ?? {};
@@ -85,18 +98,20 @@ const props = defineProps<{
 watch(
   () => props.filter,
   async (newFilter) => {
-    resetFilter();
-    // statusPelayanan.value = ""; // Reset statusPelayanan
-    filterData.value = {
-      ...filterData.value,
-      poly: [newFilter.uuid],
-      status: statusPelayanan.value,
-    };
-    // console.log(`filter paling baru`, filterData.value);
-    // search();
+
+    if (!newFilter || !newFilter.uuid) {
+      patientData.value = [];
+      return;
+    }
+    filterData.value.poly = [newFilter.uuid];
+    filterData.value.page = 1;
+    properties.value.page = 1;
+
     patientData.value = await fetchRJPatient();
   },
-  { deep: true }
+  {
+    deep: true,
+  }
 );
 
 const statusPelayanan = ref("2");
@@ -108,9 +123,9 @@ const selectedPatient = ref<any[]>([]);
 const route = useRoute();
 const currentRouteName = ref("");
 
-onMounted(() => {
+onMounted(async () => {
   currentRouteName.value = route.name ? String(route.name) : "";
-  // search();
+  patientData.value = await fetchRJPatient();
 });
 
 const updateSelectedPatient = (patient: any) => {
@@ -137,9 +152,9 @@ const updateUnselectAll = () => {
 const isResetPatient = ref(false);
 
 const resetCancelVisit = () => {
-  cancelReason.value = ""; // Kosongkan cancelReason
-  selectedPatient.value = []; // Kosongkan selectedPatient
-  showCancelVisit.value = false; // Menutup tampilan cancel visit
+  cancelReason.value = ""; 
+  selectedPatient.value = []; 
+  showCancelVisit.value = false; 
   isResetPatient.value = !isResetPatient.value;
 };
 
@@ -179,14 +194,11 @@ const handlePage = (event: any) => {
 
 // FIlter Status
 const filterStatus = async (status: string) => {
-  // resetFilter();
   statusPelayanan.value = status;
   filterData.value = {
     ...filterData.value,
     status: statusPelayanan.value,
   };
-  // console.log(`filter paling baru`, filterData.value);
-  // search();
   patientData.value = await fetchRJPatient();
 };
 
