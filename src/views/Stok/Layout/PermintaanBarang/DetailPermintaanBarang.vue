@@ -9,9 +9,15 @@ import CustomSwitch from "@/components/Base/CustomSwitch.vue";
 import CustomTextfield from "@/components/Base/CustomTextfield.vue";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import DeleteDialog from "./DeleteDialogPermintaanBarang.vue";
+import { formatStringDate } from "@/utils/Helpers";
 
 // Terima data dari list
-const props = defineProps<{ data: any }>();
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({}),
+  },
+});
 
 const isDeleteDialogVisible = ref(false);
 
@@ -31,50 +37,14 @@ const handleCancellation = (alasan: string) => {
 
 const emit = defineEmits(["back"]);
 
-// Kontainer konten untuk mendeteksi overflow
-const contentRef = ref<HTMLElement | null>(null);
-const isSticky = ref(false);
-let resizeObserver: ResizeObserver | null = null;
-
-const updateSticky = () => {
-  const el = contentRef.value;
-  if (!el) {
-    isSticky.value = false;
-    return;
-  }
-  // Sticky aktif jika konten overflow (tinggi konten > tinggi tampilan)
-  isSticky.value = el.scrollHeight - el.clientHeight > 2;
-};
-
-const tableRows = ref([
-  {
-    no: 1,
-    namaItem: "",
-    minStok: 0,
-    maxStok: 0,
-    stokPermintaan: 0,
-    satuanIsi: "",
-    hargaDasar: 0,
-    jumlahPermintaan: 0,
+watch(
+  () => props.data,
+  (newVal) => {
+    console.log("data updated:", newVal);
+    // Add any logic you need when data changes
   },
-]);
-
-onMounted(() => {
-  nextTick(updateSticky);
-  resizeObserver = new ResizeObserver(() => updateSticky());
-  if (contentRef.value) resizeObserver.observe(contentRef.value);
-});
-
-onBeforeUnmount(() => {
-  resizeObserver?.disconnect?.();
-});
-
-// Re-evaluasi saat jumlah baris berubah
-watch(tableRows, () => nextTick(updateSticky), { deep: true });
-
-onMounted(() => {
-  console.log("DetailPermintaanBarang menerima data:", props.data);
-});
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -114,7 +84,7 @@ onMounted(() => {
                   class="ml-[10px] mt-[8px] text-adameds-300"
                 />
                 <div class="px-2">
-                  <CustomButton :label="props.data.permintaan" />
+                  <CustomButton :label="props.data.noPermintaan" />
                 </div>
               </div>
               <CustomButton
@@ -130,7 +100,9 @@ onMounted(() => {
               <div class="flex">
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">Tgl. Permintaan</div>
-                  <div>{{ props.data.tanggal }}</div>
+                  <div>
+                    {{ formatStringDate(props.data.tanggalPermintaan, "date") }}
+                  </div>
                 </div>
                 <div class="flex gap-2 w-full">
                   <div class="flex flex-col w-full">
@@ -152,7 +124,13 @@ onMounted(() => {
                   <div class="text-sm font-bold underline">
                     Tujuan Permintaan
                   </div>
-                  <div>{{ props.data.kategoriItem }}</div>
+                  <div>
+                    {{
+                      props.data.lokasiTujuan
+                        ? props.data.lokasiTujuan
+                        : "Tujuan Tidak Diberikan"
+                    }}
+                  </div>
                 </div>
                 <div class="flex flex-col w-full">
                   <div class="text-sm font-bold underline">Catatan</div>
@@ -186,8 +164,13 @@ onMounted(() => {
               scrollable
               class="h-full text-xs"
             >
-              <Column header="No" field="no" />
-              <Column header="Nama Item" field="namaItem"> </Column>
+              <Column header="No">
+                <template #header>No.</template>
+                <template #body="slotProps">
+                  {{ slotProps.index + 1 }}
+                </template>
+              </Column>
+              <Column header="Nama Item" field="namaItem" />
               <Column header="Min. Stok" field="minStok" />
               <Column header="Max. Stok" field="maxStok" />
               <Column
@@ -196,7 +179,7 @@ onMounted(() => {
               />
               <Column header="Satuan/Isi" field="satuanIsi"> </Column>
               <Column header="Harga Dasar" field="hargaDasar" />
-              <Column header="Jumlah Permintaan" field="jumlahPermintaan">
+              <Column header="Jumlah Permintaan" field="qtyPermintaan">
               </Column>
             </DataTable>
           </div>
@@ -207,7 +190,7 @@ onMounted(() => {
           <div class="flex gap-10">
             <div>
               <div class="underline">Total Item</div>
-              <div>{{ tableRows.length }}</div>
+              <div>{{ props.data.items.length }}</div>
             </div>
             <div>
               <div class="underline">Petugas Permintaan</div>
