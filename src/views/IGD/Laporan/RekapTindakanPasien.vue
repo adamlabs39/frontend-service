@@ -30,7 +30,7 @@ const props = defineProps({
     >
     </Column>
     <Column
-      field="jumlahTindakan"
+      field="total"
       header="Jumlah"
       headerClass="bg-adameds-50"
       class="w-[100px] text-SM"

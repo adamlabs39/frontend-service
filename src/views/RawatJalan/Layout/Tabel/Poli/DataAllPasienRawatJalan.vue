@@ -216,7 +216,7 @@ watch(
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.paymentMethod == '1' ? 'TUNAI' : 'BPJS'"
+            :label="slotProps.data.paymentMethod == '1' ? 'TUNAI' : 'ASURANSI'"
             :bgColor="slotProps.data.paymentMethod == '1' ? 'bg-adameds-50' : 'bg-warning-50'"
             :textColor="slotProps.data.paymentMethod == '1' ? 'text-adameds-300' : 'text-warning-300'"
             :borderColor="slotProps.data.paymentMethod == '1' ? 'border-adameds-300' : 'border-warning-300'"

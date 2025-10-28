@@ -1,21 +1,18 @@
 <script lang="ts" setup>
 import NoData from "@/components/section/NoData.vue";
-import { useRekapTindakanStore } from "@/stores/rawatJalan/laporan/rekapTindakan";
-import { utilsStore } from "@/stores/utils";
 import DataTable from "primevue/datatable";
-import { onMounted, ref, watch } from "vue";
-
+import Column from "primevue/column";
 
 const props = defineProps({
   rekapTindakanPasienData: {
-    type: Array,
-    required: true
-  }
-})
+    type: Array as () => Array<any>,
+    required: true,
+  },
+});
 </script>
 
 <template>
-  <!-- {{ rekapTindakanPasien }} -->
+  {{ console.log("Data diterima di komponen anak:", rekapTindakanPasienData) }}
   <DataTable
     v-if="rekapTindakanPasienData.length"
     :value="rekapTindakanPasienData"
@@ -31,30 +28,20 @@ const props = defineProps({
         </div>
       </template>
     </Column>
+
     <Column
-      field="tindakan"
+      field="namaTindakan"
       header="Tindakan"
       headerClass="bg-adameds-50"
-      class="w-[100px]"
-    >
-      <template #body="slotProps">
-        <div class="text-SM">
-          <div>{{ slotProps.data.namaTindakan }}</div>
-        </div>
-      </template>
-    </Column>
+      class="w-[100px] text-SM"
+    />
+
     <Column
-      field="jumlah"
+      field="total"
       header="Jumlah"
       headerClass="bg-adameds-50"
-      class="w-[100px]"
-    >
-      <template #body="slotProps">
-        <div class="text-SM">
-          <div>{{ slotProps.data.jumlahTindakan }}</div>
-        </div>
-      </template>
-    </Column>
+      class="w-[100px] text-SM"
+    />
   </DataTable>
   <NoData v-else />
 </template>

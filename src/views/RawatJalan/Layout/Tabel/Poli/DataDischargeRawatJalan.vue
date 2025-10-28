@@ -194,10 +194,10 @@ const openDialogRM = async (event: any) => {
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.paymentDethod == 1 ? 'TUNAI' : 'BPJS'"
-            :bgColor="slotProps.data.paymentDethod == 1 ? 'bg-adameds-50' : 'bg-warning-50'"
-            :textColor="slotProps.data.paymentDethod == 1 ? 'text-adameds-300' : 'text-warning-300'"
-            :borderColor="slotProps.data.paymentDethod == 1 ? 'border-adameds-300' : 'border-warning-300'"
+            :label="slotProps.data.paymentMethod == 1 ? 'TUNAI' : 'ASURANSI'"
+            :bgColor="slotProps.data.paymentMethod == 1 ? 'bg-adameds-50' : 'bg-warning-50'"
+            :textColor="slotProps.data.paymentMethod == 1 ? 'text-adameds-300' : 'text-warning-300'"
+            :borderColor="slotProps.data.paymentMethod == 1 ? 'border-adameds-300' : 'border-warning-300'"
             customClass="h-5 pr-[6px] mr-[5px]"
           />
           <CustomChip

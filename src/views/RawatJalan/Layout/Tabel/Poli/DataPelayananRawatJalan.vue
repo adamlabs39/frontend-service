@@ -289,7 +289,7 @@ const resetSelection = () => {
           />
           <CustomChip
             :showCheckedIcon="false"
-            :label="slotProps.data.paymentMethod == '1' ? 'TUNAI' : 'BPJS'"
+            :label="slotProps.data.paymentMethod == '1' ? 'TUNAI' : 'ASURANSI'"
             :bgColor="
               slotProps.data.paymentMethod == '1'
                 ? 'bg-adameds-50'

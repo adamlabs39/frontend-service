@@ -12,6 +12,8 @@ import CustomInfoRow from "@/components/Base/CustomInfoRow.vue";
 import CustomDialog from "@/components/Base/CustomDialog.vue";
 import { utilsStore } from "@/stores/utils";
 import { useRekamMedisStore } from "@/stores/rekamMedis/rekamMedis";
+import { epochToDate } from "@/utils/Helpers";
+import CustomSelect from "@/components/Base/CustomSelect.vue";
 
 // NOTE Store
 const storeUtils = utilsStore();
@@ -84,9 +86,9 @@ const setFormData = () => {
   if (rekamMedisStore.openedRekamMedis.data.lukaBakar) {
     persentaseLukaBakar.value =
       rekamMedisStore.openedRekamMedis.data.lukaBakar.persentaseLuka;
-    lpt.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.lpt;
-    petugas.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.petugas;
-  } else {
+      lpt.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.lpt;
+      petugas.value = rekamMedisStore.openedRekamMedis.data.lukaBakar.petugas;
+    } else {
     persentaseLukaBakar.value = 0;
     lpt.value = 0;
     petugas.value = "Super Admin";
@@ -97,15 +99,89 @@ onBeforeMount(() => {
   setFormData();
 });
 
-// NOTE Untuk merefresh form yang sedang dibuka jika ada perubahan data
 const storedRMData = computed(() => rekamMedisStore.openedRekamMedis);
 watch(storedRMData, (newRM) => {
   setFormData();
 });
 
+const historyData = ref<any>(null);
+const historyPageIndex = ref(0);
 const historyDialog = ref(false);
-const showDialogHistory = () => {
+const filterOptions = ref([
+  { name: "Semua", value: "semua" },
+  { name: "RJ", value: "rj" },
+  { name: "RI", value: "ri" },
+  { name: "IGD", value: "igd" },
+]);
+const selectedFilter = ref("semua");
+
+const fetchHistoryData = async () => {
+  if (!props.patientData?.patient) {
+    console.warn("Data Pasien tidak lengkap untuk mengambil riwayat.");
+    historyData.value = null;
+    return;
+  }
+  try {
+    storeUtils.setLoading(true);
+    const response = await rekamMedisStore.getCompare({
+      noPelayanan: props.patientData.noPelayanan || props.patientData.no_pelayanan,
+      noRm: props.patientData.patient.noRm,
+      // Gunakan nilai dari filter yang dipilih
+      jenisKunjungan: selectedFilter.value === 'semua' ? '' : selectedFilter.value,
+      key: "luka_bakar",
+    });
+    if (response && response.payload && response.payload.length > 0) {
+      historyData.value = response.payload;
+    } else {
+      historyData.value = null;
+    }
+  } catch (error) {
+    console.error("Gagal mengambil data perbandingan untuk luka bakar:", error);
+    historyData.value = null;
+  } finally {
+    storeUtils.setLoading(false);
+  }
+};
+
+const showDialogHistory = async () => {
+  await fetchHistoryData();
+  historyPageIndex.value = 0; 
   historyDialog.value = true;
+};
+
+watch(selectedFilter, async (newValue, oldValue) => {
+    if (historyDialog.value && newValue !== oldValue) {
+        await fetchHistoryData();
+        historyPageIndex.value = 0;
+    }
+});
+
+const leftHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value]) return null;
+  return historyData.value[historyPageIndex.value].data;
+});
+
+const rightHistoryItem = computed(() => {
+  if (!historyData.value || !historyData.value[historyPageIndex.value + 1]) return null;
+  return historyData.value[historyPageIndex.value + 1].data;
+});
+
+const canGoToPrevious = computed(() => historyPageIndex.value > 0);
+const canGoToNext = computed(() => {
+  if (!historyData.value) return false;
+  return historyPageIndex.value + 2 < historyData.value.length;
+});
+
+const previousHistory = () => {
+  if (canGoToPrevious.value) {
+    historyPageIndex.value -= 2;
+  }
+};
+
+const nextHistory = () => {
+  if (canGoToNext.value) {
+    historyPageIndex.value += 2;
+  }
 };
 
 const accordion = ref<HTMLCanvasElement | null>(null);
@@ -282,7 +358,107 @@ defineExpose({
       </template>
     </CustomDialog>
     <!-- Dialog History -->
-    <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+     <CustomDialog class="" v-model:visible="historyDialog" width="80%">
+  <template #header>Pemeriksaan Fisik</template>
+  <template #body>
+    <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
+      <div class="mb-[18px] flex justify-between col-span-3 items-center">
+        <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
+        <div class="flex items-center">
+          <CustomSelect
+            v-model="selectedFilter"
+            :options="filterOptions"
+            optionLabel="name"
+            optionValue="value"
+            :show-label="false"
+            class="w-40 mr-4"
+          />
+          <CustomButton
+            @click="previousHistory"
+            :disabled="!canGoToPrevious"
+            class="!rounded-md mr-[10px]"
+            size="small"
+            icon="PhCaretLeft"
+          />
+          <CustomButton
+            @click="nextHistory"
+            :disabled="!canGoToNext"
+            class="!rounded-md"
+            size="small"
+            icon="PhCaretRight"
+          />
+        </div>
+      </div>
+
+      <div>
+        <div v-if="leftHistoryItem">
+          <CustomAccordion headerClass="bg-adameds-50" :initialState="'0'">
+            <template #header>
+              {{ epochToDate(leftHistoryItem.updatedAt, 'date') || "Data Riwayat" }}
+            </template>
+            <template #content>
+              <Adult
+                v-if="patientData?.patient.gender == 'Male'"
+                :openedData="leftHistoryItem"
+                class="w-full mt-4"
+              />
+              <AdultWomen
+                v-else
+                :openedData="leftHistoryItem"
+                class="w-full mt-4"
+              />
+              <div class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Presentase Luka Bakar" :value="`${leftHistoryItem.persentaseLuka || '0'} %`" />
+                <CustomInfoRow label="LPT" :value="`${leftHistoryItem.lpt || '0'} M²`" />
+                <hr class="border-grey-200" />
+                <CustomInfoRow label="Petugas Input" :value="leftHistoryItem.petugas || '-'" />
+                <CustomInfoRow label="Jam Input" :value="String(epochToDate(leftHistoryItem.updatedAt, 'time'))" />
+              </div>
+            </template>
+          </CustomAccordion>
+        </div>
+        <div v-else class="text-center text-grey-400 p-4">
+          Tidak ada riwayat.
+        </div>
+      </div>
+
+      <div class="border border-adameds-300 mx-[15px]"></div>
+
+      <div>
+        <div v-if="rightHistoryItem">
+          <CustomAccordion headerClass="bg-adameds-50" :initialState="'0'">
+            <template #header>
+              {{ epochToDate(rightHistoryItem.updatedAt, 'date') || "Data Riwayat" }}
+            </template>
+            <template #content>
+              <Adult
+                v-if="patientData?.patient.gender == 'Male'"
+                :openedData="rightHistoryItem"
+                class="w-full mt-4"
+              />
+              <AdultWomen
+                v-else
+                :openedData="rightHistoryItem"
+                class="w-full mt-4"
+              />
+              <div class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Presentase Luka Bakar" :value="`${rightHistoryItem.persentaseLuka || '0'} %`" />
+                <CustomInfoRow label="LPT" :value="`${rightHistoryItem.lpt || '0'} M²`" />
+                <hr class="border-grey-200" />
+                <CustomInfoRow label="Petugas Input" :value="rightHistoryItem.petugas || '-'" />
+                <CustomInfoRow label="Jam Input" :value="String(epochToDate(rightHistoryItem.updatedAt, 'time'))" />
+              </div>
+            </template>
+          </CustomAccordion>
+        </div>
+        <div v-else class="text-center text-grey-400 p-4">
+          Tidak ada data riwayat selanjutnya.
+        </div>
+      </div>
+    </div>
+  </template>
+</CustomDialog>
+    <!-- <CustomDialog class="" v-model:visible="historyDialog" width="80%">
       <template #header>Pemeriksaan Fisik</template>
       <template #body>
         <div class="pt-5 grid grid-cols-[1fr_min-content_1fr]">
@@ -290,42 +466,76 @@ defineExpose({
             <div class="font-semibold text-grey-400">Riwayat Sebelumnya</div>
             <div class="flex">
               <CustomButton
-                @click="() => {}"
+                @click="previousHistory"
+                :disabled="!canGoToPrevious"
                 class="!rounded-md mr-[10px]"
                 size="small"
                 icon="PhCaretLeft"
               />
               <CustomButton
-                @click="() => {}"
+                @click="nextHistory"
+                :disabled="!canGoToNext"
                 class="!rounded-md"
                 size="small"
                 icon="PhCaretRight"
               />
             </div>
           </div>
+
           <div>
-            <Adult class="w-[800px]" />
-            <div class="py-5 flex flex-col gap-[19px]">
-              <CustomInfoRow label="Presentase Luka Bakar" value="0 %" />
-              <CustomInfoRow label="LPT" value="0 M²" />
-              <hr class="border-grey-200" />
-              <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
-              <CustomInfoRow label="Jam Input" :value="`petugas`" />
+            <div v-if="leftHistoryItem">
+              <Adult
+                v-if="patientData?.patient.gender == 'Male'"
+                :openedData="leftHistoryItem"
+                class="w-[800px]"
+              />
+              <AdultWomen
+                v-else
+                :openedData="leftHistoryItem"
+                class="w-[800px]"
+              />
+              <div class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Presentase Luka Bakar" :value="`${leftHistoryItem.persentaseLuka || '0'} %`" />
+                <CustomInfoRow label="LPT" :value="`${leftHistoryItem.lpt || '0'} M²`" />
+                <hr class="border-grey-200" />
+                <CustomInfoRow label="Petugas Input" :value="leftHistoryItem.petugas || '-'" />
+                <CustomInfoRow label="Jam Input" :value="String(epochToDate(leftHistoryItem.updatedAt, 'time'))" />
+              </div>
+            </div>
+            <div v-else class="text-center text-grey-400 p-4">
+              Tidak ada riwayat.
             </div>
           </div>
+
           <div class="border border-adameds-300 mx-[15px]"></div>
+
           <div>
-            <Adult class="w-[800px]" />
-            <div class="py-5 flex flex-col gap-[19px]">
-              <CustomInfoRow label="Presentase Luka Bakar" value="0 %" />
-              <CustomInfoRow label="LPT" value="0 M²" />
-              <hr class="border-grey-200" />
-              <CustomInfoRow label="Petugas Input" value="Nama Petugas" />
-              <CustomInfoRow label="Jam Input" :value="`petugas`" />
+            <div v-if="rightHistoryItem">
+              <Adult
+                v-if="patientData?.patient.gender == 'Male'"
+                :openedData="rightHistoryItem"
+                class="w-[800px]"
+              />
+              <AdultWomen
+                v-else
+                :openedData="rightHistoryItem"
+                class="w-[800px]"
+              />
+              
+              <div class="py-5 flex flex-col gap-[19px]">
+                <CustomInfoRow label="Presentase Luka Bakar" :value="`${rightHistoryItem.persentaseLuka || '0'} %`" />
+                <CustomInfoRow label="LPT" :value="`${rightHistoryItem.lpt || '0'} M²`" />
+                <hr class="border-grey-200" />
+                <CustomInfoRow label="Petugas Input" :value="rightHistoryItem.petugas || '-'" />
+                <CustomInfoRow label="Jam Input" :value="String(epochToDate(rightHistoryItem.updatedAt, 'time'))" />
+              </div>
+            </div>
+            <div v-else class="text-center text-grey-400 p-4">
+              Tidak ada data riwayat selanjutnya.
             </div>
           </div>
         </div>
       </template>
-    </CustomDialog>
+    </CustomDialog> -->
   </div>
 </template>

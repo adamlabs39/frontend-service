@@ -7,24 +7,6 @@ export const useIgdLaporanStore = defineStore({
   state: () => ({}),
   getters: {},
   actions: {
-    async getLaporanTindakan(
-      {
-        page = 1,
-        limit = 10,
-        name = "",
-        practitionerUuid = "",
-        jenisKunjungan = "igd",
-        // month = 0,
-        timestamp = 0,
-      },
-      payload = {}
-    ) {
-      let url = `/pelayanan/laporan-tindakan?page=${page}&limit=${limit}&name=${name}&practitioner_uuid=${practitionerUuid}&pelayanan=${jenisKunjungan}`;
-        if (timestamp !== 0) {
-            url += `&timestamp=${timestamp}`;
-        }
-        return apiIgdGet(url, payload);
-    },
     async getKunjunganIGD(
             {
                 q = "",
