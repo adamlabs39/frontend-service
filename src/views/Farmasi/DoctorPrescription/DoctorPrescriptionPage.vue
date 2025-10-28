@@ -4,7 +4,7 @@ import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription"
 import { utilsStore } from "@/stores/utils";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
-import { epochToDate, setTimeForDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -26,12 +26,12 @@ const optionsLayanan = ref([
   { label: "Rawat Inap", value: "ri" },
 ]);
 
-function dateToEpoch(date: any) {
-  if (!(date instanceof Date)) {
-    throw new Error("Input harus berupa objek Date");
-  }
-  return date.getTime();
-}
+// function dateToEpoch(date: any) {
+//   if (!(date instanceof Date)) {
+//     throw new Error("Input harus berupa objek Date");
+//   }
+//   return date.getTime();
+// }
 
 // Filter Jenis Resep
 const selectedRecipe = ref<string[]>([]);
