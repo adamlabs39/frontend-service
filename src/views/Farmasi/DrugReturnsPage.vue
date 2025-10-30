@@ -112,6 +112,7 @@ const hasDataAlkes = computed(
 // Fetch Drug Retur
 const fetchDrugRetur = async () => {
   UseUtilsStore.setLoading(true);
+
   const selectedPayment = [...selectedPaymentMethod.value];
   const selectedLocationNew = [...selectedLocation.value];
 
@@ -191,7 +192,7 @@ const onRowSelectAlkes = (event: any) => {
 
 onMounted(() => {
   fetchStockLocation();
-  fetchDrugRetur(); 
+  fetchDrugRetur();
 });
 </script>
 
@@ -395,22 +396,29 @@ onMounted(() => {
           <Column header="Resep" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <p>{{ slotProps.data.noResep }}</p>
+                <p>{{ slotProps.data.noResep || "-" }}</p>
                 <p class="mt-[3px]">
-                  {{ epochToDate(slotProps.data.orderDate, "dateTime") }}
+                  {{
+                    slotProps.data.orderDate
+                      ? epochToDate(slotProps.data.orderDate, "dateTime")
+                      : "-"
+                  }}
                 </p>
               </div>
             </template>
           </Column>
+
           <!-- Pasien -->
           <Column header="Pasien" headerClass="bg-adameds-50">
             <template #body="slotProps">
               <div class="text-SM">
-                <p class="font-semibold">{{ slotProps.data.patient?.name }}</p>
+                <p class="font-semibold">
+                  {{ slotProps.data.patient?.name || "-" }}
+                </p>
               </div>
               <div class="flex flex-wrap mt-[3px]">
                 <CustomChip
-                  :label="slotProps.data.noRm"
+                  :label="slotProps.data.noRm || '-'"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300"
@@ -420,13 +428,16 @@ onMounted(() => {
               </div>
             </template>
           </Column>
+
           <!-- Keperawatan -->
           <Column header="Keperawatan" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ slotProps.data.jenisPelayanan }}</div>
+              <div class="text-SM">
+                {{ slotProps.data.jenisPelayanan || "-" }}
+              </div>
               <div class="flex flex-wrap mt-[3px]">
                 <CustomChip
-                  :label="slotProps.data.lokasiStok.name"
+                  :label="slotProps.data.lokasiStok?.name || '-'"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300"
@@ -462,6 +473,7 @@ onMounted(() => {
               </div>
             </template>
           </Column>
+
           <!-- Status -->
           <Column field="status" header="Status" headerClass="bg-adameds-50">
             <template #body="slotProps">
@@ -544,7 +556,7 @@ onMounted(() => {
               <div class="text-SM">{{ slotProps.data.jenisPelayanan }}</div>
               <div class="flex flex-wrap mt-[3px]">
                 <CustomChip
-                  :label="slotProps.data.lokasiStok.name"
+                  :label="slotProps.data.lokasiStok?.name || '-'"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
                   bgColor="bg-adameds-300"

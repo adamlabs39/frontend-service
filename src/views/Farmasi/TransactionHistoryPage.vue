@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import { useTransactionHistoryStore } from "@/stores/farmasi/TransactionHistory";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import { utilsStore } from "@/stores/utils";
-import { dateToEpoch, epochToDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -57,8 +57,8 @@ const fetchTransactionHistory = async () => {
     const response = await TransactionHistoryStore.getApi({
       item_type: selectMedicine.value,
       status_type: selectedHistory.value,
-      start_date: dateToEpoch(startDateFilter.value),
-      end_date: dateToEpoch(endDateFilter.value),
+      start_date: dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      end_date: dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
       search: searchQuery.value,
       lokasi_stok_uuid: locationParam,
       payment_method: paymentParam,
@@ -129,8 +129,8 @@ const onSelectPayment = (label: string) => {
 // Filter Search Data
 const searchData = () => {
   searchQuery.value;
-  dateToEpoch(startDateFilter.value);
-  dateToEpoch(endDateFilter.value);
+  dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
+  dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
   fetchTransactionHistory();
 };
 
@@ -210,11 +210,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
+  <div class="flex overflow-hidden flex-col h-full">
     <Card
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>

@@ -4,7 +4,7 @@ import { useDoctorPrescriptionStore } from "@/stores/farmasi/DoctorPrescription"
 import { utilsStore } from "@/stores/utils";
 import { useStockLocationStore } from "@/stores/datamasterFarmasi/StockLocation";
 import { useMedicalItemStore } from "@/stores/datamasterFarmasi/MedicalItem";
-import { epochToDate, setTimeForDate } from "@/utils/Helpers";
+import { dateToEpoch, epochToDate, setTimeForDate } from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomSelect from "@/components/Base/CustomSelect.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -26,12 +26,12 @@ const optionsLayanan = ref([
   { label: "Rawat Inap", value: "ri" },
 ]);
 
-function dateToEpoch(date: any) {
-  if (!(date instanceof Date)) {
-    throw new Error("Input harus berupa objek Date");
-  }
-  return date.getTime();
-}
+// function dateToEpoch(date: any) {
+//   if (!(date instanceof Date)) {
+//     throw new Error("Input harus berupa objek Date");
+//   }
+//   return date.getTime();
+// }
 
 // Filter Jenis Resep
 const selectedRecipe = ref<string[]>([]);
@@ -56,7 +56,7 @@ interface Prescription {
   isChronic?: boolean;
   isCompound?: boolean;
   patient: string;
-  lokasiStok: { name: string };
+  lokasiStok: { name: string } | null;
 }
 
 interface ApiResponse {
@@ -464,7 +464,7 @@ const handleReset = () => {
                       Lokasi Tujuan Order
                     </div>
                     <div class="mt-[5px]">
-                      {{ prescription.lokasiStok.name }}
+                      {{ prescription.lokasiStok?.name || "-" }}
                     </div>
                     <div>
                       <CustomChip
@@ -600,7 +600,7 @@ const handleReset = () => {
                       Lokasi Tujuan Order
                     </div>
                     <div class="mt-[5px]">
-                      {{ prescription.lokasiStok.name }}
+                      {{ prescription.lokasiStok?.name || "-" }}
                     </div>
                     <div>
                       <CustomChip
@@ -735,7 +735,7 @@ const handleReset = () => {
                       Lokasi Tujuan Order
                     </div>
                     <div class="mt-[5px]">
-                      {{ prescription.lokasiStok.name }}
+                      {{ prescription.lokasiStok?.name || "-" }}
                     </div>
                     <div>
                       <CustomChip
@@ -826,19 +826,22 @@ const handleReset = () => {
           <!-- Detail Resep - Telaah -->
           <DetailPrescription
             v-if="incomingRecipesDetails"
-            :payloadDetail="PrescriptionDetail"
+            :key="(PrescriptionDetail?.uuid || 'incoming') + '-incoming'"
+            :payloadDetail="PrescriptionDetail || {}"
             @close="incomingRecipesClose"
           />
           <!-- Detail Resep - Obat Siap Diserahkan -->
           <DetailPrescription
             v-if="readyMedicineDetails"
-            :payloadDetail="PrescriptionDetail"
+            :key="(PrescriptionDetail?.uuid || 'ready') + '-ready'"
+            :payloadDetail="PrescriptionDetail || {}"
             @close="readyMedicineClose"
           />
           <!-- Detail Resep - Serahkan Obat -->
           <DetailPrescription
             v-if="drugHandoverDetails"
-            :payloadDetail="PrescriptionDetail"
+            :key="(PrescriptionDetail?.uuid || 'handover') + '-handover'"
+            :payloadDetail="PrescriptionDetail || {}"
             @close="drugHandoverClose"
           />
         </div>

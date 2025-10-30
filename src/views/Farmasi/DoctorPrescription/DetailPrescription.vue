@@ -147,11 +147,16 @@ const fetchPegawai = async () => {
 
 const fetchStockObat = async () => {
   if (props.payloadDetail.isCompound == true) {
-    const itemMedsUuidInRacikan = props.payloadDetail.obat.flatMap((obat: any) => 
-      obat.racikan.map((racikan: any) => racikan.itemMedis ? racikan.itemMedis.uuid : null)
+    const itemMedsUuidInRacikan = props.payloadDetail.obat.flatMap(
+      (obat: any) =>
+        obat.racikan.map((racikan: any) =>
+          racikan.itemMedis ? racikan.itemMedis.uuid : null
+        )
     );
     try {
-      const response = await MedicalItemStore.getAvailableStockApi(itemMedsUuidInRacikan);
+      const response = await MedicalItemStore.getAvailableStockApi(
+        itemMedsUuidInRacikan
+      );
       if (response && response.payload) {
         stockObatPayload.value = response.payload;
       } else {
@@ -183,7 +188,9 @@ const fetchStockObat = async () => {
 const fetchObatRacikan = async () => {
   const itemMedsUuidInRacikan = props.payloadDetail.obat
     .flatMap((obat: any) =>
-      obat.racikan.map((racikan: any) => racikan.itemMedis ? racikan.itemMedis.uuid : null)
+      obat.racikan.map((racikan: any) =>
+        racikan.itemMedis ? racikan.itemMedis.uuid : null
+      )
     )
     .filter((uuid: string): uuid is string => uuid !== null); // Pastikan hanya string, bukan null
 
@@ -204,7 +211,7 @@ const fetchObatRacikan = async () => {
     console.error("Failed to fetch all data", error);
     stockObatRacikanPayload.value = [];
   }
-  console.log(stockObatRacikanPayload.value, 'stockObatRacikanPayload.value');
+  console.log(stockObatRacikanPayload.value, "stockObatRacikanPayload.value");
 };
 
 // Fetch Obat Non Racikan
@@ -212,12 +219,14 @@ const fetchObatNonRacikan = async () => {
   const uuidNonRacikan = props.payloadDetail.obat[0].itemMedis.uuid;
 
   try {
-    const response = await MedicalItemStore.getAvailableStockApi(uuidNonRacikan);
+    const response = await MedicalItemStore.getAvailableStockApi(
+      uuidNonRacikan
+    );
     if (response && response.payload) {
       stockObatNonRacikanPayload.value = response.payload;
     } else {
       stockObatNonRacikanPayload.value = [];
-    }    
+    }
   } catch (error) {
     console.error("Failed to fetch data", error);
     stockObatNonRacikanPayload.value = [];
@@ -323,14 +332,18 @@ const schema = toTypedSchema(
               schema
                 .of(
                   yup.object({
-                    jenisStokUuid: yup.string().required("Stok Obat harus dipilih"),
+                    jenisStokUuid: yup
+                      .string()
+                      .required("Stok Obat harus dipilih"),
                   })
-                ).strict(),
+                )
+                .strict(),
             otherwise: (schema) => schema.notRequired(),
           }),
         })
       ),
-    }).noUnknown()
+    })
+    .noUnknown()
 );
 
 const { errors, handleSubmit, resetForm, setValues, defineField } = useForm({
@@ -364,10 +377,12 @@ const updateObatRacikan = async (
     );
 
     if (fields.value[indexObat].value.isCompound) {
-      const selectedRacikan = fields.value[indexObat].value.racikan[indexRacikan];
+      const selectedRacikan =
+        fields.value[indexObat].value.racikan[indexRacikan];
       selectedRacikan.hargaSatuan = selectedStock.harga;
       selectedRacikan.sisaStok = selectedStock.totalStok;
-      selectedRacikan.subTotal = selectedStock.harga * selectedRacikan.medicationQty;
+      selectedRacikan.subTotal =
+        selectedStock.harga * selectedRacikan.medicationQty;
 
       // Hitung grandTotal
       const racikanItems = fields.value[indexObat].value.racikan;
@@ -421,10 +436,12 @@ const updateObatNonRacikan = async (
     );
 
     if (fields.value[indexObat].value.isCompound) {
-      const selectedRacikan = fields.value[indexObat].value.racikan[indexRacikan];
+      const selectedRacikan =
+        fields.value[indexObat].value.racikan[indexRacikan];
       selectedRacikan.hargaSatuan = selectedStock.harga;
       selectedRacikan.sisaStok = selectedStock.totalStok;
-      selectedRacikan.subTotal = selectedStock.harga * selectedRacikan.medicationQty;
+      selectedRacikan.subTotal =
+        selectedStock.harga * selectedRacikan.medicationQty;
 
       // Hitung grandTotal
       const racikanItems = fields.value[indexObat].value.racikan;
@@ -459,7 +476,7 @@ const updateObatNonRacikan = async (
 // };
 // const focusObatRacikan = (uuid: string) => {
 //   console.log(uuid, 'uuid');
-  
+
 //   fetchObatRacikan(uuid)
 // };
 
@@ -473,7 +490,7 @@ const fetchDetailPrescription = async () => {
     console.error("Failed to fetch data:", error);
     payload.value = {};
   }
-  
+
   totalTagihan.value = 0;
   if (payload.value?.lokasiStokUuid) {
     awalLokasi.value = payload.value.lokasiStokUuid;
@@ -639,7 +656,9 @@ onMounted(() => {
           </div>
           <div class="flex justify-end">
             <div class="bg-white w-[0.5px] h-[30px] mr-[20px]"></div>
-            <p class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]">
+            <p
+              class="text-sm font-bold text-white font-poppins mt-[5px] mr-[20px]"
+            >
               Tgl. Order : {{ epochToDate(payload.orderDate, "date") }}
             </p>
             <CustomButton
@@ -659,7 +678,9 @@ onMounted(() => {
           <div class="basis-1/2">
             <p class="font-bold text-MD">Nama lengkap pasien</p>
             <p>{{ payload.noReg }}</p>
-            <CustomButton class="w-24 h-5 text-sm">{{ payload.noRm }}</CustomButton>
+            <CustomButton class="w-24 h-5 text-sm">{{
+              payload.noRm
+            }}</CustomButton>
             <CustomChip
               :showCheckedIcon="false"
               label="Laki-laki"
@@ -713,7 +734,9 @@ onMounted(() => {
                       <p>Tidak Ada</p>
                     </div>
                     <div>
-                      <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+                      <p
+                        class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                      >
                         Dokter Pengirim
                         <span>
                           <CustomButton
@@ -735,7 +758,9 @@ onMounted(() => {
                     Diagnosa Primer
                   </p>
                   <p class="">H10.9 Conjuctivitis</p>
-                  <p class="text-xs font-bold underline underline-offset-2 mt-[10px]">
+                  <p
+                    class="text-xs font-bold underline underline-offset-2 mt-[10px]"
+                  >
                     Diagnosa Sekunder
                   </p>
                   <p class="">-</p>
@@ -780,7 +805,9 @@ onMounted(() => {
                 <div class="mt-[20px] p-4 rounded-t-lg bg-adameds-50 shadow-md">
                   <div class="grid grid-cols-2 gap-2">
                     <div class="flex">
-                      <CustomButton class="text-sm h-7">{{ idx + 1 }}</CustomButton>
+                      <CustomButton class="h-7 text-sm">{{
+                        idx + 1
+                      }}</CustomButton>
                       <p class="my-auto ml-2 text-sm font-bold">
                         {{ obat.value.itemMedis?.name }}
                       </p>
@@ -831,7 +858,9 @@ onMounted(() => {
                         label=""
                         background-color="bg-grass-300 rounded-lg"
                         class="h-6 w-[26px] p-0 ml-[10px] mr-[10px]"
-                        @click="openDialog('digerus', 'Tambah Data', obat.value)"
+                        @click="
+                          openDialog('digerus', 'Tambah Data', obat.value)
+                        "
                       >
                         <img
                           src="@/assets/icons/Exclude.svg"
@@ -852,19 +881,30 @@ onMounted(() => {
                   </div>
                 </div>
                 <div class="p-4 bg-white rounded-b-lg shadow-md">
-                  <DataTable :value="obat.value.isCompound ? obat.value.racikan : itemsObat" class="text-xs">
-                     <!-- Rincian Obat -->
+                  <DataTable
+                    :value="
+                      obat.value.isCompound ? obat.value.racikan : itemsObat
+                    "
+                    class="text-xs"
+                  >
+                    <!-- Rincian Obat -->
                     <Column v-if="obat.value.isCompound" header="Rincian Obat">
                       <template #body="slotProps">
                         <div class="grid grid-cols-1">
-                          <p>{{ slotProps.data.itemMedis.name}}</p>
+                          <p>{{ slotProps.data.itemMedis?.name || "-" }}</p>
                           <div class="flex">
                             <PhArrowRight
                               :size="15"
                               class="my-auto text-success-300"
                               weight="bold"
                             />
-                            <p class="ml-[5px]">{{ slotProps.data.medicationQty }} {{ slotProps.data.itemMedis?.satuanPenggunaan?.name }}</p>
+                            <p class="ml-[5px]">
+                              {{ slotProps.data.medicationQty }}
+                              {{
+                                slotProps.data.itemMedis?.satuanPenggunaan
+                                  ?.name || "-"
+                              }}
+                            </p>
                           </div>
                         </div>
                       </template>
@@ -872,7 +912,7 @@ onMounted(() => {
                     <!-- Stok Obat -->
                     <Column field="itemsObat">
                       <template #header>
-                        <div class="flex items-center justify-between w-full">
+                        <div class="flex justify-between items-center w-full">
                           <div class="font-semibold">Stok Obat</div>
                           <CustomButton
                             v-if="payload.orderStatus !== 1"
@@ -926,50 +966,85 @@ onMounted(() => {
                             "
                           />
                         </div>
-                        <div v-if="payload.orderStatus !== 1">{{ obat.value.jenisStok.name }}</div>
+                        <div v-if="payload.orderStatus !== 1">
+                          {{ obat.value.jenisStok?.name || "-" }}
+                        </div>
                       </template>
                     </Column>
                     <!-- Sisa Stok -->
-                    <Column v-if="payload.orderStatus === 1" headerClass="font-semibold" class="text-center" bodyClass="align-top text-center">
+                    <Column
+                      v-if="payload.orderStatus === 1"
+                      headerClass="font-semibold"
+                      class="text-center"
+                      bodyClass="align-top text-center"
+                    >
                       <template #header>
                         <div class="w-full text-center">Sisa Stok</div>
                       </template>
                       <template #body="slotProps">
-                        {{ obat.value.isCompound ? slotProps.data.sisaStok || "-" : obat.value.sisaStok || "-" }}
+                        {{
+                          obat.value.isCompound
+                            ? slotProps.data.sisaStok ?? "-"
+                            : obat.value.sisaStok ?? "-"
+                        }}
                       </template>
                     </Column>
                     <!-- Aturan & Cara Pakai -->
-                    <Column v-if="!obat.value.isCompound" field="caraPakai" header="Aturan & Cara Pakai">
+                    <Column
+                      v-if="!obat.value.isCompound"
+                      field="caraPakai"
+                      header="Aturan & Cara Pakai"
+                    >
                       <template #body="slotProps">
                         <div>
                           <p class="text-sm">
-                            {{ obat.value.aturanPakai?.name }} <br />
-                            {{ obat.value.caraPakai?.caraPakai }}
+                            {{ obat.value.aturanPakai?.name || "-" }} <br />
+                            {{ obat.value.caraPakai?.caraPakai || "-" }}
                           </p>
                         </div>
                       </template>
                     </Column>
                     <!-- Biaya Satuan -->
-                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
+                    <Column
+                      headerClass="font-semibold"
+                      class="w-2/12 text-end"
+                      bodyClass="align-top text-end"
+                    >
                       <template #header>
                         <div class="w-full text-end">Biaya Satuan</div>
                       </template>
                       <template #body="slotProps">
-                        {{ obat.value.isCompound ? formatRupiah(slotProps.data.hargaSatuan) || "-" : formatRupiah(obat.value.hargaSatuan) || "-" }}
+                        {{
+                          obat.value.isCompound
+                            ? formatRupiah(slotProps.data.hargaSatuan) || "-"
+                            : formatRupiah(obat.value.hargaSatuan) || "-"
+                        }}
                       </template>
                     </Column>
                     <!-- Sub. Total -->
-                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
+                    <Column
+                      headerClass="font-semibold"
+                      class="w-2/12 text-end"
+                      bodyClass="align-top text-end"
+                    >
                       <template #header>
                         <div class="w-full text-end">Sub. Total</div>
                       </template>
                       <template #body="slotProps">
-                        {{ obat.value.isCompound ? formatRupiah(slotProps.data.subTotal) || "-" : formatRupiah(obat.value.grandTotal) || "-" }}
+                        {{
+                          obat.value.isCompound
+                            ? formatRupiah(slotProps.data.subTotal) || "-"
+                            : formatRupiah(obat.value.grandTotal) || "-"
+                        }}
                       </template>
                     </Column>
                   </DataTable>
 
-                  <DataTable v-if="obat.value.isCompound" :value="itemsRacikan" class="text-xs">
+                  <DataTable
+                    v-if="obat.value.isCompound"
+                    :value="itemsRacikan"
+                    class="text-xs"
+                  >
                     <Column class="w-4/12" header="Aturan & Cara Pakai">
                       <template #body>
                         {{ obat.value.aturanPakai?.name }} <br />
@@ -977,7 +1052,11 @@ onMounted(() => {
                       </template>
                     </Column>
                     <!-- Biaya Embalase -->
-                    <Column headerClass="font-semibold" class="w-3/12 text-end" bodyClass="align-top text-end">
+                    <Column
+                      headerClass="font-semibold"
+                      class="w-3/12 text-end"
+                      bodyClass="align-top text-end"
+                    >
                       <template #header>
                         <div class="w-full text-end">Biaya Embalase</div>
                       </template>
@@ -986,7 +1065,11 @@ onMounted(() => {
                       </template>
                     </Column>
                     <!-- Biaya Racik -->
-                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
+                    <Column
+                      headerClass="font-semibold"
+                      class="w-2/12 text-end"
+                      bodyClass="align-top text-end"
+                    >
                       <template #header>
                         <div class="w-full text-end">Biaya Racik</div>
                       </template>
@@ -995,12 +1078,20 @@ onMounted(() => {
                       </template>
                     </Column>
                     <!-- Sub. Total -->
-                    <Column headerClass="font-semibold" class="w-2/12 text-end" bodyClass="align-top text-end">
+                    <Column
+                      headerClass="font-semibold"
+                      class="w-2/12 text-end"
+                      bodyClass="align-top text-end"
+                    >
                       <template #header>
                         <div class="w-full text-end">Sub. Total</div>
                       </template>
                       <template #body="slotProps">
-                        {{ obat.value.grandTotal ? formatRupiah(obat.value.grandTotal) : "-" }}
+                        {{
+                          obat.value.grandTotal
+                            ? formatRupiah(obat.value.grandTotal)
+                            : "-"
+                        }}
                       </template>
                     </Column>
                   </DataTable>
@@ -1080,7 +1171,10 @@ onMounted(() => {
                         </div>
                       </template>
                     </Column>
-                    <Column v-if="payload.orderStatus !== 1" headerClass="bg-adameds-50">
+                    <Column
+                      v-if="payload.orderStatus !== 1"
+                      headerClass="bg-adameds-50"
+                    >
                       <template #header>
                         <div class="w-full font-bold">Hasil</div>
                       </template>
@@ -1128,7 +1222,10 @@ onMounted(() => {
                         </div>
                       </template>
                     </Column>
-                    <Column v-if="payload.orderStatus !== 1" headerClass="bg-adameds-50">
+                    <Column
+                      v-if="payload.orderStatus !== 1"
+                      headerClass="bg-adameds-50"
+                    >
                       <template #header>
                         <div class="w-full font-bold">Hasil</div>
                       </template>
@@ -1141,7 +1238,8 @@ onMounted(() => {
                         />
                       </template>
                     </Column>
-                    <Column v-if="payload.orderStatus === 1"
+                    <Column
+                      v-if="payload.orderStatus === 1"
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
@@ -1175,7 +1273,10 @@ onMounted(() => {
                         </div>
                       </template>
                     </Column>
-                    <Column v-if="payload.orderStatus !== 1" headerClass="bg-adameds-50">
+                    <Column
+                      v-if="payload.orderStatus !== 1"
+                      headerClass="bg-adameds-50"
+                    >
                       <template #header>
                         <div class="w-full font-bold">Hasil</div>
                       </template>
@@ -1188,7 +1289,8 @@ onMounted(() => {
                         />
                       </template>
                     </Column>
-                    <Column v-if="payload.orderStatus === 1"
+                    <Column
+                      v-if="payload.orderStatus === 1"
                       selectionMode="multiple"
                       headerStyle="width: 3rem"
                       headerClass="bg-adameds-50"
@@ -1306,12 +1408,17 @@ onMounted(() => {
             </template>
           </CustomAccordion>
         </div>
-        <hr v-if="payload.orderStatus === 1 || payload.orderStatus === 4" class="my-5 border-[1px] border-grey-200" />
-        <div class="flex items-end justify-between">
+        <hr
+          v-if="payload.orderStatus === 1 || payload.orderStatus === 4"
+          class="my-5 border-[1px] border-grey-200"
+        />
+        <div class="flex justify-between items-end">
           <CustomSelect
             v-if="payload.orderStatus === 1 || payload.orderStatus === 4"
             v-model="selectedPegawai"
-            :label="payload.orderStatus === 4 ? 'Petugas Edukasi' : 'Petugas Telaah'"
+            :label="
+              payload.orderStatus === 4 ? 'Petugas Edukasi' : 'Petugas Telaah'
+            "
             place-holder="Pilih Petugas"
             :options="pegawaiPayload"
             optionValue="name"
@@ -1321,9 +1428,11 @@ onMounted(() => {
           <CustomButton
             v-if="payload.orderStatus === 1"
             @click="simpanTelaah(payload.uuid)"
-            :disabled="!checkTelaah || !selectedPegawai || Object.keys(errors).length > 0"
+            :disabled="
+              !checkTelaah || !selectedPegawai || Object.keys(errors).length > 0
+            "
           >
-            <div class="flex items-center gap-2">
+            <div class="flex gap-2 items-center">
               <div class="text-sm">Simpan Telaah</div>
             </div>
           </CustomButton>
@@ -1359,7 +1468,7 @@ onMounted(() => {
             >
             </CustomButton>
             <CustomButton @click="cetakDialog = true">
-              <div class="flex items-center gap-2">
+              <div class="flex gap-2 items-center">
                 <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
                 <div class="text-sm">Cetak</div>
               </div>
@@ -1367,13 +1476,17 @@ onMounted(() => {
           </div>
           <div class="flex justify-end">
             <div class="">
-              <p class="text-xs font-bold text-right underline underline-offset-2">
+              <p
+                class="text-xs font-bold text-right underline underline-offset-2"
+              >
                 Diverifikasi Oleh
               </p>
               <p>{{ payload.petugasVerifikasi }}</p>
             </div>
             <div class="">
-              <div class="bg-mediumGrey-300 w-[1px] h-[33px] ml-[20px] mt-1"></div>
+              <div
+                class="bg-mediumGrey-300 w-[1px] h-[33px] ml-[20px] mt-1"
+              ></div>
             </div>
             <div class="">
               <CustomButton
@@ -1519,19 +1632,19 @@ onMounted(() => {
     <template #body>
       <div class="flex gap-3 mt-[20px]">
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">E-Tiket</div>
           </div>
         </CustomButton>
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">E-Resep</div>
           </div>
         </CustomButton>
         <CustomButton>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <PhPrinter :size="18" colorc="#ffffff" weight="fill" />
             <div class="text-sm">Salinan E-Resep</div>
           </div>

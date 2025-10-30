@@ -2,7 +2,12 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useDrugSalesStore } from "@/stores/farmasi/DrugSales";
 import { utilsStore } from "@/stores/utils";
-import { epochToDate, dateToEpoch, formatPrice } from "@/utils/Helpers";
+import {
+  epochToDate,
+  dateToEpoch,
+  formatPrice,
+  setTimeForDate,
+} from "@/utils/Helpers";
 import CustomButton from "@/components/Base/CustomButton.vue";
 import CustomDatePicker from "@/components/Base/CustomDatePicker.vue";
 import CustomBreadCrumb from "@/components/Base/CustomBreadCrumb.vue";
@@ -12,8 +17,8 @@ import CustomChip from "@/components/Base/CustomChip.vue";
 import CustomPaginator from "@/components/Base/CustomPaginator.vue";
 import type { MenuItem } from "primevue/menuitem";
 import NoData from "@/components/section/NoData.vue";
-import DetailDrugSalesPage from './Layout/DetailDrugSalesPage.vue'
-import DetailDrugSalesPage2 from './Layout/DetailDrugSalesPage2.vue'
+import DetailDrugSalesPage from "./Layout/DetailDrugSalesPage.vue";
+import DetailDrugSalesPage2 from "./Layout/DetailDrugSalesPage2.vue";
 
 const startDateFilter = ref<Date>(new Date());
 const endDateFilter = ref<Date>(new Date());
@@ -31,21 +36,20 @@ const selectedPayType = ref<string>("belum_lunas");
 
 const onSelectPayType = (label: string) => {
   selectedPayType.value = label;
-  fetchDrugSales()
+  fetchDrugSales();
 };
 
 // Filter Farmasi
 const selectedFilterFarmasi = ref<string[]>([]);
 const onPoliSelect = (label: string) => {
   if (selectedFilterFarmasi.value.includes(label)) {
-    
     selectedFilterFarmasi.value = selectedFilterFarmasi.value.filter(
       (item) => item != label
     );
   } else {
     selectedFilterFarmasi.value.push(label);
   }
-  fetchDrugSales()
+  fetchDrugSales();
 };
 
 const dataBreadCrumb = ref<MenuItem[]>([]);
@@ -61,9 +65,9 @@ const changeSection = (label: string) => {
 // Filter Search Data
 const searchData = () => {
   searchQuery.value;
-  dateToEpoch(startDateFilter.value);
-  dateToEpoch(endDateFilter.value);
-  fetchDrugSales()
+  dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0));
+  dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59));
+  fetchDrugSales();
 };
 
 // Filter Reset Data
@@ -71,7 +75,7 @@ const resetData = () => {
   searchQuery.value = "";
   startDateFilter.value = new Date();
   endDateFilter.value = new Date();
-  fetchDrugSales()
+  fetchDrugSales();
 };
 
 // State Management
@@ -97,12 +101,12 @@ const fetchDrugSales = async () => {
   try {
     const response = await DrugSalesStore.getApi(
       selectedPayType.value,
-      dateToEpoch(startDateFilter.value),
-      dateToEpoch(endDateFilter.value),
-      selectedTest.join(''),
+      dateToEpoch(setTimeForDate(startDateFilter.value, 0, 0, 0)),
+      dateToEpoch(setTimeForDate(endDateFilter.value, 23, 59, 59)),
+      selectedTest.join(""),
       searchQuery.value,
       DrugSalesProperties.value.page,
-      DrugSalesProperties.value.page_size,
+      DrugSalesProperties.value.page_size
     );
 
     if (response && response.payload) {
@@ -132,7 +136,7 @@ const selectedData = ref();
 
 const onRowSelect = (event: any) => {
   selectedData.value = event.data;
-  changeSection('Detail Obat')
+  changeSection("Detail Obat");
 };
 
 const closeDrugsalesPage = () => {
@@ -146,19 +150,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
+  <div class="flex overflow-hidden flex-col h-full">
     <Card
       v-if="dataBreadCrumb.length == 0"
-      pt:body:class="h-full pt-0 overflow-auto"
-      pt:content:class="h-full overflow-hidden"
-      class="h-full overflow-hidden"
+      pt:body:class="overflow-auto pt-0 h-full"
+      pt:content:class="overflow-hidden h-full"
+      class="overflow-hidden h-full"
     >
       <template #header>
         <CustomAccordion :openWithHeader="false" noBorder>
           <template #header>
             <div class="flex justify-between w-full align-middle">
               <div class="flex">
-                <CustomButton icon="PhArrowClockwise" class="mr-5" @click="fetchDrugSales" />
+                <CustomButton
+                  icon="PhArrowClockwise"
+                  class="mr-5"
+                  @click="fetchDrugSales"
+                />
                 <CustomBreadCrumb
                   :home="{
                     label: 'Penjualan Obat',
@@ -217,8 +225,16 @@ onMounted(() => {
                 label="BELUM BAYAR"
                 :outlined="selectedPayType != 'belum_lunas'"
                 borderColor="border-adameds-300"
-                :textColor="selectedPayType != 'belum_lunas' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedPayType != 'belum_lunas' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectedPayType != 'belum_lunas'
+                    ? 'text-adameds-300'
+                    : 'text-white'
+                "
+                :backgroundColor="
+                  selectedPayType != 'belum_lunas'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
                 class="font-semibold"
               />
               <CustomButton
@@ -226,43 +242,60 @@ onMounted(() => {
                 label="LUNAS"
                 :outlined="selectedPayType != 'lunas'"
                 borderColor="border-adameds-300"
-                :textColor="selectedPayType != 'lunas' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedPayType != 'lunas' ? 'bg-transparent' : 'bg-adameds-300'"
-                class="ml-[20px] font-semibold "
+                :textColor="
+                  selectedPayType != 'lunas' ? 'text-adameds-300' : 'text-white'
+                "
+                :backgroundColor="
+                  selectedPayType != 'lunas'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
+                class="ml-[20px] font-semibold"
               />
               <CustomButton
                 @click="onSelectPayType('cancel')"
                 label="DIBATALKAN"
                 :outlined="selectedPayType != 'cancel'"
                 borderColor="border-adameds-300"
-                :textColor="selectedPayType != 'cancel' ? 'text-adameds-300' : 'text-white'"
-                :backgroundColor="selectedPayType != 'cancel' ? 'bg-transparent' : 'bg-adameds-300'"
+                :textColor="
+                  selectedPayType != 'cancel'
+                    ? 'text-adameds-300'
+                    : 'text-white'
+                "
+                :backgroundColor="
+                  selectedPayType != 'cancel'
+                    ? 'bg-transparent'
+                    : 'bg-adameds-300'
+                "
                 class="ml-[20px] font-semibold"
               />
             </div>
-            
+
             <!-- Filter Farmasi -->
             <div class="flex mb-[10px] mt-5">
-              <div class="w-[10%] font-semibold text-SM text-grey-300">Filter Farmasi</div>
-                <div class="flex">
-                  <span class="font-semibold text-grey-300">|</span>
-                  <CustomChip
-                    v-for="(Pelayanan, index) in filterFarmasi" :key="index"
-                    :label="Pelayanan.label"
-                    :value="Pelayanan.value"
-                    borderColor="border-adameds-300"
-                    bgColor="bg-adameds-50"
-                    iconColor="text-adameds-300"
-                    textColor="text-adameds-300"
-                    customClass="h-7"
-                    class="ml-[10px]"
-                    :isSelected="selectedFilterFarmasi.includes(Pelayanan.value)"
-                    @selected="onPoliSelect"
-                    selectedColor="bg-adameds-300 border-adameds-300"
-                  />
-                </div>
+              <div class="w-[10%] font-semibold text-SM text-grey-300">
+                Filter Farmasi
+              </div>
+              <div class="flex">
+                <span class="font-semibold text-grey-300">|</span>
+                <CustomChip
+                  v-for="(Pelayanan, index) in filterFarmasi"
+                  :key="index"
+                  :label="Pelayanan.label"
+                  :value="Pelayanan.value"
+                  borderColor="border-adameds-300"
+                  bgColor="bg-adameds-50"
+                  iconColor="text-adameds-300"
+                  textColor="text-adameds-300"
+                  customClass="h-7"
+                  class="ml-[10px]"
+                  :isSelected="selectedFilterFarmasi.includes(Pelayanan.value)"
+                  @selected="onPoliSelect"
+                  selectedColor="bg-adameds-300 border-adameds-300"
+                />
+              </div>
             </div>
-            <hr class="mt-5 border-[1px] border-grey-200">
+            <hr class="mt-5 border-[1px] border-grey-200" />
           </template>
           <template #collapseIcon>
             <CustomButton
@@ -292,11 +325,11 @@ onMounted(() => {
           scrollHeight="flex"
           :pt="{ headerRow: 'text-SM' }"
           :dt="{
-          rowSelectedColor: '#000000',
-          rowSelectedBackground: 'transparent',
-          bodyCellSelectedBorderColor: 'transparent',
-          bodyCellBorderColor: 'transparent',
-          rowStripedBackground: '#F8F8F8',
+            rowSelectedColor: '#000000',
+            rowSelectedBackground: 'transparent',
+            bodyCellSelectedBorderColor: 'transparent',
+            bodyCellBorderColor: 'transparent',
+            rowStripedBackground: '#F8F8F8',
           }"
         >
           <!-- Penjualan -->
@@ -304,7 +337,9 @@ onMounted(() => {
             <template #body="slotProps">
               <div class="text-SM">
                 <p>{{ slotProps.data.noTransaksi }}</p>
-                <p>{{ epochToDate(slotProps.data.tanggalPembelian, "dateTime") }}</p>
+                <p>
+                  {{ epochToDate(slotProps.data.tanggalPembelian, "dateTime") }}
+                </p>
               </div>
             </template>
           </Column>
@@ -319,7 +354,7 @@ onMounted(() => {
                   :label="slotProps.data.lokasiStok.name"
                   :showCheckedIcon="false"
                   borderColor="border-adameds-300"
-                  bgColor="bg-adameds-300" 
+                  bgColor="bg-adameds-300"
                   textColor="text-white"
                   customClass="h-6"
                 />
@@ -335,7 +370,9 @@ onMounted(() => {
           <!-- Harga -->
           <Column header="Harga" headerClass="bg-adameds-50">
             <template #body="slotProps">
-              <div class="text-SM">{{ formatPrice(slotProps.data.totalHarga) }}</div>
+              <div class="text-SM">
+                {{ formatPrice(slotProps.data.totalHarga) }}
+              </div>
             </template>
           </Column>
         </DataTable>
@@ -366,4 +403,3 @@ onMounted(() => {
     />
   </div>
 </template>
-  
