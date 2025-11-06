@@ -1,4 +1,4 @@
-FROM node:19.5.0-alpine
+FROM node:25-alpine3.22
 LABEL application="adameds-frontend"
 WORKDIR /adameds-frontend
 COPY . .
