@@ -3,6 +3,6 @@ LABEL application="adameds-frontend"
 WORKDIR /adameds-frontend
 COPY . .
 RUN npm install
-RUN npm run build
+RUN npm run build-only
 EXPOSE 5520/tcp
 CMD ["npm" , "run", "preview"]
